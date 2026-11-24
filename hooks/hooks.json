@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'For every coding task (writing, fixing, debugging, refactoring, reviewing or testing code, even a small fix), load the agent-skill-ultimate-coding:agent-skill-ultimate-coding skill first and follow it.'"
+            "command": "echo 'For every coding task (writing, fixing, debugging, refactoring, reviewing or testing code, even a small fix), load the agent-skill-ultimate-coding:agent-skill-ultimate-coding skill first and follow it. Any task that adds or changes logic starts with its design card, written in your reply before any code.'"
           }
         ]
       }

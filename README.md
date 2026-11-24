@@ -80,9 +80,10 @@ Real tasks, run **with and without** the plugin using Claude Code's `plugin eval
 | Order code protects against double submits | 🔴 0 of 3 | 🟢 3 of 3 |
 | A query built from user input stays parameterized | 🔴 1 of 3 | 🟢 3 of 3 |
 | A one-word typo fix stays short | 🟡 2 of 3 | 🟢 3 of 3 |
-| A bill split adds up exactly to the total | 🔴 0 of 3 | 🔴 0 of 3 ³ |
+| Architecture basics: race-safe status change, error model, must-happen side effect, thin handler, translated UI | 🟢 15 of 15 | 🟢 15 of 15 |
+| A bill split adds up exactly to the total | 🔴 0 of 3 | 🔴 1 of 3 ³ |
 
-³ Still open: on tiny snippet tasks Haiku often skips the design card, and with it the exact-split rule.
+³ With the skill, Haiku spots the uneven split in its design card, but usually keeps the single per-person amount the request asks for and offers the exact split as the alternative. Asked directly, today's models already get the architecture basics right; those rules matter more when the request does not point at the problem.
 
 The gain is in discipline, not knowledge: across all our runs, bug fixes without the skill loaded came with a reproducing test **0 times out of 24**, and every time with it. Where today's models already get it right, the skill doesn't get in the way: normal work stays in scope and reports stay short. [Run the evals yourself](#evals).
 
@@ -207,7 +208,7 @@ Agents decide for themselves when to load a skill, and for short requests ("here
 - **Copied the folder, or using another agent:** add this line to your project's `CLAUDE.md` or `AGENTS.md`:
 
 ```markdown
-For every coding task, load the agent-skill-ultimate-coding skill first and follow it.
+For every coding task, load the agent-skill-ultimate-coding skill first and follow it. Any task that adds or changes logic starts with its design card, written in your reply before any code.
 ```
 
 ## Evals
