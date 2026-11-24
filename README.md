@@ -16,7 +16,6 @@
 [![Works with](https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex%20%7C%20Cursor%20%7C%20Gemini%20%7C%20Copilot-4493F8?style=flat-square)](#any-agent-copy-the-folder)
 [![Evals](https://img.shields.io/badge/evals-with%20vs%20without-2EA44F?style=flat-square)](#proven-with-evals)
 [![Last commit](https://img.shields.io/github/last-commit/Khodour/agent-skill-ultimate-coding?style=flat-square)](https://github.com/Khodour/agent-skill-ultimate-coding/commits/main)
-
 **[Install](#install) · [How it works](#how-it-works) · [The 13 MUSTs](#the-13-musts) · [Evals](#proven-with-evals) · [Contributing](#contributing)**
 
 </div>
@@ -202,6 +201,10 @@ docs/assets/                         images used by this README
 ## Contributing
 
 Issues, forks and pull requests are welcome. Every rule must be language-neutral, explain what failure it prevents, and earn its place: if it doesn't change what an agent does, it doesn't belong.
+
+## About the author
+
+Built by **Khodour**, an Anthropic-certified AI architect and senior software engineer with 25+ years of shipping production software with large teams. The rules here come from that experience, and each one was checked with evals.
 
 ## License
 
