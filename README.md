@@ -33,21 +33,29 @@ Today's models already know SOLID, DRY and SQL injection. What they lack is **di
 
 ## Proven with evals
 
-Real tasks, run **with and without** the skill using Claude Code's `plugin eval` and graded by a separate judge. This table shows only where the skill changed the result:
+Real tasks, run **with and without** the skill using Claude Code's `plugin eval` and graded by a separate judge. On a small, fast model (Claude Haiku 5.5) the average score across the whole suite rose from **0.77 to 0.94**, at the same cost per task as the previous version.
+
+<p align="center">
+  <img src="docs/assets/eval-results.svg" alt="Dumbbell chart of pass rates without and with the skill. Claude Haiku 5.5: fixes a query inside a loop 0% to 100%; bug fix with a reproducing test 20% to 100%; safe against double submits 0% to 100%; parameterized query 20% to 100%; held-out failed cart read keeps the cart 80% to 100%; held-out coupon used once under races 0% to 40%; bill split adds up 0% to 33%. Default model: reproducing test 0% to 100%; bill split 33% to 100%; double submits 67% to 100%; runs the tests 67% to 100%." width="100%">
+</p>
+
+The chart shows only where the skill changed the result. Everywhere else both arms passed (security basics, migrations, API compatibility, project layout, state changes, error handling, translations), and the skill didn't get in the way: trivial fixes stay short. *Held-out* cases were written after the skill was finished, and the skill is never changed to pass them. [Run them yourself](#evals).
+
+<details>
+<summary>The numbers behind the chart</summary>
 
 | Behaviour | Default model | Claude Haiku 5.5 |
 |---|:---:|:---:|
-| A bug fix comes with a test that reproduces the bug | 0/3 → **3/3** | 1/5 → **5/5** |
-| Editing a function with a query inside a loop fixes it | — | 0/5 → **5/5** |
-| Order code is safe against double submits | 2/3 → **3/3** | 0/5 → **5/5** |
-| A query built from user input stays parameterized | — | 1/5 → **5/5** |
-| A bill split adds up exactly to the total | 1/3 → **3/3** | 0/3 → 1/3 |
-| The agent runs the tests before calling a fix done | 2/3 → **3/3** | — |
-| *Held out:* a coupon is used once per customer, even with two requests at once | — | 0/5 → 2/5 |
-| *Held out:* a failed cart read never wipes the saved cart | — | 4/5 → **5/5** |
-| **Average across the whole suite** | | 0.77 → **0.94** |
+| A bug fix comes with a test that reproduces the bug | 0/3 → 3/3 | 1/5 → 5/5 |
+| Editing a function with a query inside a loop fixes it | already passed | 0/5 → 5/5 |
+| Order code is safe against double submits | 2/3 → 3/3 | 0/5 → 5/5 |
+| A query built from user input stays parameterized | already passed | 1/5 → 5/5 |
+| A bill split adds up exactly to the total | 1/3 → 3/3 | 0/3 → 1/3 |
+| The agent runs the tests before calling a fix done | 2/3 → 3/3 | already passed |
+| *Held out:* a coupon is used once per customer, even with two requests at once | not run | 0/5 → 2/5 |
+| *Held out:* a failed cart read never wipes the saved cart | not run | 4/5 → 5/5 |
 
-**—** means the model already passed without the skill. Everywhere else both arms passed (security basics, migrations, API compatibility, project layout, state changes, error handling, translations), and the skill didn't get in the way: trivial fixes stay short, and the cost per task did not grow from the previous version. *Held-out* cases were written after the skill was finished, and the skill is never changed to pass them. [Run them yourself](#evals).
+</details>
 
 ## How it works
 
