@@ -22,11 +22,13 @@ The rules are directions, not dogma. Apply each one in the language's own idiom 
 
 | Size | Examples | What runs |
 |---|---|---|
-| **Trivial** | Typo, text or colour change, rename, one config value | Make the change → run the project's checks → reply with the change and at most one short sentence. No new tests, no report sections. |
-| **Normal** | New feature, bug fix, new screen or endpoint | All five moments. Tests by risk. Real-user test when users can see the change. |
-| **Complex** | Money, auth, permissions, personal data, data migrations, concurrency, public API changes | All five moments + read the matching reference files in full + independent review + concurrency or stress checks. |
+| **Trivial** | Typo, text or colour change, rename, one config value | Make the change → run the project's checks → reply with the change and at most one short sentence. No design card, no new tests, no report sections. |
+| **Normal** | New feature, bug fix, new screen or endpoint | Design card + all five moments. Tests by risk. Real-user test when users can see the change. |
+| **Complex** | Money, auth, permissions, personal data, data migrations, concurrency, public API changes | Design card with Risks + all five moments + read the matching reference files in full + independent review + concurrency or stress checks. |
 
 When unsure, go one size up.
+
+**Normal and complex tasks start with the design card** (see Design): write it in your reply before any code, even when the task looks small or there are no files. No card, no code.
 
 ## The MUSTs (never skipped, at any size)
 
@@ -63,21 +65,34 @@ When unsure, go one size up.
 - Read the code you will touch: its callers, its tests, the patterns around it.
 - Search for something that already does the job. Extend it before inventing anything new.
 - State your assumptions. If the request is unclear, or a simpler or safer way exists, say so before building (see "Asking questions").
-- Define **done** as checks you can verify: "done when the test for X passes and a user can do Y".
 
-**Check:** I know what already exists and what done means.
+**Check:** I know what already exists and what the user actually needs.
 
 ### 2. Design
 
+- **Write the design card in your reply before any code** (normal and complex tasks). A few words per line; "n/a" only with a reason:
+
+  ```
+  Job        what it does, in one sentence without "and"
+  Mirror     the closest existing piece to copy (file path), or "none"
+  Edges      inputs that break naive code: empty, zero, negative, huge, duplicate, uneven split
+  Twice?     what happens if it runs twice: double click, retry, two users at once
+  Data       what is read and written; does it need one transaction?
+  Load       how often it runs, how much data; any query or call inside a loop?
+  MUSTs      the numbers above that apply
+  Done when  the checks that prove it; for a bug, the test that fails today
+  Risks      complex tasks only: races, permissions, data loss, the way back
+  ```
+
+  Every line that names a risk ends as code, a test, or a ⚠️ Warning in the report. Code that contradicts the card is a bug.
 - Choose the simplest thing that works. Build only what was asked: no options, flags or hooks "for later".
 - One job per piece. Simple interfaces that hide the details. Each decision (how we search, price, authenticate) lives in one place.
 - Place code where its kind already lives: find the closest existing example (a model, an endpoint, a screen) and mirror its folder nesting, file split, naming and wiring. Only when the project has no pattern: feature first, then kind inside.
-- Shape the data: parse input once at the edge, make bad states impossible, snapshot historical facts (the price paid, not today's price). Money is integer cents or decimals, and when an amount is split, the parts add up exactly to the whole.
-- Ask the load questions: how often does this run, how much data, does it grow with users or rows?
+- Shape the data: parse input once at the edge, make bad states impossible, snapshot historical facts (the price paid, not today's price). Money is integer cents or decimals, and when an amount is split, the parts add up exactly to the whole: give the leftover cents to some shares by a clear rule, never round every share the same way.
 - For multi-step work, write a short plan with a check after each step, and start with a thin slice that works end to end.
 - Open the reference files the routing table points to.
 
-**Check:** this is the smallest design that works, and I know where each piece lives.
+**Check:** the card is written, and this is the smallest design that works.
 
 ### 3. Build
 
@@ -94,7 +109,7 @@ When unsure, go one size up.
 ### 4. Verify
 
 - Run every check the project already has: build, type checker, linter, formatter, tests.
-- Add tests by risk: **always** for bug fixes (reproduce the bug with a failing test first) and real logic (money, rules, permissions, calculations); **never** for trivial changes; suggest them for everything else.
+- Add tests by risk: **always** for bug fixes (reproduce the bug with a failing test first) and real logic (money, rules, permissions, calculations); **never** for trivial changes; suggest them for everything else. If you cannot run tests, still write them into the change (or the reply when there are no files) and mark them not run.
 - **When users can see or use the change:** finish with a real-user test. Use the real interface (browser, emulator, terminal, HTTP calls, public API) on a safe environment, never production. Try the happy path, then act like a careless human (see the checklist in `references/testing.md`). Compare results with expected values worked out separately. Every bug found becomes a test, then gets fixed and retested.
 - **When the software has users or clients and the change touches data paths:** test with a large dataset and send 10–20 requests at the same item at once. Hot paths and releases get a real stress test on staging (`references/performance.md`).
 - Review your own diff with `references/review.md`. **Complex tasks** also get an independent review: a separate reviewer (a subagent, if your agent has them) receives the diff and the touched files with a narrow job such as "find bugs in this change". Without subagents, do a second, separate pass with the checklist. Fix what is found and re-run the checks.
@@ -113,6 +128,8 @@ Not verified          what could not be run + steps for the user to check it
 Noticed, not touched  problems outside the task's area
 ⚠️ Warnings           weakened checks, overridden MUSTs, risks left open
 ```
+
+Keep it short: about 10 lines for a normal task, one line per item. Leave out empty sections, except **Not verified** and **⚠️ Warnings** (write "none"). No restating the task, no generic advice, no risks unrelated to this change. Complex tasks may run longer, never padded.
 
 No "should work now". If something failed, say so and show the output.
 
