@@ -54,7 +54,7 @@
   <rect class="num" x="504" y="36" width="24" height="24" rx="7"/><text class="n" x="516" y="53" text-anchor="middle">3</text>
   <text class="t" x="504" y="90">Build</text>
   <text class="s" x="504" y="112">small steps,</text>
-  <text class="s" x="504" y="130">the 13 MUSTs</text>
+  <text class="s" x="504" y="130">the MUST rules</text>
   <rect class="chk" x="502" y="168" width="116" height="30" rx="15"/><text class="ct" x="560" y="187" text-anchor="middle">✓ each step runs</text>
   <path class="arr" d="M636 114 l6 6 l-6 6"/>
 

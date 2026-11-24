@@ -20,7 +20,7 @@ Read the **whole diff** as a strict reviewer would, in this order (most importan
 
 **2. Behaviour**
 - [ ] Does it do what "done" said, including edge cases and errors?
-- [ ] All 13 MUSTs hold? Pay special attention to input reaching SQL/shell/HTML, access checks per record, secrets, transactions, and anything shipped that could break.
+- [ ] All MUSTs hold? Pay special attention to input reaching SQL/shell/HTML, access checks per record, secrets, transactions, and anything shipped that could break.
 - [ ] Races: what happens with two users, a double click, a retry?
 
 **3. Complexity**
