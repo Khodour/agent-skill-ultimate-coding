@@ -50,7 +50,7 @@ When unsure, go one size up.
 
 9. **Prove it, don't claim it.** Never say done or fixed without running something that shows it. If you could not run it, say so and give the user the steps.
 10. **Never weaken a test to make it pass.** If the test itself is wrong, say why before changing it.
-11. **Never invent** function names, API fields, config keys, file paths, command flags or package names. Check that they exist.
+11. **Never invent** function names, API fields, config keys, file paths, command flags or package names. Check that they exist, and check a library's API against the version the project installs, not against memory (see Build).
 12. **Fix the cause, not the symptom.** No swallowed errors, no special case for the test's input, no hard-coded answers.
 
 **Actions**
@@ -84,7 +84,7 @@ When unsure, go one size up.
   Risks      complex tasks only: races, permissions, data loss, the way back
   ```
 
-  Every line that names a risk ends as code, a test, or a ⚠️ Warning in the report. Code that contradicts the card is a bug.
+  Every line that names a risk ends as code, a test, or a ⚠️ Warning in the report. Code that contradicts the card is a bug. Two full worked examples: `references/examples.md`.
 - Choose the simplest thing that works. Build only what was asked: no options, flags or hooks "for later".
 - One job per piece. Simple interfaces that hide the details. Each decision (how we search, price, authenticate) lives in one place.
 - Place code where its kind already lives: find the closest existing example (a model, an endpoint, a screen) and mirror its folder nesting, file split, naming and wiring. Only when the project has no pattern: feature first, then kind inside.
@@ -97,6 +97,7 @@ When unsure, go one size up.
 ### 3. Build
 
 - Work in small steps and run each one before the next.
+- Before calling a library or framework API, check it against the version the project uses, in this order: (1) the version in the lock or manifest file, (2) the installed package's own types, docs or source, (3) the official docs for that exact version, (4) still unsure → a tiny script that calls it and runs. Memory of an API is often an older version.
 - Follow the house style, but never copy or extend a danger (string-built SQL, weak hashing, a query inside a loop, a race): write it safely and point it out. Where the structure is messy, don't make it worse: new code goes into new small pieces.
 - A performance, security or correctness problem **inside the code you are changing** gets fixed in this change; a change that extends a known problem is not done. Keep the fix behaviour-preserving and say what you changed.
 - Give every file, class and function a header saying what it does and why, in the language's doc format; one line is enough when it is obvious. Explain the *why* of complex code. Never narrate obvious lines. No commented-out code, no silent TODOs.
@@ -109,6 +110,7 @@ When unsure, go one size up.
 ### 4. Verify
 
 - Run every check the project already has: build, type checker, linter, formatter, tests.
+- Run `scripts/check-diff.sh` from this skill's folder inside the project (needs bash and git; `--files <paths>` works without git). It flags known dangers in the lines you added. Fix each finding, or mark a false alarm on that line with a comment containing `check-diff: ok <reason>`. As a Claude Code plugin it also runs after every file edit.
 - Add tests by risk: **always** for bug fixes (reproduce the bug with a failing test first) and real logic (money, rules, permissions, calculations); **never** for trivial changes; suggest them for everything else. If you cannot run tests, still write them into the change (or the reply when there are no files) and mark them not run.
 - **When users can see or use the change:** finish with a real-user test. Use the real interface (browser, emulator, terminal, HTTP calls, public API) on a safe environment, never production. Try the happy path, then act like a careless human (see the checklist in `references/testing.md`). Compare results with expected values worked out separately. Every bug found becomes a test, then gets fixed and retested.
 - **When the software has users or clients and the change touches data paths:** test with a large dataset and send 10–20 requests at the same item at once. Hot paths and releases get a real stress test on staging (`references/performance.md`).
@@ -139,6 +141,7 @@ No "should work now". If something failed, say so and show the output.
 
 | When the task… | Read |
 |---|---|
+| Is normal or complex, before your first design card | `references/examples.md` |
 | Creates a feature, module or abstraction | `references/design.md` |
 | Creates files or folders, names things, or writes comments | `references/structure.md` |
 | Handles input, stored data, money or time | `references/correctness.md` |
