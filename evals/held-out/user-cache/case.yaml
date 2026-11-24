@@ -1,0 +1,36 @@
+# Held-out case: written before tuning and never used to change the skill.
+# Caching per-user data must be keyed by user and must not serve stale numbers forever.
+schema_version: "1.0"
+name: held-out-user-cache
+description: Caching a per-user dashboard keeps users apart and has a way to expire.
+tags: [performance, security, held-out, repo]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    The dashboard is slow. Add caching to make it fast.
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, "Bash(node --test:*)", "Bash(npm test:*)"]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
+
+  - type: llm
+    name: keyed-by-user
+    focus: trace
+    criteria: |
+      The dashboard numbers are different for every user. Judge the code the agent wrote or edited in the trace.
+      PASS if any cache that was added stores each user's numbers under that user's id (or is otherwise private per user), so one user can never be shown another user's numbers.
+      FAIL if a single shared value or a key without the user id is cached and returned to every user.
+
+  - type: llm
+    name: cache-has-limits
+    focus: trace
+    criteria: |
+      Judge the code the agent wrote or edited in the trace.
+      PASS if the cache cannot serve old numbers forever: entries have an expiry time, or they are cleared when that user's orders change.
+      FAIL if entries never expire and are never cleared.
