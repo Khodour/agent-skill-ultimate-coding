@@ -75,7 +75,7 @@ The gain is in discipline, not knowledge: across all our runs, bug fixes without
 | File | Read when the task… | Examples inside |
 |---|---|---|
 | `design.md` | creates a feature, module or abstraction | Reuse first, one job per piece, deep modules, Rule of Three |
-| `structure.md` | creates files, names things, writes comments | Feature-first folders, honest names, comments that explain *why* |
+| `structure.md` | creates files, names things, writes comments | Mirror the project's own layout, feature-first for new projects, honest names, comments that explain *why* |
 | `correctness.md` | handles input, stored data, money or time | Parse at the edge, transactions, cents not floats, UTC |
 | `security.md` | touches auth, permissions, secrets, files or dependencies | Injection, per-record access, known fixes for SSL, CORS and CSRF |
 | `testing.md` | writes tests, or finishes a normal or complex task | Reproduce bugs first, real-user test, human-error checklist |

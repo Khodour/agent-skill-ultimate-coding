@@ -70,7 +70,7 @@ When unsure, go one size up.
 
 - Choose the simplest thing that works. Build only what was asked: no options, flags or hooks "for later".
 - One job per piece. Simple interfaces that hide the details. Each decision (how we search, price, authenticate) lives in one place.
-- Place code by feature first, then by kind inside; framework-required layouts win.
+- Place code where its kind already lives: find the closest existing example (a model, an endpoint, a screen) and mirror its folder nesting, file split, naming and wiring. Only when the project has no pattern: feature first, then kind inside.
 - Shape the data: parse input once at the edge, make bad states impossible, snapshot historical facts (the price paid, not today's price). Money is integer cents or decimals, and when an amount is split, the parts add up exactly to the whole.
 - Ask the load questions: how often does this run, how much data, does it grow with users or rows?
 - For multi-step work, write a short plan with a check after each step, and start with a thin slice that works end to end.
