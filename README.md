@@ -16,7 +16,7 @@
 [![Works with](https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex%20%7C%20Cursor%20%7C%20Gemini%20%7C%20Copilot-4493F8?style=flat-square)](#any-agent-copy-the-folder)
 [![Evals](https://img.shields.io/badge/evals-with%20vs%20without-2EA44F?style=flat-square)](#proven-with-evals)
 [![Last commit](https://img.shields.io/github/last-commit/Khodour/agent-skill-ultimate-coding?style=flat-square)](https://github.com/Khodour/agent-skill-ultimate-coding/commits/main)
-**[Install](#install) · [How it works](#how-it-works) · [The 13 MUSTs](#the-13-musts) · [Evals](#proven-with-evals) · [Contributing](#contributing)**
+**[Install](#install) · [How it works](#how-it-works) · [The MUST rules](#the-must-rules) · [Evals](#proven-with-evals) · [Contributing](#contributing)**
 
 </div>
 
@@ -40,7 +40,7 @@ Today's models already know SOLID, DRY and SQL injection. What they lack is **di
 
 ## Proven with evals
 
-Real tasks, run **with and without** the plugin using Claude Code's `plugin eval` (3 runs per case, graded by a separate judge model):
+Real tasks, run **with and without** the plugin using Claude Code's `plugin eval`, graded by a separate judge model. Results for v1.0.0 (3 runs per case):
 
 | Behaviour | Without the skill | With the skill |
 |---|:---:|:---:|
@@ -70,7 +70,7 @@ The gain is in discipline, not knowledge: across all our runs, bug fixes without
 | 🟡 **Normal** | Feature, bug fix, new screen or endpoint | All five moments, tests by risk, a real-user test if users can see it |
 | 🔴 **Complex** | Money, auth, permissions, personal data, migrations, concurrency, public APIs | Everything above, plus reference files in full, independent review, concurrency and stress checks |
 
-`SKILL.md` stays short. About 84 detailed rules live in `references/`, and the agent reads a file **only when the task touches its topic**:
+`SKILL.md` stays short. The detailed rules live in `references/`, and the agent reads a file **only when the task touches its topic**:
 
 | File | Read when the task… | Examples inside |
 |---|---|---|
@@ -84,11 +84,11 @@ The gain is in discipline, not knowledge: across all our runs, bug fixes without
 | `resilience.md` | calls anything outside the process, or has a UI | Timeouts, safe retries, offline behaviour, regional blocks |
 | `review.md` | reaches Verify or Report | Self-review checklist, reviewer brief, report template |
 
-**What it costs:** loading the skill adds about 2,600 tokens and one tool call per task. Each reference file adds about 1,000–1,500 tokens, read only when the task touches its topic; a trivial fix reads none. In our evals, tasks with the skill took about 4 seconds longer on average. On real tasks, where context is much larger, that is a small share.
+**What it costs:** loading the skill adds a few thousand tokens and one tool call per task. Reference files load only when the task touches their topic, so a trivial fix reads none. On real tasks, where the context is much larger, that is a small share.
 
 **Who wins when rules disagree:** the user's direct instruction → the project's own rules (`CLAUDE.md`, `AGENTS.md`, …) → this skill. A MUST can be overridden only by the user explicitly, and the agent warns and records it.
 
-## The 13 MUSTs
+## The MUST rules
 
 Never skipped, at any task size.
 
@@ -167,7 +167,7 @@ Agents change their paths over time; check your agent's skills documentation if 
 
 Agents decide for themselves when to load a skill, and for short requests ("here's a bug, fix it") they often skip it.
 
-- **Claude Code plugin install:** nothing to do. The plugin ships a small startup hook (`hooks/hooks.json`) that tells each session to load the skill for every coding task. In our evals it loaded in 18 of 18 runs.
+- **Claude Code plugin install:** nothing to do. The plugin ships a small startup hook (`hooks/hooks.json`) that tells each session to load the skill for every coding task. In our evals it loaded on every run.
 - **Copied the folder, or using another agent:** add this line to your project's `CLAUDE.md` or `AGENTS.md`:
 
 ```markdown
