@@ -69,7 +69,7 @@ The chart shows only where the skill changed the result. Everywhere else both ar
 | 🟡 **Normal** | Feature, bug fix, any new function | A design card before code, the five moments, tests by risk, a short report |
 | 🔴 **Complex** | Money, auth, personal data, migrations, concurrency, public APIs | All of the above, plus the matching reference files, an independent review and concurrency checks |
 
-- **`SKILL.md` stays short.** Detail lives in `references/` (design, structure, correctness, security, testing, existing code, performance, resilience, UI, review, worked examples), and the agent reads a file only when the task touches its topic.
+- **`SKILL.md` stays short.** Detail lives in `references/` (design, structure, correctness, security, testing, existing code, performance, resilience, UI, AI features, review, worked examples), and the agent reads a file only when the task touches its topic.
 - **A checker, not only rules.** `scripts/check-diff.sh` reads only the lines a change adds and flags known dangers with the fix: SQL built from strings, TLS checks turned off, secrets in code, swallowed errors, skipped tests, money in floats, a query inside a loop. It needs only bash and git, and as a Claude Code plugin it runs after every file edit.
 - **Who wins when rules disagree:** your instruction → the project's own rules (`CLAUDE.md`, `AGENTS.md`) → a skill made for the project's framework → this skill.
 - **Cost:** a few thousand tokens and one tool call per task.

@@ -34,7 +34,7 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
 
 **Security**
 
-1. **Data never becomes code.** Never glue input into SQL, shell commands, HTML, file paths or templates. Use parameters and safe APIs; escape for where the data goes.
+1. **Data never becomes code.** Never glue input into SQL, shell commands, HTML, file paths or templates. Use parameters and safe APIs; escape for where the data goes. What an AI model returns (text, SQL, tool calls) is untrusted input too.
 2. **Check access on the server for every action and every record.** "Logged in" is not enough; ask "may this user touch *this* record?" Deny by default.
 3. **Never hand-roll auth or crypto.** Use the platform's proven library. Passwords get a slow, salted hash. Tokens are random, expire and can be revoked.
 4. **Secrets stay outside code, git, logs, URLs, error messages and shipped apps.** A leaked secret is rotated, not just deleted. Never send secrets or private data to outside tools.
@@ -151,6 +151,7 @@ No "should work now". If something failed, say so and show the output.
 | Changes existing code, an API or a database schema | `references/existing-code.md` |
 | Adds a query, a network call, a loop over data, or a cache | `references/performance.md` |
 | Calls anything outside the process, or has a UI | `references/resilience.md` |
+| Calls an AI model (chat, completion, agents, tools) | `references/ai-features.md` |
 | Changes what people see or touch in a UI | `references/ui.md` |
 | Reaches Verify or Report | `references/review.md` |
 
