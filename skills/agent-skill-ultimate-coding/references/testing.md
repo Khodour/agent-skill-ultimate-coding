@@ -27,7 +27,7 @@ How to prove the work, not just claim it. Read this when writing or changing tes
 Never say done or fixed without running something that shows it: tests, the app, or a script that reproduces the problem. If you could not run it, say so plainly and give the user the steps to check it.
 
 ### 2. Bugs: reproduce first
-Write a test or script that **fails** because of the bug. Fix the code. Watch it pass. Without the failing step, you don't know the fix fixed anything.
+Write a test or script that **fails** because of the bug. Fix the code. Watch it pass. Without the failing step, you don't know the fix fixed anything. If you cannot run tests, still write the reproducing test into the change (or into the reply when there are no files) and mark it not run: the user can run it, an unwritten test helps no one.
 
 ### 3. Never weaken a test to make it pass (MUST)
 Don't edit, skip or delete a test just to turn it green. If the test itself is wrong, say why before changing it. A test must be **able to fail**:

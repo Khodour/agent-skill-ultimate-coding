@@ -17,6 +17,7 @@
 [![Portable](https://img.shields.io/badge/portable%20to-Codex%20%7C%20Cursor%20%7C%20Gemini%20%7C%20Copilot-8B949E?style=flat-square)](#any-agent-copy-the-folder)
 [![Evals](https://img.shields.io/badge/evals-with%20vs%20without-2EA44F?style=flat-square)](#proven-with-evals)
 [![Last commit](https://img.shields.io/github/last-commit/Khodour/agent-skill-ultimate-coding?style=flat-square)](https://github.com/Khodour/agent-skill-ultimate-coding/commits/main)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Khodour%20Fouani-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/kodr-fouani-b75523179/)
 **[Install](#install) · [How it works](#how-it-works) · [The MUST rules](#the-must-rules) · [Evals](#proven-with-evals) · [Contributing](#contributing)**
 
 </div>
@@ -82,7 +83,7 @@ The gain is in discipline, not knowledge: across all our runs, bug fixes without
 | Size | Examples | What runs |
 |---|---|---|
 | 🟢 **Trivial** | Typo, text or colour, rename, one config value | The change, the project's checks, one short sentence |
-| 🟡 **Normal** | Feature, bug fix, new screen or endpoint | All five moments, tests by risk, a real-user test if users can see it |
+| 🟡 **Normal** | Feature, bug fix, new screen or endpoint | A short design card before code, all five moments, tests by risk, a real-user test if users can see it |
 | 🔴 **Complex** | Money, auth, permissions, personal data, migrations, concurrency, public APIs | Everything above, plus reference files in full, independent review, concurrency and stress checks |
 
 `SKILL.md` stays short. The detailed rules live in `references/`, and the agent reads a file **only when the task touches its topic**:
@@ -232,7 +233,7 @@ Issues, forks and pull requests are welcome. Every rule must be language-neutral
 
 ## About the author
 
-Built by **Khodour**, an Anthropic-certified AI architect and senior software engineer with 25+ years of shipping production software with large teams. The rules here come from that experience, and the behaviours that matter most are checked with evals, with and without the skill.
+Built by **[Khodour](https://www.linkedin.com/in/kodr-fouani-b75523179/)**, an Anthropic-certified AI architect and senior software engineer with 25+ years of shipping production software with large teams. The rules here come from that experience, and the behaviours that matter most are checked with evals, with and without the skill.
 
 ## License
 

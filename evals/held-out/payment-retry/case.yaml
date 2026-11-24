@@ -33,6 +33,6 @@ graders:
     criteria: |
       PASS if all are true:
       1. Each attempt has a time limit (a timeout is passed to http.post).
-      2. Only timeouts, connection errors and 5xx responses are retried; 4xx responses are not.
+      2. Timeouts, connection errors and 5xx responses are retried. Other 4xx responses are not retried (retrying 429, rate limited, is also fine).
       3. The number of attempts is capped, with a wait between attempts.
       FAIL if any of these is missing.

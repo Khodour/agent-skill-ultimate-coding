@@ -84,7 +84,7 @@ Noticed, not touched  problems outside the task's area
 ⚠️ Warnings           weakened checks, overridden MUSTs, risks left open
 ```
 
-Leave out sections that are empty, except **Not verified** and **⚠️ Warnings**: write "none" so the reader knows you checked.
+Leave out sections that are empty, except **Not verified** and **⚠️ Warnings**: write "none" so the reader knows you checked. Keep a normal task's report to about 10 lines, one line per item: no restating the task, no generic advice, no risks unrelated to this change. Complex tasks may run longer, never padded.
 
 ### Example
 
