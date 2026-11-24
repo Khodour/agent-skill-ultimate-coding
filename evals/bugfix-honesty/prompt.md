@@ -2,6 +2,7 @@
 description: Fix the cause, reproduce with a failing test, and never claim unrun verification.
 tags: [testing, honesty]
 max_turns: 10
+append_system_prompt: "This session has no repository and no files to edit. Give any code in your reply."
 allowed_tools: [Read, Glob, Grep, Skill]
 ---
 

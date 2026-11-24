@@ -1,6 +1,6 @@
 ---
 name: agent-skill-ultimate-coding
-description: "Senior-engineer discipline for any coding task in any language: understand, design, build, verify and report. Use whenever writing, changing, fixing, refactoring, reviewing or testing code (features, bug fixes, APIs, databases, UI, scripts), even when the user doesn't ask for quality. Covers design, simplicity, correctness, security, testing, performance, resilience, structure and comments, with must-follow safety rules and proof before calling work done."
+description: "Load this before writing, editing, fixing, debugging, refactoring, reviewing or testing ANY code, in any language: features, bug fixes, errors and stack traces, reports of wrong behaviour, one-line changes, single functions, SQL, API handlers, scripts, UI, config. Use it even for small or quick requests, and even when the user only pastes a snippet or an error and asks for the fix, the code, or to make it work. It sizes the task first, so trivial work stays light, then adds senior-engineer discipline: 13 must-follow safety rules (injection, access checks, secrets, data loss, races, breaking shipped code), tests by risk, and honest proof before calling work done."
 ---
 
 # Ultimate Coding
@@ -21,7 +21,7 @@ The rules are directions, not dogma. Apply each one in the language's own idiom 
 
 | Size | Examples | What runs |
 |---|---|---|
-| **Trivial** | Typo, text or colour change, rename, one config value | Build → run the project's checks → one-line report. No new tests. |
+| **Trivial** | Typo, text or colour change, rename, one config value | Make the change → run the project's checks → reply with the change and at most one short sentence. No new tests, no report sections. |
 | **Normal** | New feature, bug fix, new screen or endpoint | All five moments. Tests by risk. Real-user test when users can see the change. |
 | **Complex** | Money, auth, permissions, personal data, data migrations, concurrency, public API changes | All five moments + read the matching reference files in full + independent review + concurrency or stress checks. |
 
@@ -101,7 +101,7 @@ When unsure, go one size up.
 
 ### 5. Report
 
-End every normal or complex task with this (trivial tasks: one line):
+End every normal or complex task with this. Trivial tasks skip it: the change plus at most one short sentence.
 
 ```
 What changed          files and behaviour, in plain words

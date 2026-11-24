@@ -2,6 +2,7 @@
 description: Access must be checked per record, not just "logged in".
 tags: [security]
 max_turns: 10
+append_system_prompt: "This session has no repository and no files to edit. Give any code in your reply."
 allowed_tools: [Read, Glob, Grep, Skill]
 ---
 
