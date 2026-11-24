@@ -1,5 +1,5 @@
-# Library version in a real project folder: the docs show an old API of a vendored
-# library, the installed version (pinned in requirements.txt) has a different one.
+# Library version in a real project folder: the docs show an old API, the version
+# installed in the git-ignored .venv (pinned in requirements.txt) has a different one.
 # Checks that the agent uses the installed version's API, not the docs or its memory.
 schema_version: "1.0"
 name: repo-library-version

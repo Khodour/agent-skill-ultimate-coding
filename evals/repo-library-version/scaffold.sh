@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 # Builds a small Python app whose docs show an OLD version of its exchange-rate
-# library, while the installed (vendored) version has a different API.
+# library, while the version installed in the git-ignored virtual environment
+# (pinned in requirements.txt) has a different API. Nothing in the visible project
+# says the API changed: only the lock-style pin and the installed package do.
 # Used by evals/repo-library-version/case.yaml: checks that the agent uses the
 # installed version's API instead of the stale docs or its memory.
 set -euo pipefail
 
-mkdir -p app vendor/ratekit docs tests
+SITE=.venv/lib/python3.12/site-packages
+mkdir -p app "$SITE/ratekit" docs tests
+
+printf '.venv/\n__pycache__/\n' > .gitignore
 
 cat > README.md <<'EOF'
 # shop-fx
@@ -19,7 +24,7 @@ cat > requirements.txt <<'EOF'
 ratekit==3.1.0
 EOF
 
-cat > vendor/ratekit/__init__.py <<'EOF'
+cat > "$SITE/ratekit/__init__.py" <<'EOF'
 """ratekit 3: live exchange rates.
 
 Usage:
@@ -49,20 +54,16 @@ class Client:
         return Decimal(str(self._transport(base, quote, deadline_ms)))
 EOF
 
-cat > vendor/ratekit/CHANGELOG.md <<'EOF'
-# Changelog
-
-## 3.0.0
-- Removed the module-level `get_rate(base, quote, timeout=...)`. Use `Client(api_key).rate(base, quote, deadline_ms=...)`.
-- Rates are returned as `Decimal`, not `float`.
-EOF
-
 cat > app/__init__.py <<'EOF'
-"""shop-fx app package. Puts the vendored libraries on the import path."""
+"""shop-fx app package. Makes the project's virtual environment importable when
+the tests are run with the system Python."""
+import glob
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "vendor"))
+_root = os.path.dirname(os.path.dirname(__file__))
+for _site in glob.glob(os.path.join(_root, ".venv", "lib", "python3*", "site-packages")):
+    sys.path.insert(0, _site)
 EOF
 
 cat > app/settings.py <<'EOF'

@@ -22,11 +22,11 @@ The rules are directions, not dogma. Apply each one in the language's own idiom 
 
 | Size | Examples | What runs |
 |---|---|---|
-| **Trivial** | Typo, text or colour change, rename, one config value | Make the change → run the project's checks → reply with the change and at most one short sentence. No design card, no new tests, no report sections. |
-| **Normal** | New feature, bug fix, new screen or endpoint | Design card + all five moments. Tests by risk. Real-user test when users can see the change. |
+| **Trivial** | Typo, text or colour change, rename, one config value. No new logic. | Make the change → run the project's checks → reply with the change and at most one short sentence. No design card, no new tests, no report sections. |
+| **Normal** | New feature, bug fix, new screen or endpoint, any new function or calculation, even a short one | Design card + all five moments. Tests by risk. Real-user test when users can see the change. |
 | **Complex** | Money, auth, permissions, personal data, data migrations, concurrency, public API changes | Design card with Risks + all five moments + read the matching reference files in full + independent review + concurrency or stress checks. |
 
-When unsure, go one size up.
+When unsure, go one size up. A task that adds or changes logic (a condition, a loop, a calculation, a query) is never trivial, however small.
 
 **Normal and complex tasks start with the design card** (see Design): write it in your reply before any code, even when the task looks small or there are no files. No card, no code.
 
