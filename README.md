@@ -48,10 +48,14 @@ Real tasks, run **with and without** the plugin using Claude Code's `plugin eval
 | The skill loads by itself (plugin install) | | 🟢 18 of 18 runs |
 | Bug fix comes with a test that reproduces the bug | 🔴 0 of 3 | 🟢 3 of 3 |
 | Order code protects against double submits | 🟡 2 of 3 | 🟢 3 of 3 |
+| A bill split adds up exactly to the total (no lost cents) | 🔴 1 of 3 | 🟢 3 of 3 |
+| Editing a function with an N+1 query fixes it instead of extending it | 🟢 3 of 3 | 🟢 3 of 3 |
+| An API field rename keeps old app versions working | 🟢 3 of 3 | 🟢 3 of 3 |
+| A live database migration loses no data | 🟢 3 of 3 | 🟢 3 of 3 |
 | A one-word typo fix stays short | 🟢 3 of 3 | 🟢 3 of 3 |
 | Security basics (SQL injection, SSL, per-record access) | 🟢 9 of 9 | 🟢 9 of 9 |
 
-Every case scores 1.00 with the skill. The gain is in discipline, not knowledge: across all our runs, bug fixes without the skill loaded came with a reproducing test **0 times out of 21**, and every time with it. [Run the evals yourself](#evals).
+The gain is in discipline, not knowledge: across all our runs, bug fixes without the skill loaded came with a reproducing test **0 times out of 21**, and every time with it. [Run the evals yourself](#evals).
 
 ## How it works
 
