@@ -54,10 +54,18 @@ With enough users, someone depends on every behaviour. Public APIs, old app vers
 ### 6. Clean the area you touch, report the rest
 Inside the files you are changing: remove dead code, unused imports and small rot. Outside them, don't touch anything; list what you noticed under "Noticed, not touched" in the report.
 
+**A real problem inside the code you are changing is fixed, not extended.** If the function you are editing has an N+1 query, an injection, a race or a money bug, fix it in this change (keeping its behaviour) and say so in the report. "Noticed, not touched" is for code you are *not* changing.
+
+```text
+task: "show each author's avatar in list_posts()", which loads every author separately
+❌ add avatar to the per-post author lookup, list the N+1 under "Noticed, not touched"
+✅ one batched lookup for all authors (same results), avatar added, the fix named in the report
+```
+
 ### 7. Keep each change focused
 - One task per change.
 - No reformatting of whole files along the way; it hides the real change.
-- **Restructure first, then change behaviour, as two separate steps.** Never mix them in one change.
+- **When a task needs both restructuring and a behaviour change, do them as two separate steps**, one after the other, so each can be checked on its own. This is about order, never a reason to skip a needed fix.
 
 ### 8. Keep the docs true
 When behaviour changes, update the README, project docs (such as `CLAUDE.md` or `AGENTS.md`), API docs and comments **in the same change**. A stale doc is a bug.
