@@ -173,5 +173,17 @@ expect_not "hook inside the project skips committed lines" "$out" 'a.py:1 '
 git config --unset core.fsmonitor
 cd "$here"
 
+# Security: a file name with a quote and a backslash must give valid JSON with no extra keys.
+new_repo; name='q"\x.py'; printf 'eval(x)\n' > "$name"
+json_path=$(printf '%s' "$tmp/r/$name" | sed 's/\\/\\\\/g; s/"/\\"/g')
+out=$(printf '{"tool_input":{"file_path":"%s"}}' "$json_path" | CLAUDE_PROJECT_DIR="$tmp/r" bash "$tool" --hook 2>&1)
+if printf '%s' "$out" | python3 -c '
+import json, sys
+d = json.load(sys.stdin)
+assert list(d) == ["hookSpecificOutput"] and list(d["hookSpecificOutput"]) == ["hookEventName", "additionalContext"]
+assert "q\"\\x.py:1  [dynamic-code]" in d["hookSpecificOutput"]["additionalContext"]' 2>/dev/null
+then pass "hook JSON stays valid for a name with a quote and a backslash"; else bad "hook JSON for a tricky name: $out"; fi
+cd "$here"
+
 [ $fail -eq 0 ] && echo "ALL PASS" || echo "SOME FAILED"
 exit $fail

@@ -80,7 +80,9 @@ if [ "$MODE" = "hook" ]; then
   # The hook JSON carries tool_input.file_path; a plain grep avoids needing jq.
   # Anything unexpected ends quietly with exit 0: a hook must never break a session.
   input=$(cat)
-  path=$(printf '%s' "$input" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:[[:space:]]*"//; s/"$//')
+  # The value may hold JSON escapes (\" and \\ in names, \/ in paths); undo them.
+  path=$(printf '%s' "$input" | grep -oE '"file_path"[[:space:]]*:[[:space:]]*"([^"\\]|\\.)*"' | head -1 |
+         sed -E 's/^"file_path"[[:space:]]*:[[:space:]]*"//; s/"$//; s/\\"/"/g; s/\\\//\//g; s/\\\\/\\/g')
   [ -n "$path" ] && [ -f "$path" ] || exit 0
   cd "$(dirname "$path")" || exit 0
   FILES=("$(basename "$path")")
@@ -280,10 +282,23 @@ report=$(
 
 if [ "$MODE" = "hook" ]; then
   # Claude Code reads hook feedback from JSON on stdout. "additionalContext" reaches
-  # Claude as context, not as a failed hook. The text is JSON-escaped by hand (no jq).
+  # Claude as context, not as a failed hook. The text is JSON-escaped one character
+  # at a time by string joining (gsub treats backslashes differently between awks),
+  # so a file name holding " or \ can never break out of the string. Control bytes
+  # become \u00XX; non-ASCII bytes become "?" so the output is always valid JSON.
   escaped=$(printf '%s' "$report" | awk '
-    { gsub(/\\/, "\\\\"); gsub(/"/, "\\\""); gsub(/\t/, "\\t"); gsub(/[\001-\037]/, "")
-      printf "%s%s", (NR > 1 ? "\\n" : ""), $0 }')
+    BEGIN { for (i = 1; i < 32; i++) ctl[sprintf("%c", i)] = sprintf("\\u%04x", i)
+            for (i = 128; i < 256; i++) high[sprintf("%c", i)] = 1 }
+    { if (NR > 1) out = out "\\n"
+      for (i = 1; i <= length($0); i++) {
+        c = substr($0, i, 1)
+        if (c == "\\") out = out "\\\\"
+        else if (c == "\"") out = out "\\\""
+        else if (c in ctl) out = out ctl[c]
+        else if (c in high) out = out "?"
+        else out = out c
+      } }
+    END { printf "%s", out }')
   printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"%s"}}\n' "$escaped"
   exit 0
 fi
