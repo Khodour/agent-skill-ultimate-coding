@@ -24,7 +24,7 @@
 ---
 
 > [!TIP]
-> **Make it always on with one line.** Agents often skip a skill for short requests like "here's a bug, fix it". Add the line from [Make it always on](#make-it-always-on-recommended) to your project's `CLAUDE.md` or `AGENTS.md`.
+> **Installed as a Claude Code plugin, it loads itself on every coding task.** Installed another way, or using another agent? Add the one line from [Make it always on](#make-it-always-on-recommended) to your project's `CLAUDE.md` or `AGENTS.md`.
 
 ## Why this skill
 
@@ -41,16 +41,17 @@ Today's models already know SOLID, DRY and SQL injection. What they lack is **di
 
 ## Proven with evals
 
-Real tasks, run **with and without** the skill using Claude Code's `plugin eval`, graded by a separate judge model:
+Real tasks, run **with and without** the plugin using Claude Code's `plugin eval` (3 runs per case, graded by a separate judge model):
 
 | Behaviour | Without the skill | With the skill |
 |---|:---:|:---:|
-| Bug fix comes with a test that reproduces the bug | 🔴 0 of 12 runs | 🟢 3 of 3 runs |
-| Order code protects against double submits | 🟡 missed in some runs | 🟢 6 of 6 runs |
-| A one-word typo fix stays short | 🟢 passes | 🟢 passes |
-| Security basics (SQL injection, SSL, per-record access) | 🟢 passes | 🟢 passes |
+| The skill loads by itself (plugin install) | | 🟢 18 of 18 runs |
+| Bug fix comes with a test that reproduces the bug | 🔴 0 of 3 | 🟢 3 of 3 |
+| Order code protects against double submits | 🟡 2 of 3 | 🟢 3 of 3 |
+| A one-word typo fix stays short | 🟢 3 of 3 | 🟢 3 of 3 |
+| Security basics (SQL injection, SSL, per-record access) | 🟢 9 of 9 | 🟢 9 of 9 |
 
-The gain is in discipline, not knowledge. [Run the evals yourself](#evals).
+Every case scores 1.00 with the skill. The gain is in discipline, not knowledge: across all our runs, bug fixes without the skill loaded came with a reproducing test **0 times out of 21**, and every time with it. [Run the evals yourself](#evals).
 
 ## How it works
 
@@ -159,13 +160,14 @@ Agents change their paths over time; check your agent's skills documentation if 
 
 ### Make it always on (recommended)
 
-Agents decide for themselves when to load a skill, and for short requests they often skip it. Add this line to your project's `CLAUDE.md` or `AGENTS.md`:
+Agents decide for themselves when to load a skill, and for short requests ("here's a bug, fix it") they often skip it.
+
+- **Claude Code plugin install:** nothing to do. The plugin ships a small startup hook (`hooks/hooks.json`) that tells each session to load the skill for every coding task. In our evals it loaded in 18 of 18 runs.
+- **Copied the folder, or using another agent:** add this line to your project's `CLAUDE.md` or `AGENTS.md`:
 
 ```markdown
 For every coding task, load the agent-skill-ultimate-coding skill first and follow it.
 ```
-
-In our evals, this line made the skill load on every run of the bug-fix case, and every one of those fixes then came with a test that reproduces the bug.
 
 ## Evals
 
@@ -186,6 +188,7 @@ This runs each case with the skill and without it (a baseline), grades both, and
 skills/agent-skill-ultimate-coding/
   SKILL.md                           the skill: sizes, moments, MUSTs, routing
   references/                        detail files, read on demand
+hooks/hooks.json                     startup hook: loads the skill for coding tasks
 evals/                               test cases for `claude plugin eval`
 docs/assets/                         images used by this README
 ```
