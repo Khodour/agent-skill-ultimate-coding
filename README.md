@@ -70,22 +70,26 @@ Real tasks, run **with and without** the plugin using Claude Code's `plugin eval
 
 ¹ One baseline run's trace was lost, so it could not be graded. ² The cost cap stopped the judge on two baseline runs; they were graded by hand against the same written criteria.
 
-**On a small, fast model.** The same suite with Claude Haiku 5.5 as the agent, to check that the skill helps weaker models too (3 runs per case, same judges before and after):
+**On a small, fast model.** The same suite with Claude Haiku 5.5 as the agent, to check that the skill helps weaker models too. Same judges before and after; the key behaviours were re-run 5 times each:
 
 | Behaviour on Haiku 5.5 | Without the skill | With the skill |
 |---|:---:|:---:|
-| Average score across the suite | 🟡 0.77 | 🟢 0.94 |
-| Editing a function with an N+1 query fixes it | 🔴 0 of 3 | 🟢 3 of 3 |
-| Bug fix comes with a test that reproduces the bug (no repository) | 🔴 0 of 3 | 🟢 3 of 3 |
-| Order code protects against double submits | 🔴 0 of 3 | 🟢 3 of 3 |
-| A query built from user input stays parameterized | 🔴 1 of 3 | 🟢 3 of 3 |
-| A one-word typo fix stays short | 🟡 2 of 3 | 🟢 3 of 3 |
-| Architecture basics: race-safe status change, error model, must-happen side effect, thin handler, translated UI | 🟢 15 of 15 | 🟢 15 of 15 |
+| Average score across the suite (3 runs per case) | 🟡 0.77 | 🟢 0.94 |
+| Editing a function with an N+1 query fixes it | 🔴 0 of 5 | 🟢 5 of 5 |
+| Bug fix comes with a test that reproduces the bug | 🔴 1 of 5 | 🟢 5 of 5 |
+| Order code protects against double submits | 🔴 0 of 5 | 🟢 5 of 5 |
+| A query built from user input stays parameterized | 🔴 1 of 5 | 🟢 5 of 5 |
+| A one-word typo fix stays short | 🟢 5 of 5 | 🟢 5 of 5 |
+| *Held out:* a coupon's rules sit outside the handler, and "once per customer" survives two requests at once | 🔴 0 of 5 | 🟡 2 of 5 |
+| *Held out:* a failed cart read never wipes the saved cart | 🟢 4 of 5 | 🟢 5 of 5 |
+| *Held out:* shipping, account deletion with billing, and translated toasts | 🟢 15 of 15 | 🟢 15 of 15 |
 | A bill split adds up exactly to the total | 🔴 0 of 3 | 🔴 1 of 3 ³ |
 
-³ With the skill, Haiku spots the uneven split in its design card, but usually keeps the single per-person amount the request asks for and offers the exact split as the alternative. Asked directly, today's models already get the architecture basics right; those rules matter more when the request does not point at the problem.
+³ With the skill, Haiku spots the uneven split in its design card, but usually keeps the single per-person amount the request asks for and offers the exact split as the alternative.
 
-The gain is in discipline, not knowledge: across all our runs, bug fixes without the skill loaded came with a reproducing test **0 times out of 24**, and every time with it. Where today's models already get it right, the skill doesn't get in the way: normal work stays in scope and reports stay short. [Run the evals yourself](#evals).
+The held-out cases were written after the skill was finished, and the skill is never changed to pass them. They describe ordinary requests without naming the trap.
+
+The gain is in discipline, not knowledge. On the default model, bug fixes without the skill came with a reproducing test 0 times in 24 runs; on Haiku, 1 time in 5. With the current skill, Haiku did it 5 times in 5. Where today's models already get it right, the skill doesn't get in the way: normal work stays in scope and reports stay short. [Run the evals yourself](#evals).
 
 ## How it works
 
