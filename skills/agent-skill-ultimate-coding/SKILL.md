@@ -71,7 +71,7 @@ When unsure, go one size up.
 - Choose the simplest thing that works. Build only what was asked: no options, flags or hooks "for later".
 - One job per piece. Simple interfaces that hide the details. Each decision (how we search, price, authenticate) lives in one place.
 - Place code by feature first, then by kind inside; framework-required layouts win.
-- Shape the data: parse input once at the edge, make bad states impossible, snapshot historical facts (the price paid, not today's price).
+- Shape the data: parse input once at the edge, make bad states impossible, snapshot historical facts (the price paid, not today's price). Money is integer cents or decimals, and when an amount is split, the parts add up exactly to the whole.
 - Ask the load questions: how often does this run, how much data, does it grow with users or rows?
 - For multi-step work, write a short plan with a check after each step, and start with a thin slice that works end to end.
 - Open the reference files the routing table points to.
@@ -81,9 +81,10 @@ When unsure, go one size up.
 ### 3. Build
 
 - Work in small steps and run each one before the next.
-- Follow the house style, but never copy a danger (string-built SQL, weak hashing): write it safely and point it out. Where the structure is messy, don't make it worse: new code goes into new small pieces.
+- Follow the house style, but never copy or extend a danger (string-built SQL, weak hashing, a query inside a loop, a race): write it safely and point it out. Where the structure is messy, don't make it worse: new code goes into new small pieces.
+- A performance, security or correctness problem **inside the code you are changing** gets fixed in this change; a change that extends a known problem is not done. Keep the fix behaviour-preserving and say what you changed.
 - Give every file, class and function a header saying what it does and why, in the language's doc format; one line is enough when it is obvious. Explain the *why* of complex code. Never narrate obvious lines. No commented-out code, no silent TODOs.
-- Clean only the area you touch; list problems elsewhere in the report. Restructuring and behaviour changes are separate steps, never mixed in one change.
+- Clean only the area you touch; list problems in code you are *not* changing in the report. When a task needs both restructuring and a behaviour change, do them as two separate steps, one after the other.
 - A hand-written file over ~400 lines or a function over ~50 is a signal: check it is not doing more than one job.
 - When stuck: if the same fix fails twice, stop and look for the real cause. After a third failure, explain what you tried and ask.
 

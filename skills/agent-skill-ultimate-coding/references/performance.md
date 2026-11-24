@@ -31,7 +31,7 @@ For every query, call or loop, at design time (it costs nothing):
 ```
 
 ### 2. No input/output inside loops
-Never run a query, network call or file read once per item. Fetch everything in one go: a join, `IN (...)`, or a batch call.
+Never run a query, network call or file read once per item. Fetch everything in one go: a join, `IN (...)`, or a batch call. When you change a function that already does this, fix it in the same change instead of extending it.
 
 ```text
 ❌ orders = getOrders()

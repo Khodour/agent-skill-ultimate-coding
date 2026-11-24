@@ -97,6 +97,7 @@ Report the error in the language's normal way (exception, error value, `Result`)
 - Never use binary floating point. Use integer minor units (cents) or a decimal type.
 - Store the currency with every amount.
 - Round in **one** place, with one rule.
+- **When an amount is split, the parts add up exactly to the whole.** Return each part, with the leftover cents assigned by one stated rule. If the request asks for a single "per person" amount and the total does not divide evenly, say so rather than silently losing or inventing cents.
 
 ```text
 ❌ total = 0.1 + 0.2              0.30000000000000004
