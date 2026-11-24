@@ -17,14 +17,18 @@
 #   check-diff.sh --files a b     every line of the given files (no git needed)
 #   check-diff.sh --hook          Claude Code hook: checks the edited file named in
 #                                 the hook JSON on stdin (its uncommitted added lines)
-# Exit: 0 = nothing found, 1 = findings (2 in --hook mode, so Claude sees them),
-#       3 = usage error. Needs only bash, git and a POSIX awk.
+# Exit: 0 = nothing found, 1 = findings, 3 = usage error. In --hook mode it always
+#       exits 0 and hands findings to Claude as JSON "additionalContext".
+#       Needs only bash, git and a POSIX awk.
 
 set -u
 # Byte-wise C locale: a file that is not valid UTF-8 must not crash awk and hide findings.
 export LC_ALL=C
 # Paths are always literal: a file named "app/[id]/page.tsx" must not match other files as a glob.
 export GIT_LITERAL_PATHSPECS=1
+# A repository's own config can name programs for git to run (core.fsmonitor,
+# textconv, external diff). Turn those off for every git call made here.
+GIT=(git -c core.fsmonitor=false -c core.quotePath=false)
 
 MODE="git"
 BASE="HEAD"
@@ -80,26 +84,34 @@ if [ "$MODE" = "hook" ]; then
   [ -n "$path" ] && [ -f "$path" ] || exit 0
   cd "$(dirname "$path")" || exit 0
   FILES=("$(basename "$path")")
+  # The hook fires on any file the agent edits, which can sit in a cloned repository
+  # nobody has vetted. Use git only when the file belongs to the session's own project
+  # repository (where git already runs); otherwise check the whole file without git.
+  HOOK_GIT=0
+  if [ -n "${CLAUDE_PROJECT_DIR:-}" ]; then
+    proj_top=$(cd "$CLAUDE_PROJECT_DIR" 2>/dev/null && "${GIT[@]}" rev-parse --show-toplevel 2>/dev/null)
+    file_top=$("${GIT[@]}" rev-parse --show-toplevel 2>/dev/null)
+    [ -n "$proj_top" ] && [ "$proj_top" = "$file_top" ] && HOOK_GIT=1
+  fi
 fi
 
 # Git setup at top level (not inside the pipeline, so a bad base really exits 3).
 # Everything runs from the repository root, so diff paths and untracked paths agree.
 INREPO=0
 DIFFBASE=""
-if [ "$MODE" != "files" ] && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+if [ "$MODE" = "git" ] || { [ "$MODE" = "hook" ] && [ "$HOOK_GIT" = 1 ]; }; then
+  "${GIT[@]}" rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "check-diff: not a git repository (use --files <paths>)" >&2; exit 3; }
   INREPO=1
-  if [ "$MODE" = "hook" ]; then FILES=("$(git rev-parse --show-prefix)${FILES[0]}"); fi
-  cd "$(git rev-parse --show-toplevel)" || exit 3
+  if [ "$MODE" = "hook" ]; then FILES=("$("${GIT[@]}" rev-parse --show-prefix)${FILES[0]}"); fi
+  cd "$("${GIT[@]}" rev-parse --show-toplevel)" || exit 3
   if [ "$BASE" != "HEAD" ]; then
-    git rev-parse --verify --quiet "$BASE^{commit}" >/dev/null || { echo "check-diff: unknown base '$BASE'" >&2; exit 3; }
+    "${GIT[@]}" rev-parse --verify --quiet "$BASE^{commit}" >/dev/null || { echo "check-diff: unknown base '$BASE'" >&2; exit 3; }
     # Diff from where this branch left the base, so lines the base later removed
     # are not mistaken for lines this branch added.
-    DIFFBASE=$(git merge-base "$BASE" HEAD) || { echo "check-diff: '$BASE' shares no history with HEAD" >&2; exit 3; }
-  elif git rev-parse --verify --quiet HEAD >/dev/null; then
+    DIFFBASE=$("${GIT[@]}" merge-base "$BASE" HEAD) || { echo "check-diff: '$BASE' shares no history with HEAD" >&2; exit 3; }
+  elif "${GIT[@]}" rev-parse --verify --quiet HEAD >/dev/null; then
     DIFFBASE="HEAD"
   fi
-elif [ "$MODE" = "git" ]; then
-  echo "check-diff: not a git repository (use --files <paths>)" >&2; exit 3
 fi
 
 # Prints the added lines of the change as a unified diff with no context.
@@ -108,11 +120,11 @@ collect() {
     existing_files | dot_paths | as_new_files
   elif [ -z "$DIFFBASE" ]; then
     # A repository with no commits yet: every file counts as new.
-    git -c core.quotePath=false ls-files -z --cached --others --exclude-standard -- ${FILES[@]+"${FILES[@]}"} | dot_paths | as_new_files
+    "${GIT[@]}" ls-files -z --cached --others --exclude-standard -- ${FILES[@]+"${FILES[@]}"} | dot_paths | as_new_files
   else
-    git -c core.quotePath=false diff -U0 --inter-hunk-context=0 --no-color --no-ext-diff \
+    "${GIT[@]}" diff -U0 --inter-hunk-context=0 --no-color --no-ext-diff --no-textconv \
       --src-prefix=a/ --dst-prefix=b/ "$DIFFBASE" -- ${FILES[@]+"${FILES[@]}"}
-    git -c core.quotePath=false ls-files -z --others --exclude-standard -- ${FILES[@]+"${FILES[@]}"} | dot_paths | as_new_files
+    "${GIT[@]}" ls-files -z --others --exclude-standard -- ${FILES[@]+"${FILES[@]}"} | dot_paths | as_new_files
   fi
 }
 
@@ -260,10 +272,20 @@ findings=$(collect | awk -v filesmode="$FILESMODE" "$RULES")
 
 [ -z "$findings" ] && exit 0
 count=$(printf '%s\n' "$findings" | wc -l | tr -d ' ')
-{
+report=$(
   echo "check-diff: $count possible problem(s) in added lines. Signals, not verdicts: fix each one,"
   echo "or, if it is a false alarm, add a comment containing \"check-diff: ok <reason>\" on that line."
   printf '%s\n' "$findings"
-} >&2
-[ "$MODE" = "hook" ] && exit 2
+)
+
+if [ "$MODE" = "hook" ]; then
+  # Claude Code reads hook feedback from JSON on stdout. "additionalContext" reaches
+  # Claude as context, not as a failed hook. The text is JSON-escaped by hand (no jq).
+  escaped=$(printf '%s' "$report" | awk '
+    { gsub(/\\/, "\\\\"); gsub(/"/, "\\\""); gsub(/\t/, "\\t"); gsub(/[\001-\037]/, "")
+      printf "%s%s", (NR > 1 ? "\\n" : ""), $0 }')
+  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"%s"}}\n' "$escaped"
+  exit 0
+fi
+printf '%s\n' "$report" >&2
 exit 1

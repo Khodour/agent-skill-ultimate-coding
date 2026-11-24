@@ -70,6 +70,20 @@ Real tasks, run **with and without** the plugin using Claude Code's `plugin eval
 
 ¹ One baseline run's trace was lost, so it could not be graded. ² The cost cap stopped the judge on two baseline runs; they were graded by hand against the same written criteria.
 
+**On a small, fast model.** The same suite with Claude Haiku 5.5 as the agent, to check that the skill helps weaker models too (3 runs per case, same judges before and after):
+
+| Behaviour on Haiku 5.5 | Without the skill | With the skill |
+|---|:---:|:---:|
+| Average score across the suite | 🟡 0.77 | 🟢 0.94 |
+| Editing a function with an N+1 query fixes it | 🔴 0 of 3 | 🟢 3 of 3 |
+| Bug fix comes with a test that reproduces the bug (no repository) | 🔴 0 of 3 | 🟢 3 of 3 |
+| Order code protects against double submits | 🔴 0 of 3 | 🟢 3 of 3 |
+| A query built from user input stays parameterized | 🔴 1 of 3 | 🟢 3 of 3 |
+| A one-word typo fix stays short | 🟡 2 of 3 | 🟢 3 of 3 |
+| A bill split adds up exactly to the total | 🔴 0 of 3 | 🔴 0 of 3 ³ |
+
+³ Still open: on tiny snippet tasks Haiku often skips the design card, and with it the exact-split rule.
+
 The gain is in discipline, not knowledge: across all our runs, bug fixes without the skill loaded came with a reproducing test **0 times out of 24**, and every time with it. Where today's models already get it right, the skill doesn't get in the way: normal work stays in scope and reports stay short. [Run the evals yourself](#evals).
 
 ## How it works
@@ -90,15 +104,16 @@ The gain is in discipline, not knowledge: across all our runs, bug fixes without
 
 | File | Read when the task… | Examples inside |
 |---|---|---|
-| `design.md` | creates a feature, module or abstraction | Reuse first, one job per piece, deep modules, Rule of Three |
+| `design.md` | creates a feature, module or abstraction | Reuse first, one job per piece, rules in the middle and tools at the edge, Rule of Three |
 | `structure.md` | creates files, names things, writes comments | Mirror the project's own layout, feature-first for new projects, honest names, comments that explain *why* |
-| `correctness.md` | handles input, stored data, money or time | Parse at the edge, transactions, cents not floats, UTC |
+| `correctness.md` | handles input, stored data, money or time | Parse at the edge, state machines, transactions, must-happen side effects, cents not floats, UTC, one error model |
 | `security.md` | touches auth, permissions, secrets, files or dependencies | Injection, per-record access, known fixes for SSL, CORS and CSRF |
 | `testing.md` | writes tests, or finishes a normal or complex task | Reproduce bugs first, real-user test, human-error checklist |
 | `existing-code.md` | changes existing code, an API or a schema | House style, Chesterton's fence, safe migrations |
 | `performance.md` | adds a query, network call, data loop or cache | No N+1, one call per moment, caches with a clearing plan |
 | `resilience.md` | calls anything outside the process, or has a UI | Timeouts, safe retries, offline behaviour, regional blocks |
 | `review.md` | reaches Verify or Report | Self-review checklist, reviewer brief, report template |
+| `ui.md` | changes what people see or touch in a UI | Translation, locale formatting, right-to-left, accessibility |
 | `examples.md` | is normal or complex, before the first design card | Two tasks done end to end: card, steps, proof, report |
 
 **A checker, not only rules.** `scripts/check-diff.sh` reads only the lines a change adds and flags known dangers with the fix: SQL built from strings, TLS checks turned off, secrets in code, swallowed errors, skipped tests, money in floats, a query inside a loop, and more. It needs only bash and git. The agent runs it in Verify; as a Claude Code plugin it also runs after every file edit, so the agent sees the problem while it is still working. Each finding is a signal, not a verdict: fix it, or mark the line `check-diff: ok <reason>`.

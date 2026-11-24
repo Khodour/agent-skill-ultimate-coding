@@ -63,11 +63,13 @@ else bad "check-diff: ok mark did not silence the line"; fi
   bash "$tool" 2>&1 | grep -q 'new_file.py:1  \[dynamic-code\]'
 ) && pass "git mode checks new untracked files" || bad "git mode missed an untracked file"
 
-# Hook mode: reads the edited file from the hook JSON and exits 2 with findings.
-printf '{"tool_name":"Edit","tool_input":{"file_path":"%s"}}' "$tmp/repo/new_file.py" | bash "$tool" --hook >/dev/null 2>&1
-[ $? -eq 2 ] && pass "hook mode exits 2 on findings" || bad "hook mode did not exit 2"
-printf '{"tool_input":{"file_path":"%s"}}' "$here/good/safe.py" | bash "$tool" --hook >/dev/null 2>&1
-[ $? -eq 0 ] && pass "hook mode exits 0 on a clean file" || bad "hook mode flagged a clean file"
+# Hook mode: reads the edited file from the hook JSON, exits 0, and returns findings as
+# valid JSON additionalContext for Claude Code (nothing at all for a clean file).
+out=$(printf '{"tool_name":"Edit","tool_input":{"file_path":"%s"}}' "$tmp/repo/new_file.py" | bash "$tool" --hook 2>/dev/null); rc=$?
+if [ $rc -eq 0 ] && printf '%s' "$out" | python3 -c 'import json,sys; c=json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"]; assert "[dynamic-code]" in c' 2>/dev/null
+then pass "hook mode returns findings as valid JSON, exit 0"; else bad "hook JSON (exit $rc): $out"; fi
+out=$(printf '{"tool_input":{"file_path":"%s"}}' "$here/good/safe.py" | bash "$tool" --hook 2>&1); rc=$?
+[ $rc -eq 0 ] && [ -z "$out" ] && pass "hook mode is silent on a clean file" || bad "hook mode on a clean file (exit $rc): $out"
 
 # Regression tests for bugs found in review. Each builds a small repo and checks one case.
 G="git -c user.email=t@t -c user.name=t"
@@ -138,8 +140,8 @@ expect "--files: an unreadable file does not hide the next one" "$(bash "$tool" 
 chmod 644 "$tmp/unreadable.py"
 
 new_repo; mkdir -p 'app/[id]' app/d && printf 'export const x = 1;\n' > 'app/[id]/page.tsx' && printf 'eval(x)\n' > app/d/page.tsx
-printf '{"tool_input":{"file_path":"%s"}}' "$tmp/r/app/[id]/page.tsx" | bash "$tool" --hook >/dev/null 2>&1; rc=$?
-[ $rc -eq 0 ] && pass "hook: a path with [brackets] is literal, not a glob" || bad "hook treated [id] as a glob (exit $rc)"
+out=$(printf '{"tool_input":{"file_path":"%s"}}' "$tmp/r/app/[id]/page.tsx" | CLAUDE_PROJECT_DIR="$tmp/r" bash "$tool" --hook 2>&1)
+[ -z "$out" ] && pass "hook: a path with [brackets] is literal, not a glob" || bad "hook treated [id] as a glob: $out"
 
 printf 'begin; charge(order); rescue; end\n' > "$tmp/r.rb"
 expect "Ruby one-line rescue; end is a swallowed error" "$(bash "$tool" --files "$tmp/r.rb" 2>&1)" 'swallowed-error'
@@ -151,7 +153,24 @@ mkdir -p "$tmp/tests/proj" && printf 'PASSWORD = "hunter2hunter2"\n' > "$tmp/tes
 expect "--files: a project under a folder named tests keeps its secret check" "$(bash "$tool" --files "$tmp/tests/proj/app.py" 2>&1)" '\[secret\]'
 
 new_repo; mkdir -p pkg && printf 'eval(x)\n' > pkg/new.py
-expect "hook names the file from the repository root" "$(printf '{"tool_input":{"file_path":"%s"}}' "$tmp/r/pkg/new.py" | bash "$tool" --hook 2>&1)" 'pkg/new.py:1'
+expect "hook names the file from the repository root" "$(printf '{"tool_input":{"file_path":"%s"}}' "$tmp/r/pkg/new.py" | CLAUDE_PROJECT_DIR="$tmp/r" bash "$tool" --hook 2>&1)" 'pkg/new.py:1'
+cd "$here"
+
+# Security: a repository whose config names a program (core.fsmonitor) must never make
+# check-diff run it, in git mode or in hook mode.
+new_repo; printf 'x = 1\n' > a.py && git add . && $G commit -q -m a
+git config core.fsmonitor "touch '$tmp/PWNED'"
+printf 'eval(x)\n' >> a.py
+bash "$tool" >/dev/null 2>&1
+[ ! -e "$tmp/PWNED" ] && pass "git mode never runs core.fsmonitor" || bad "git mode ran core.fsmonitor"
+rm -f "$tmp/PWNED"
+out=$(printf '{"tool_input":{"file_path":"%s"}}' "$tmp/r/a.py" | CLAUDE_PROJECT_DIR="$here" bash "$tool" --hook 2>&1)
+[ ! -e "$tmp/PWNED" ] && pass "hook outside the project never runs that repo's git config" || bad "hook ran a foreign repo's git config"
+expect "hook outside the project still checks the whole file" "$out" 'a.py:2  \[dynamic-code\]'
+out=$(printf '{"tool_input":{"file_path":"%s"}}' "$tmp/r/a.py" | CLAUDE_PROJECT_DIR="$tmp/r" bash "$tool" --hook 2>&1)
+expect "hook inside the project uses git (added lines only)" "$out" 'a.py:2  \[dynamic-code\]'
+expect_not "hook inside the project skips committed lines" "$out" 'a.py:1 '
+git config --unset core.fsmonitor
 cd "$here"
 
 [ $fail -eq 0 ] && echo "ALL PASS" || echo "SOME FAILED"

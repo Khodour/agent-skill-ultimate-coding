@@ -1,5 +1,5 @@
 {
-  "description": "SessionStart adds one line of context (also after /clear or compaction) so Claude loads the skill for every coding task; agents often skip skills for short requests. PostToolUse runs the skill's check-diff script on each edited file and shows Claude known dangers in that file's added lines not yet committed (exit 2 = findings; it exits 0 quietly on anything unexpected).",
+  "description": "SessionStart adds one line of context (also after /clear or compaction) so Claude loads the skill for every coding task; agents often skip skills for short requests. PostToolUse runs the skill's check-diff script on each edited file and hands Claude, as additionalContext, any known danger in that file's added lines not yet committed. It always exits 0, so it can never break a session.",
   "hooks": {
     "SessionStart": [
       {

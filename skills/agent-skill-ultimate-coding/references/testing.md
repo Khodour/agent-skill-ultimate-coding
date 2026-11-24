@@ -102,6 +102,7 @@ Before saying done, follow `review.md`: read the whole diff as a reviewer would,
 **When there is a UI**
 - Double-click on Submit, Back button, refresh during a save, two tabs open
 - Right-to-left layout, small screens, large system font size
+- The other language: untranslated text, labels cut off or overflowing
 - Keyboard only (Tab, Enter, Escape)
 
 **When there is money**

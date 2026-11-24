@@ -53,6 +53,7 @@ With enough users, someone depends on every behaviour. Public APIs, old app vers
 - **Change by adding:** a new optional field, a new endpoint version, a new flag. Old callers keep working.
 - **Deprecate before removing:** mark it, tell users, remove it only when nothing uses it.
 - Never rename or change the type of a field that clients already read.
+- **Risky behaviour changes ship with a way back:** a switch (feature flag or setting) that turns them off without a deploy, or a revert you have tested. Know the way back before you ship.
 
 ```text
 ❌ rename response field "price" to "amount"        old apps break
