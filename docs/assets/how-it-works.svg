@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="240" viewBox="0 0 960 240" role="img" aria-labelledby="title desc">
+  <title id="title">How the skill works</title>
+  <desc id="desc">Six steps: 0 Size the task, 1 Understand, 2 Design, 3 Build, 4 Verify, 5 Report. Each step ends with a check.</desc>
+  <!-- README diagram: Step 0 + the five moments, each with its exit check. Adapts to light and dark mode. -->
+  <style>
+    .box  { fill: #FFFFFF; stroke: #EADFD3; stroke-width: 1.5; }
+    .zero { fill: #F7E4D8; stroke: #C96A43; stroke-dasharray: 5 4; }
+    .num  { fill: #C96A43; }
+    .n    { fill: #FFFFFF; font: 700 13px ui-monospace, Menlo, Consolas, monospace; }
+    .t    { fill: #2A1712; font: 700 17px -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .s    { fill: #6E5B52; font: 400 12.5px -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .chk  { fill: #E2F4E9; }
+    .ct   { fill: #2F9E5B; font: 600 11.5px -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .arr  { fill: none; stroke: #C96A43; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    @media (prefers-color-scheme: dark) {
+      .box  { fill: #161B22; stroke: #30363D; }
+      .zero { fill: #2A1C17; stroke: #E08A5F; }
+      .t    { fill: #F0F6FC; }
+      .s    { fill: #9198A1; }
+      .chk  { fill: #1E3328; }
+      .ct   { fill: #6FD49A; }
+    }
+  </style>
+
+  <!-- Step 0: size the task -->
+  <rect class="box zero" x="10" y="20" width="140" height="200" rx="14"/>
+  <rect class="num" x="24" y="36" width="24" height="24" rx="7"/><text class="n" x="36" y="53" text-anchor="middle">0</text>
+  <text class="t" x="24" y="90">Size</text>
+  <text class="s" x="24" y="112">trivial, normal</text>
+  <text class="s" x="24" y="130">or complex</text>
+  <rect class="chk" x="22" y="168" width="116" height="30" rx="15"/><text class="ct" x="80" y="187" text-anchor="middle">✓ path chosen</text>
+  <path class="arr" d="M156 114 l6 6 l-6 6"/>
+
+  <!-- 1 Understand -->
+  <rect class="box" x="170" y="20" width="140" height="200" rx="14"/>
+  <rect class="num" x="184" y="36" width="24" height="24" rx="7"/><text class="n" x="196" y="53" text-anchor="middle">1</text>
+  <text class="t" x="184" y="90">Understand</text>
+  <text class="s" x="184" y="112">rules, code, what</text>
+  <text class="s" x="184" y="130">exists, define done</text>
+  <rect class="chk" x="182" y="168" width="116" height="30" rx="15"/><text class="ct" x="240" y="187" text-anchor="middle">✓ done defined</text>
+  <path class="arr" d="M316 114 l6 6 l-6 6"/>
+
+  <!-- 2 Design -->
+  <rect class="box" x="330" y="20" width="140" height="200" rx="14"/>
+  <rect class="num" x="344" y="36" width="24" height="24" rx="7"/><text class="n" x="356" y="53" text-anchor="middle">2</text>
+  <text class="t" x="344" y="90">Design</text>
+  <text class="s" x="344" y="112">simplest shape,</text>
+  <text class="s" x="344" y="130">data, load questions</text>
+  <rect class="chk" x="342" y="168" width="116" height="30" rx="15"/><text class="ct" x="400" y="187" text-anchor="middle">✓ smallest design</text>
+  <path class="arr" d="M476 114 l6 6 l-6 6"/>
+
+  <!-- 3 Build -->
+  <rect class="box" x="490" y="20" width="140" height="200" rx="14"/>
+  <rect class="num" x="504" y="36" width="24" height="24" rx="7"/><text class="n" x="516" y="53" text-anchor="middle">3</text>
+  <text class="t" x="504" y="90">Build</text>
+  <text class="s" x="504" y="112">small steps,</text>
+  <text class="s" x="504" y="130">the 13 MUSTs</text>
+  <rect class="chk" x="502" y="168" width="116" height="30" rx="15"/><text class="ct" x="560" y="187" text-anchor="middle">✓ each step runs</text>
+  <path class="arr" d="M636 114 l6 6 l-6 6"/>
+
+  <!-- 4 Verify -->
+  <rect class="box" x="650" y="20" width="140" height="200" rx="14"/>
+  <rect class="num" x="664" y="36" width="24" height="24" rx="7"/><text class="n" x="676" y="53" text-anchor="middle">4</text>
+  <text class="t" x="664" y="90">Verify</text>
+  <text class="s" x="664" y="112">tests, real-user</text>
+  <text class="s" x="664" y="130">test, review</text>
+  <rect class="chk" x="662" y="168" width="116" height="30" rx="15"/><text class="ct" x="720" y="187" text-anchor="middle">✓ proven</text>
+  <path class="arr" d="M796 114 l6 6 l-6 6"/>
+
+  <!-- 5 Report -->
+  <rect class="box" x="810" y="20" width="140" height="200" rx="14"/>
+  <rect class="num" x="824" y="36" width="24" height="24" rx="7"/><text class="n" x="836" y="53" text-anchor="middle">5</text>
+  <text class="t" x="824" y="90">Report</text>
+  <text class="s" x="824" y="112">what changed,</text>
+  <text class="s" x="824" y="130">tested, not verified</text>
+  <rect class="chk" x="822" y="168" width="116" height="30" rx="15"/><text class="ct" x="880" y="187" text-anchor="middle">✓ trustworthy</text>
+</svg>

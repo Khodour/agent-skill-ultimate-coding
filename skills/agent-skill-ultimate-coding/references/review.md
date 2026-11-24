@@ -73,7 +73,7 @@ scenario that triggers it. Say "no problems found" if there are none.
 
 ## Report template
 
-Every normal or complex task ends with this. Trivial tasks get one line.
+Every normal or complex task ends with this. Trivial tasks skip it: the change plus at most one short sentence.
 
 ```text
 What changed          files and behaviour, in plain words
