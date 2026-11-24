@@ -11,8 +11,30 @@ Where code lives, what it is called, and how it explains itself. Read this when 
 
 ## Structure
 
-### 1. Feature first, kind inside
-Group code by feature, then by kind inside each feature. Things that change together live together, so one change touches one folder. Code shared by many features goes in a `core/` or `shared/` folder, organised by kind. When the framework requires its own layout, the framework wins.
+### 1. Mirror the project's layout; feature first only when there is none
+
+**In an existing project, the project's own nesting wins.** Before creating a file, find the closest sibling, an existing piece of the same kind (another model, endpoint, service, screen, test), and copy its shape:
+
+1. **Where:** the same folder and nesting depth, inside the matching feature or app.
+2. **How it is split:** one file per entity if siblings do that; one shared file if they do that; the same read/write or layer split.
+3. **What it is called:** the same file, class and function naming pattern.
+4. **How it is wired:** everything the sibling is connected to: package exports (`__init__`, `index`), registries and routes, admin or DI registration, config lists, and a migration when a data model changes.
+
+```text
+Existing project:                    Task: "add a Coupon model to billing"
+  apps/
+    billing/                         ❌ apps/billing/models.py           (a new flat file)
+      models/                        ❌ apps/coupons/coupon.py           (a new layout)
+        __init__.py   exports each   ✅ apps/billing/models/coupon.py    (mirrors invoice.py)
+        invoice.py                      + export in models/__init__.py
+        payment.py                      + a migration, + admin/route wiring if siblings have it
+      api/
+        invoice/read.py, manage.py
+```
+
+If siblings disagree, follow the most recent or most common pattern and say which one you chose. If the existing pattern is a danger, see `existing-code.md` rule 2.
+
+**In a new project, or one with no pattern:** group code by feature, then by kind inside each feature. Things that change together live together, so one change touches one folder. Code shared by many features goes in a `core/` or `shared/` folder, organised by kind. When the framework requires its own layout, the framework wins.
 
 ```text
 ❌ by kind first: one feature is spread over three trees
