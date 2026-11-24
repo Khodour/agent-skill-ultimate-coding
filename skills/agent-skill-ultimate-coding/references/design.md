@@ -1,0 +1,130 @@
+# Design and simplicity
+
+How to shape code so it stays small, clear and easy to change. Read this when a task creates a feature, a module or an abstraction.
+
+Examples are pseudocode. Apply each idea in the language's own way.
+
+**Contents**
+- Design rules 1–8
+- Simplicity rules 9–14
+- Build or use (rule 15)
+- Size signal
+
+---
+
+## Design
+
+### 1. Reuse before inventing
+Search the codebase for something that already does the job: a helper, a client, a component, an endpoint. Extend it. Create something new only when every existing door is closed, and say why.
+
+```text
+❌ write a new formatMoney() in the invoice screen
+✅ find the existing currency formatter; add the missing option there
+```
+
+### 2. One job per piece
+Each file, class and function has one job, so it has one reason to change. Test: describe it in one sentence without "and". If you can't, split it.
+
+```text
+❌ processOrder(): validates input, charges the card, updates stock,
+   sends the email, writes the audit log
+✅ validateOrder(), charge(), reserveStock(), notifyCustomer(), audit(),
+   each called by a short processOrder()
+```
+
+### 3. Deep, not shallow
+A good module has a small, simple interface that hides a lot of work. A shallow module (as complex to call as it is inside) adds nothing. Every design decision (how we search, how we price, how we authenticate) lives in **one** place. When the same decision appears in several files, it has leaked.
+
+```text
+❌ five files each compute tax as  price * 0.11
+✅ one taxFor(price, region) function; every file calls it
+```
+
+### 4. Add, don't edit
+New features plug in as new files or entries (a registry, a route table, a config list, a strategy map) without changing code that already works.
+
+```text
+❌ if type == "card" ... elif type == "cash" ... elif type == "wallet" ...
+   (edited for every new payment type)
+✅ PAYMENT_HANDLERS = { card: payCard, cash: payCash }
+   adding a type = adding one entry
+```
+
+### 5. Pass dependencies in
+Code receives what it needs (database, clock, settings, current user) instead of reaching for globals. This is what makes a piece testable alone.
+
+```text
+❌ function total(order): rate = GLOBAL_DB.query("tax rate") ...
+✅ function total(order, taxRate) ...   the caller supplies the rate
+```
+
+### 6. When the language has inheritance: compose, don't inherit
+Build from parts ("has-a"). Inherit only for a true "is-a" that works everywhere the parent works.
+
+```text
+❌ class Car extends Engine     a car is not an engine
+✅ class Car { engine: Engine }
+```
+
+### 7. Talk to neighbours only
+Call methods on your direct objects, not on their insides. Long chains tie your code to the private shape of other objects.
+
+```text
+❌ app.session.user.group.permissions.contains("edit")
+✅ user.can("edit")
+```
+
+### 8. Tie-breaker: easier to change
+When two designs both work, choose the one that keeps future changes local and leaves more options open.
+
+---
+
+## Simplicity
+
+### 9. Simplest thing that works
+A new developer should understand it in one read. Cleverness that needs a comment to decode is a cost.
+
+### 10. Build only what is asked
+No unused parameters, settings, flags, extension points or "for later" code. Every piece has a caller today.
+
+```text
+❌ exportReport(format, compress=false, encrypt=false, chunkSize=null)
+   when only CSV export was requested
+✅ exportCsv(report)
+```
+
+### 11. Merge the same knowledge, not look-alike code
+Two pieces of code that *look* alike may need different changes tomorrow. Merge them when they encode the same rule with the same reason to change. Otherwise wait for the third repeat.
+
+```text
+❌ one validate(x, isInvoice, isRefund, skipTax) full of flags,
+   because invoice and refund validation looked similar
+✅ validateInvoice() and validateRefund(), sharing only the truly
+   common rule: checkCurrency()
+```
+
+### 12. When rules collide, this order wins
+1. It works (passes the tests).
+2. It is clear (reveals intention).
+3. No duplicated knowledge.
+4. Fewest pieces.
+
+### 13. Small working slice first
+Get a thin version running end to end (input → logic → storage → output), then grow it step by step. Large systems built in one go tend to fail; working large systems grow out of small working ones.
+
+### 14. Cut before calling it done
+Reread the change. If it could be much shorter and just as clear, make it shorter. 200 lines that could be 50 get rewritten.
+
+---
+
+## 15. Build or use
+
+- **Existing project:** follow its own framework and libraries, even custom ones.
+- **New project:** prefer well-known, maintained libraries over writing your own.
+- **Never** write your own security, crypto, password hashing, authentication or session handling. Use the platform's proven library.
+
+---
+
+## Size signal
+
+A hand-written file over ~400 lines, or a function over ~50, is a signal to check for more than one job. It is not a hard limit: verbose languages run longer, and config, SQL, templates and generated files are long by nature. In messy code, don't make it worse: new code goes into new small pieces, and a bigger refactor is suggested in the report, never done uninvited.
