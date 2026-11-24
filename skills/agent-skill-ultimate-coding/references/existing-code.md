@@ -17,6 +17,19 @@ Most work happens in code that already exists. These rules keep changes safe in 
 ### 1. Read before you write
 Before changing an area, learn how it works: who calls it, its tests, the patterns around it, and (when something looks odd) its history in version control.
 
+**Libraries: trust the installed version, not memory.** APIs change between versions, and a remembered signature is often from an older one. Before using a library call you have not seen in this project, check it in this order:
+
+1. **The version in use:** the lock or manifest file (`package-lock.json`, `poetry.lock`, `go.sum`, `Cargo.lock`, `composer.lock`, `Gemfile.lock`, …).
+2. **The installed package itself:** its type definitions, docstrings or source where the ecosystem keeps installed packages (`node_modules/<pkg>`, the Python environment's `site-packages/<pkg>`, `vendor/`, the module cache).
+3. **The official docs for that exact version**, when a docs tool or the web is available.
+4. **Still unsure:** a tiny script or test that calls the API and runs.
+
+```text
+❌ write `client.charges.create(amount=…)` from memory, version 2 syntax,
+   while the lock file pins version 5, where it is `client.payments.create(…)`
+✅ read the lock file (v5), open the installed package's types, use what is there
+```
+
 ### 2. Follow the house style, but never copy a danger
 Match the project's patterns, naming, structure and libraries, even if you prefer something else. Consistency beats personal taste; suggest improvements separately.
 

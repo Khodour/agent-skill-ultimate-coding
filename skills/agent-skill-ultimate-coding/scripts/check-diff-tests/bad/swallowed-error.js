@@ -1,0 +1,1 @@
+sendEmail(user).catch(() => {});

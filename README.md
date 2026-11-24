@@ -99,6 +99,9 @@ The gain is in discipline, not knowledge: across all our runs, bug fixes without
 | `performance.md` | adds a query, network call, data loop or cache | No N+1, one call per moment, caches with a clearing plan |
 | `resilience.md` | calls anything outside the process, or has a UI | Timeouts, safe retries, offline behaviour, regional blocks |
 | `review.md` | reaches Verify or Report | Self-review checklist, reviewer brief, report template |
+| `examples.md` | is normal or complex, before the first design card | Two tasks done end to end: card, steps, proof, report |
+
+**A checker, not only rules.** `scripts/check-diff.sh` reads only the lines a change adds and flags known dangers with the fix: SQL built from strings, TLS checks turned off, secrets in code, swallowed errors, skipped tests, money in floats, a query inside a loop, and more. It needs only bash and git. The agent runs it in Verify; as a Claude Code plugin it also runs after every file edit, so the agent sees the problem while it is still working. Each finding is a signal, not a verdict: fix it, or mark the line `check-diff: ok <reason>`.
 
 **What it costs:** loading the skill adds a few thousand tokens and one tool call per task. Reference files load only when the task touches their topic, so a trivial fix reads none. On real tasks, where the context is much larger, that is a small share.
 
@@ -221,7 +224,9 @@ Use `--case 'held-out-*'` for the held-out set. Judges that read the whole run c
 skills/agent-skill-ultimate-coding/
   SKILL.md                           the skill: sizes, moments, MUSTs, routing
   references/                        detail files, read on demand
-hooks/hooks.json                     startup hook: loads the skill for coding tasks
+  scripts/check-diff.sh              flags known dangers in added lines
+  scripts/check-diff-tests/          its tests: bash run.sh
+hooks/hooks.json                     loads the skill for coding tasks; runs check-diff after each edit
 evals/                               test cases for `claude plugin eval`
   held-out/                          cases written before tuning; the skill is never changed to pass them
 docs/assets/                         images used by this README
