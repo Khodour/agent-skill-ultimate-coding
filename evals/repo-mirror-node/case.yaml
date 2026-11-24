@@ -1,0 +1,38 @@
+# New feature in a real Node project: checks that the agent finds the module layout
+# on disk and mirrors it (folder, file split, test beside it, wiring in app.js).
+schema_version: "1.0"
+name: repo-mirror-node
+description: A new endpoint mirrors the project's own module layout and wiring in a real repo.
+tags: [structure, existing-code, repo]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Add an endpoint that lists the products that are not archived, with their name and price.
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, "Bash(node --test:*)", "Bash(npm test:*)"]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
+
+  - type: file_exists
+    name: routes-file-in-module
+    path: src/modules/products/products.routes.js
+
+  - type: file_exists
+    name: service-file-in-module
+    path: src/modules/products/products.service.js
+
+  - type: regex
+    name: wired-in-app
+    target: { source: file, path: src/app.js }
+    pattern: '["'']/products["'']\s*:\s*productsRouter'
+
+  - type: file_exists
+    name: test-beside-module
+    path: src/modules/products/products.test.js
+    weight: 0.5

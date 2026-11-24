@@ -13,7 +13,8 @@ The rules are directions, not dogma. Apply each one in the language's own idiom 
 
 1. The user's direct instruction in this conversation.
 2. The project's own rules: `CLAUDE.md`, `AGENTS.md`, README, contributing guide, existing conventions.
-3. This skill.
+3. A skill made for the project's framework, library or domain, on its own topic (how to animate, how a framework wants its files laid out).
+4. This skill. Use both when both are loaded: the specialist skill says how, this one keeps the MUSTs, sizing, proof and report.
 
 **Exception:** a MUST below can be overridden only by the user saying so explicitly in this conversation. Then warn them in plain words, comply, and list it under ⚠️ Warnings in the report.
 

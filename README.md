@@ -13,7 +13,8 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-f4c430?style=flat-square)](LICENSE)
 [![Agent Skill](https://img.shields.io/badge/Agent%20Skill-SKILL.md-C96A43?style=flat-square)](https://agentskills.io)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-A9502E?style=flat-square)](#claude-code-plugin)
-[![Works with](https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex%20%7C%20Cursor%20%7C%20Gemini%20%7C%20Copilot-4493F8?style=flat-square)](#any-agent-copy-the-folder)
+[![Tested on](https://img.shields.io/badge/tested%20on-Claude%20Code-4493F8?style=flat-square)](#proven-with-evals)
+[![Portable](https://img.shields.io/badge/portable%20to-Codex%20%7C%20Cursor%20%7C%20Gemini%20%7C%20Copilot-8B949E?style=flat-square)](#any-agent-copy-the-folder)
 [![Evals](https://img.shields.io/badge/evals-with%20vs%20without-2EA44F?style=flat-square)](#proven-with-evals)
 [![Last commit](https://img.shields.io/github/last-commit/Khodour/agent-skill-ultimate-coding?style=flat-square)](https://github.com/Khodour/agent-skill-ultimate-coding/commits/main)
 **[Install](#install) · [How it works](#how-it-works) · [The MUST rules](#the-must-rules) · [Evals](#proven-with-evals) · [Contributing](#contributing)**
@@ -54,7 +55,21 @@ Real tasks, run **with and without** the plugin using Claude Code's `plugin eval
 | A one-word typo fix stays short | 🟢 3 of 3 | 🟢 3 of 3 |
 | Security basics (SQL injection, SSL, per-record access) | 🟢 9 of 9 | 🟢 9 of 9 |
 
-The gain is in discipline, not knowledge: across all our runs, bug fixes without the skill loaded came with a reproducing test **0 times out of 21**, and every time with it. [Run the evals yourself](#evals).
+**In real project folders.** Here the agent works in an actual small project on disk: it reads the files, edits them and runs the tests. The held-out cases were written before any tuning, and the skill was not changed to pass them. Results for v1.0.1 (3 runs per case):
+
+| Behaviour | Without the skill | With the skill |
+|---|:---:|:---:|
+| Bug fix comes with a test that reproduces the bug | 🔴 0 of 3 | 🟢 3 of 3 |
+| The agent runs the test suite before calling the fix done | 🟡 2 of 3 | 🟢 3 of 3 |
+| A new endpoint mirrors the project's own module layout | 🟢 3 of 3 | 🟢 3 of 3 |
+| A normal feature stays in scope, with a short report that claims only what ran | 🟢 2 of 2 ¹ | 🟢 3 of 3 |
+| *Held out:* allowing subfolders in downloads keeps `../` paths out | 🟢 3 of 3 | 🟢 3 of 3 |
+| *Held out:* retrying a payment call never charges twice | 🟢 3 of 3 | 🟢 3 of 3 |
+| *Held out:* a per-user cache keeps users apart and expires | 🟢 3 of 3 ² | 🟢 3 of 3 |
+
+¹ One baseline run's trace was lost, so it could not be graded. ² The cost cap stopped the judge on two baseline runs; they were graded by hand against the same written criteria.
+
+The gain is in discipline, not knowledge: across all our runs, bug fixes without the skill loaded came with a reproducing test **0 times out of 24**, and every time with it. Where today's models already get it right, the skill doesn't get in the way: normal work stays in scope and reports stay short. [Run the evals yourself](#evals).
 
 ## How it works
 
@@ -86,7 +101,7 @@ The gain is in discipline, not knowledge: across all our runs, bug fixes without
 
 **What it costs:** loading the skill adds a few thousand tokens and one tool call per task. Reference files load only when the task touches their topic, so a trivial fix reads none. On real tasks, where the context is much larger, that is a small share.
 
-**Who wins when rules disagree:** the user's direct instruction → the project's own rules (`CLAUDE.md`, `AGENTS.md`, …) → this skill. A MUST can be overridden only by the user explicitly, and the agent warns and records it.
+**Who wins when rules disagree:** the user's direct instruction → the project's own rules (`CLAUDE.md`, `AGENTS.md`, …) → a skill made for the project's framework or domain, on its own topic → this skill. A MUST can be overridden only by the user explicitly, and the agent warns and records it.
 
 ## The MUST rules
 
@@ -163,6 +178,8 @@ Copy the whole folder, including `references/`.
 
 Agents change their paths over time; check your agent's skills documentation if a folder is not picked up.
 
+The evals run on Claude Code. Other agents read the same open `SKILL.md` format but have not been tested here yet; if you try one, an issue with what you saw is very welcome.
+
 ### Make it always on (recommended)
 
 Agents decide for themselves when to load a skill, and for short requests ("here's a bug, fix it") they often skip it.
@@ -179,10 +196,20 @@ For every coding task, load the agent-skill-ultimate-coding skill first and foll
 `evals/` holds real tasks run with and without the skill. With Claude Code:
 
 ```bash
-claude plugin eval . --no-publish
+claude plugin eval . --no-publish --judge-model sonnet
 ```
 
 This runs each case with the skill and without it (a baseline), grades both, and reports the difference.
+
+The real-project cases build a small project with a setup script and let the agent edit files and run its tests. Read the case's `scaffold.sh` first, then opt in:
+
+```bash
+claude plugin eval . --no-publish --judge-model sonnet --case 'repo-*' --scaffold \
+  --allow-tools Edit Write "Bash(python3 -m unittest:*)" "Bash(python3 -m report.cli:*)" "Bash(node --test:*)" "Bash(npm test:*)" \
+  --max-cost-usd 10
+```
+
+Use `--case 'held-out-*'` for the held-out set. Judges that read the whole run cost more than the run itself, so set `--max-cost-usd`.
 
 ## Repository layout
 
@@ -195,6 +222,7 @@ skills/agent-skill-ultimate-coding/
   references/                        detail files, read on demand
 hooks/hooks.json                     startup hook: loads the skill for coding tasks
 evals/                               test cases for `claude plugin eval`
+  held-out/                          cases written before tuning; the skill is never changed to pass them
 docs/assets/                         images used by this README
 ```
 
@@ -204,7 +232,7 @@ Issues, forks and pull requests are welcome. Every rule must be language-neutral
 
 ## About the author
 
-Built by **Khodour**, an Anthropic-certified AI architect and senior software engineer with 25+ years of shipping production software with large teams. The rules here come from that experience, and each one was checked with evals.
+Built by **Khodour**, an Anthropic-certified AI architect and senior software engineer with 25+ years of shipping production software with large teams. The rules here come from that experience, and the behaviours that matter most are checked with evals, with and without the skill.
 
 ## License
 
