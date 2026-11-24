@@ -44,7 +44,7 @@ When unsure, go one size up.
 
 6. **All-or-nothing, safe to repeat.** Multi-step changes run in one transaction. Shared counters use locks or atomic updates. Side effects run after success. Create, charge and send actions are safe to repeat.
 7. **Never delete, drop, empty or overwrite stored data without the user's explicit OK.**
-8. **Never break what is shipped.** Public APIs, old app versions, saved data, file formats, URLs and flags keep working. Change by adding; deprecate before removing.
+8. **Never break what is shipped.** Public APIs, old app versions, saved data, file formats, URLs and flags keep working. Change by adding; deprecate before removing. A risky behaviour change ships with a way back (a switch that turns it off, or a tested revert).
 
 **Honesty**
 
@@ -87,6 +87,7 @@ When unsure, go one size up.
   Every line that names a risk ends as code, a test, or a ⚠️ Warning in the report. Code that contradicts the card is a bug. Two full worked examples: `references/examples.md`.
 - Choose the simplest thing that works. Build only what was asked: no options, flags or hooks "for later".
 - One job per piece. Simple interfaces that hide the details. Each decision (how we search, price, authenticate) lives in one place.
+- Business rules live outside handlers, views and UI components; those edges only parse, call the rule, and respond. A status is a state machine: one table of allowed moves, one function that moves it. Errors follow one model: expected ones typed and mapped to responses in one place, unexpected ones fail loudly (`references/design.md`, `references/correctness.md`).
 - Place code where its kind already lives: find the closest existing example (a model, an endpoint, a screen) and mirror its folder nesting, file split, naming and wiring. Only when the project has no pattern: feature first, then kind inside.
 - Shape the data: parse input once at the edge, make bad states impossible, snapshot historical facts (the price paid, not today's price). Money is integer cents or decimals, and when an amount is split, the parts add up exactly to the whole: give the leftover cents to some shares by a clear rule, never round every share the same way.
 - For multi-step work, write a short plan with a check after each step, and start with a thin slice that works end to end.
@@ -112,7 +113,7 @@ When unsure, go one size up.
 - Run every check the project already has: build, type checker, linter, formatter, tests.
 - Run `scripts/check-diff.sh` from this skill's folder inside the project (needs bash and git; `--files <paths>` works without git). It flags known dangers in the lines you added. Fix each finding, or mark a false alarm on that line with a comment containing `check-diff: ok <reason>`. As a Claude Code plugin it also runs after every file edit.
 - Add tests by risk: **always** for bug fixes (reproduce the bug with a failing test first) and real logic (money, rules, permissions, calculations); **never** for trivial changes; suggest them for everything else. If you cannot run tests, still write them into the change (or the reply when there are no files) and mark them not run.
-- **When users can see or use the change:** finish with a real-user test. Use the real interface (browser, emulator, terminal, HTTP calls, public API) on a safe environment, never production. Try the happy path, then act like a careless human (see the checklist in `references/testing.md`). Compare results with expected values worked out separately. Every bug found becomes a test, then gets fixed and retested.
+- **When users can see or use the change:** finish with a real-user test. Use the real interface (browser, emulator, terminal, HTTP calls, public API) on a safe environment, never production. Try the happy path, then act like a careless human (see the checklist in `references/testing.md`). Compare results with expected values worked out separately. When the app has more than one language, repeat it in the other language, and right to left if supported. Every bug found becomes a test, then gets fixed and retested.
 - **When the software has users or clients and the change touches data paths:** test with a large dataset and send 10–20 requests at the same item at once. Hot paths and releases get a real stress test on staging (`references/performance.md`).
 - Review your own diff with `references/review.md`. **Complex tasks** also get an independent review: a separate reviewer (a subagent, if your agent has them) receives the diff and the touched files with a narrow job such as "find bugs in this change". Without subagents, do a second, separate pass with the checklist. Fix what is found and re-run the checks.
 
@@ -150,6 +151,7 @@ No "should work now". If something failed, say so and show the output.
 | Changes existing code, an API or a database schema | `references/existing-code.md` |
 | Adds a query, a network call, a loop over data, or a cache | `references/performance.md` |
 | Calls anything outside the process, or has a UI | `references/resilience.md` |
+| Changes what people see or touch in a UI | `references/ui.md` |
 | Reaches Verify or Report | `references/review.md` |
 
 ## Asking questions

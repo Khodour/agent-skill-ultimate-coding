@@ -5,7 +5,7 @@ How to shape code so it stays small, clear and easy to change. Read this when a 
 Examples are pseudocode. Apply each idea in the language's own way.
 
 **Contents**
-- Design rules 1–8
+- Design rules 1–8 (5: rules in the middle, tools at the edge)
 - Simplicity rules 9–14
 - Build or use (rule 15)
 - Size signal
@@ -50,8 +50,17 @@ New features plug in as new files or entries (a registry, a route table, a confi
    adding a type = adding one entry
 ```
 
-### 5. Pass dependencies in
-Code receives what it needs (database, clock, settings, current user) instead of reaching for globals. This is what makes a piece testable alone.
+### 5. Rules in the middle, tools at the edge
+Business rules (pricing, permissions, what makes an order valid) live outside the edges and do not depend on the web framework or the UI. Where the framework's own convention puts rules in its data models (fat model, skinny controller), follow it; the edges still stay thin. The edges (HTTP handlers, controllers, views, components, CLI commands, jobs) do three things only: parse the input, call the rule, shape the response. Code receives what it needs (database, clock, settings, current user) instead of reaching for globals. This is what makes a piece testable alone.
+
+**Test:** could this rule run from a plain script or a test, with no web server, request object or UI? If not, it is in the wrong place. When the project already mixes these layers, don't make it worse: put new rules in their own function or module, and let the old code call it.
+
+```text
+❌ controller: reads the request, checks stock, adds tax, updates the database, builds JSON
+✅ controller: order = parseOrder(request)
+               result = placeOrder(order, repo, clock)    rules only, through what it is given
+               return toJson(result)
+```
 
 ```text
 ❌ function total(order): rate = GLOBAL_DB.query("tax rate") ...
@@ -122,6 +131,8 @@ Reread the change. If it could be much shorter and just as clear, make it shorte
 - **Existing project:** follow its own framework and libraries, even custom ones.
 - **New project:** prefer well-known, maintained libraries over writing your own.
 - **Never** write your own security, crypto, password hashing, authentication or session handling. Use the platform's proven library.
+- **New project shape:** one deployable app, split into modules by feature. Split off a separate service only for a real reason: a different scaling need, a different team, or a security boundary. Calls stay direct at first; a queue is for slow or retryable work.
+- **Choices that are hard to undo** (the database, the framework, a public API's shape): write a short decision note next to the code: what was chosen, the other options, and why.
 
 ---
 

@@ -9,6 +9,7 @@ Keeping wrong data out and right data intact. Read this when a task handles inpu
 - 4 Pure core where there is real logic
 - 5 All-or-nothing, safe to repeat (MUST)
 - 6 Exact money, honest time
+- 7 One error model
 
 ---
 
@@ -56,6 +57,23 @@ Report the error in the language's normal way (exception, error value, `Result`)
 ✅ invoice line stores productId + unitPricePaid + taxRateUsed
 ```
 
+**When something has a status** (an order, a ticket, a payment, a subscription), it is a state machine. Write it as one:
+
+- **One table of allowed moves**, and **one function** that changes the status. Any other move is an error, never a silent change.
+- **Race-safe:** the move checks the old status in the same statement, so two requests cannot both move it.
+- **When the history matters**, record each move with its time (and who made it).
+
+```text
+❌ if order.status == "paid" or order.status == "packed": order.status = "shipped"
+   (the same check copied into five files, each slightly different)
+
+✅ MOVES = { pending: [paid, cancelled], paid: [packed, refunded],
+             packed: [shipped], shipped: [delivered] }
+   move(order, to):  if to not in MOVES[order.status] → error "cannot go from X to Y"
+                     UPDATE orders SET status = :to WHERE id = :id AND status = :from
+                     zero rows → someone else moved it first → reload and report
+```
+
 ### 4. Pure core where there is real logic
 **When code holds real rules** (pricing, tax, scoring, permissions, physics, parsing), write them as functions with no input/output: no database, network, files or clock. They can then be tested alone. Plain glue code (load → save) stays simple; don't add layers with nothing in them.
 
@@ -72,7 +90,9 @@ Report the error in the language's normal way (exception, error value, `Result`)
 
 - **One transaction** for multi-step changes: all of it happens or none of it does.
 - **Shared counters** (stock, balance, seats, quotas) use a lock or an atomic update, never check-then-write.
-- **Side effects after success:** emails, files, push notifications and outside API calls run only after the commit succeeds, because a rollback cannot un-send an email.
+- **Side effects after success:** emails, files, push notifications and outside API calls run only after the commit succeeds, because a rollback cannot un-send an email. Decide per side effect:
+  - **Nice to have** (a welcome email): send after the commit; if it fails, log it.
+  - **Must happen** (a payment webhook, a stock sync, an invoice email): write a job or "outbox" row **in the same transaction** as the change, and let a worker send it with retries. The receiver handles duplicates, because a retry can deliver twice. Use the project's existing job system; don't add a queue for nice-to-have work.
 - **Safe to repeat:** actions that create, charge or send accept an idempotency key or a unique request ID, so a double click or an automatic retry does not run twice.
 
 ```text
@@ -112,3 +132,19 @@ Report the error in the language's normal way (exception, error value, `Result`)
 | A moment that happened (created, paid, logged in) | UTC timestamp; convert only for display |
 | A plain date (birthday, due date, holiday) | Date only, no time and no zone |
 | A future local event ("9:00 in Beirut next March") | Local date-time + time-zone name, because daylight-saving rules can change |
+
+### 7. One error model
+If the project already has an error model, use it. Otherwise:
+
+- **Expected errors** (not found, not allowed, invalid input, conflict) are typed: an error class, error value or code. The edge turns them into a response **in one place**: an HTTP status, a message in the user's language, an exit code.
+- **Unexpected errors** (bugs, broken invariants, a dependency down) fail loudly up to one top-level handler, which logs them with a request ID and shows a generic message.
+- Never decide by matching an error's message text. Never return `null` or `false` to mean three different failures.
+- **Assertions** guard your own assumptions (an invariant that "cannot" break). They are not input checks: input is parsed at the edge (rule 1).
+- **When code exposes an API:** errors, lists (pagination) and dates (ISO 8601, UTC) have one shape across every endpoint. The contract (a schema, types or a spec) is written once, and a test checks real responses against it. Version only on a breaking change (`existing-code.md` rule 4).
+
+```text
+❌ getUser() returns null for "not found", "no permission" and "database down"
+✅ getUser() returns the user, or raises NotFound / Forbidden;
+   "database down" is unexpected and reaches the top-level handler
+   one edge mapping: NotFound → 404, Forbidden → 403, anything else → 500 + request ID
+```
