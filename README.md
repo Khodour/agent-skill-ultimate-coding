@@ -85,6 +85,8 @@ The gain is in discipline, not knowledge: across all our runs, bug fixes without
 | `resilience.md` | calls anything outside the process, or has a UI | Timeouts, safe retries, offline behaviour, regional blocks |
 | `review.md` | reaches Verify or Report | Self-review checklist, reviewer brief, report template |
 
+**What it costs:** loading the skill adds about 2,600 tokens and one tool call per task. Each reference file adds about 1,000–1,500 tokens, read only when the task touches its topic; a trivial fix reads none. In our evals, tasks with the skill took about 4 seconds longer on average. On real tasks, where context is much larger, that is a small share.
+
 **Who wins when rules disagree:** the user's direct instruction → the project's own rules (`CLAUDE.md`, `AGENTS.md`, …) → this skill. A MUST can be overridden only by the user explicitly, and the agent warns and records it.
 
 ## The 13 MUSTs
