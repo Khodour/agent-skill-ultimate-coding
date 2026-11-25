@@ -1,30 +1,70 @@
 /**
- * The progress tracker's rules: which of the skill's five moments a run is in,
- * read from what plugins can see (tool calls, and each turn's final answer).
+ * The progress tracker's rules. The bar shows only what Claude Code's own events
+ * make certain: a turn is working, a subagent is working, the turn was stopped
+ * (Esc, an error), or it ended (waiting for you, or done), with the checks run and
+ * the report's confidence. It never guesses which step of the skill Claude is on.
  * Pure, so the rules are tested without the engine.
  */
-import type { Confidence, Run, Size } from '../types'
+import type { Confidence, PromptKind, Run, Size } from '../types'
 
-export const PHASES = ['Understand', 'Design', 'Build', 'Verify', 'Report'] as const
+/** A new run; a tentative one is dropped if its turn turns out to be only a question. */
+export const startRun = (isTentative = false): Run =>
+  ({ checks: 0, failed: 0, confidence: null, isDone: false, ...(isTentative ? { isTentative: true } : {}) })
 
-export const startRun = (): Run =>
-  ({ current: 0, reached: 0, checks: 0, failed: 0, confidence: null, isDone: false })
-
-/** Moves to `phase`; the current one may go back (a fix after Verify), what was reached never does. */
-const moveTo = (run: Run, phase: number): Run =>
-  ({ ...run, current: phase, reached: Math.max(run.reached, phase) })
+/** Real work (a card, an edit, a hand-off) makes a tentative run a task. */
+const real = (run: Run): Run => {
+  const { isTentative: _, ...rest } = run
+  return rest
+}
 
 const EDIT_TOOLS = new Set(['Edit', 'Write', 'MultiEdit', 'NotebookEdit'])
-const CHECK = /\b(test|tests|tsc|lint|eslint|ruff|mypy|pytest|jest|vitest|validate|check-diff|cargo (test|check|clippy)|go (test|vet)|build)\b/
 
-/** Whether a shell command is a check: tests, a type check, lint, validate, check-diff or a build. */
-export const isCheckCommand = (command: string): boolean => CHECK.test(command)
+// A check is recognised by the program a command part starts with, never by a word
+// anywhere in it: "test -f a.py", "ls tests/" and "which tsc" only look, they check nothing.
+// Programs may carry a path, in quotes or not ("$S/venv/bin/python", "./node_modules/.bin/jest", "/bin/bash").
+// "<anything> -m <checker>" covers interpreters named by a variable, such as "$PY" -m pytest.
+const AT = String.raw`["']?(?:[^\s"']*\/)?`
+const RUNNER = String.raw`(?:(?:npx|bunx|pnpm\s+exec|pnpm|yarn|npm(?:\s+run)?|bun(?:\s+run)?|["']?[^\s"']+["']?\s+-m|uv\s+run|poetry\s+run|bundle\s+exec)\s+)`
+const CHECKER = String.raw`${AT}(?:pytest|jest|vitest|mocha|tsc|eslint|biome|ruff|mypy|pyright|flake8|pylint|rspec|phpunit|phpstan|psalm|rubocop|unittest|tox|swiftlint|ktlint|detekt|xcodebuild|shellcheck)`
+const SCRIPT = String.raw`(?:test|tests|lint|build|typecheck|type-check|check|ci|verify|validate)[\w:-]*`
+const COMPOUND = String.raw`(?:go\s+(?:test|vet|build)|cargo\s+(?:test|check|clippy|build)|swift\s+(?:test|build)|dotnet\s+(?:test|build)|mix\s+(?:test|compile)|rake\s+(?:test|spec)|make\s+${SCRIPT}|\.?\/?gradlew?\s+(?:\S+\s+)*?\S*(?:[Tt]est|[Bb]uild|assemble|lint|check)\S*|mvn\s+(?:\S+\s+)*?(?:test|verify|package)|claude\s+plugin\s+(?:test|validate)|php\s+artisan\s+test|${AT}(?:bash|sh)\s+["']?[^"']*(?:check-diff\.sh|tests?\/[^"'\s]*\.sh))`
+const CHECK_PART = new RegExp(String.raw`^(?:\w+=\S*\s+)*(?:${RUNNER}?${CHECKER}|${RUNNER}${SCRIPT}|${COMPOUND})(?=\s|$|["'])`)
 
-/** A finished tool call: edits mean Build, check commands mean Verify. */
+/** Whether a shell command runs a check: tests, a type check, lint, a build, validate or check-diff. */
+export const isCheckCommand = (command: string): boolean =>
+  command.split(/&&|\|\||;|\||\n/).some(part => {
+    const p = part.trim().replace(/^\(+\s*/, '').replace(/^(?:time|timeout\s+\S+)\s+/, '')
+    return CHECK_PART.test(p) && !/\s--?(?:version|V|help|h)(?:\s|$)/.test(p)   // a version or help probe checks nothing
+  })
+
+/** The tools that hand work to a subagent. */
+const AGENT_TOOLS = new Set(['Agent', 'Task'])
+
+/** Whether a finished tool call is real work on a task: a design card, an edit, a check, or work handed to a subagent. */
+export const isTaskWork = (tool: string, command: string | undefined): boolean =>
+  tool === CARD_TOOL || EDIT_TOOLS.has(tool) || AGENT_TOOLS.has(tool) ||
+  (tool === 'Bash' && command !== undefined && isCheckCommand(command))
+
+/** A subagent's loop started or ended: the run counts it as busy while it works. */
+export const onAgent = (run: Run, agentId: string, isRunning: boolean): Run => {
+  const others = (run.agents ?? []).filter(a => a !== agentId)
+  const agents = isRunning ? [...others, agentId] : others
+  const { agents: _, ...rest } = run
+  return agents.length > 0 ? { ...rest, agents } : rest
+}
+
+/** Whether subagents are working for the run right now. */
+export const hasAgents = (run: Run): boolean => (run.agents?.length ?? 0) > 0
+
+/**
+ * A finished tool call. An edit or work handed to a subagent makes the run a task;
+ * a check is counted (passed or failed) but only looks, so on its own it never
+ * turns a question's turn into a task.
+ */
 export const onTool = (run: Run, tool: string, command: string | undefined, isError: boolean): Run => {
-  if (EDIT_TOOLS.has(tool)) return moveTo(run, 2)
+  if (EDIT_TOOLS.has(tool) || AGENT_TOOLS.has(tool)) return real(run)
   if (tool === 'Bash' && command !== undefined && isCheckCommand(command)) {
-    return { ...moveTo(run, 3), checks: run.checks + 1, failed: run.failed + (isError ? 1 : 0) }
+    return { ...run, checks: run.checks + 1, failed: run.failed + (isError ? 1 : 0) }
   }
   return run
 }
@@ -32,47 +72,110 @@ export const onTool = (run: Run, tool: string, command: string | undefined, isEr
 export const CARD_TOOL = 'mcp__agent-skill-ultimate-coding__design_card'
 const SIZES: readonly Size[] = ['Trivial', 'Small', 'Normal', 'Complex']
 
-/** A recorded design card: the run reaches Design and takes the card's size. */
-export const onCard = (run: Run, size: unknown): Run => {
-  const moved = run.current < 1 ? moveTo(run, 1) : { ...run, reached: Math.max(run.reached, 1) }
-  return SIZES.includes(size as Size) ? { ...moved, size: size as Size } : moved
-}
-
-const REPORT = /###\s*1\.\s*What was done/
-const CONFIDENCE = /Confidence:\s*(High|Medium|Low)/
-const WAITING = /###\s*3\.\s*Waiting for you/
+/** A design card, recorded with the tool or written as text: the run is a task, with the card's size. */
+export const onCard = (run: Run, size: unknown): Run =>
+  SIZES.includes(size as Size) ? { ...real(run), size: size as Size } : real(run)
 
 /**
- * A turn's final answer: the report moves the run to Report and sets its
- * confidence; the run pauses when the turn ends waiting for the user (a
- * "Waiting for you" part, or no report yet) and finishes otherwise.
+ * A design card written as text in Claude's reply, rather than recorded with the
+ * design_card tool: its Job and Done when lines, in plain, bold or table form.
+ * Returns the size it names, if any, or null when the text holds no card.
  */
-export const onAnswer = (run: Run, answer: string): Run => {
-  let next: Run = { ...run, isDone: true }
-  if (hasReport(answer)) next = moveTo(next, 4)
+export const cardInText = (text: string): { size?: Size } | null => {
+  const line = String.raw`(?:^|\n)[ \t>*|\x60_-]*`
+  if (!new RegExp(`${line}Job\\b[^\\n]*\\S[\\s\\S]*?${line}Done when\\b`, 'i').test(text)) return null
+  const s = /Design card[^\n]*?\b(Trivial|Small|Normal|Complex)\b|(?:^|\n)[ \t>*|_-]*Size\b[^\n]*?\b(Trivial|Small|Normal|Complex)\b/i.exec(text)
+  const word = s?.[1] ?? s?.[2]
+  const size = SIZES.find(z => z.toLowerCase() === word?.toLowerCase())
+  return size === undefined ? {} : { size }
+}
+
+export const CONFIDENCE = /Confidence:?\**\s*(High|Medium|Low)/
+// A report in any of the shapes Claude writes it: the three-part headings (numbered or bold),
+// or the confidence line every report form ends with.
+const REPORT = /(?:^|\n)\s*(?:#{1,4}\s*(?:\d\.\s*)?|\*\*)(?:What was done|Needs attention|Waiting for you)\b/i
+const WAITING = /(?:^|\n)\s*(?:#{1,4}\s*(?:\d\.\s*)?|\*\*)Waiting for you\b/i
+
+/** How a turn ended, as `turn.complete`'s `reason` gives it. */
+export type TurnEnd = 'answer' | 'aborted' | 'error' | 'refusal'
+
+/** A `turn.complete` reason as a TurnEnd: anything but a known stop (a new or missing reason) counts as an answer. */
+export const turnEnd = (reason: unknown): TurnEnd =>
+  reason === 'aborted' || reason === 'error' || reason === 'refusal' ? reason : 'answer'
+
+/** Whether an answer holds a report: its headings in any shape, or its confidence line. */
+export const hasReport = (answer: string): boolean => REPORT.test(answer) || CONFIDENCE.test(answer)
+
+/** Whether a turn's final answer finishes its task: it holds a report. */
+export const isFinishedAnswer = (answer: string): boolean => hasReport(answer)
+
+/**
+ * Whether the answer hands a question to the person: a "Waiting for you" part, or a
+ * question in its last paragraph ("Should I commit? If yes, I'll ..."). It only picks
+ * between the two labels of an ended turn, so a rare wrong guess is harmless.
+ */
+export const asksPerson = (answer: string): boolean => {
+  if (WAITING.test(answer)) return true
+  const last = answer.trim().split(/\n\s*\n/).pop() ?? ''
+  return /\?(?:[*_`)\s]|$)/.test(last)
+}
+
+/**
+ * A turn ended. Stopped by Esc, an API error or a refusal: marked so. Answered:
+ * done, or waiting for you when the answer asks the person something; the report's
+ * confidence is kept when it gives one. A tentative run whose turn did no task work
+ * and gave no report is dropped: that turn was only a question. Returns null then.
+ */
+export const onAnswer = (run: Run, answer: string, end: TurnEnd = 'answer'): Run | null => {
+  if (run.isTentative === true && end === 'answer' && !hasReport(answer)) return null
+  const { stop: _, asks: __, ...rest } = run
+  if (end !== 'answer') return { ...rest, isDone: true, stop: end }
   const c = CONFIDENCE.exec(answer)
-  if (c) next = { ...next, confidence: c[1] as Confidence }
-  return { ...next, isPaused: !isFinishedAnswer(answer) }
+  return { ...rest, isDone: true, ...(c ? { confidence: c[1] as Confidence } : {}), ...(asksPerson(answer) ? { asks: true } : {}) }
+}
+
+/** A turn of the main loop started while a run is shown (a background task's notice): it is working again. */
+export const onTurnStart = (run: Run | null): Run | null => {
+  if (run === null) return null
+  const { stop: _, asks: __, ...rest } = run
+  return { ...rest, isDone: false }
+}
+
+// Origins that are the person speaking: a new message starts a fresh bar.
+const PERSON = new Set(['composer', 'bridge', 'sdk', 'scheduled-trigger', 'channel', 'coordinator', 'projects-relay', 'slack-ping'])
+
+/**
+ * What a submitted prompt means for the run. A slash command or a hidden engine
+ * prompt changes nothing; a prompt delivered into the running turn, or one from a
+ * background task, a peer session, an observer or an unknown source, is part of
+ * the same work; only the person's own message, sent while idle, is new.
+ */
+export const classifyPrompt = (e: { command?: unknown; isMeta?: boolean; turnId?: string; origin?: { kind?: string; asUser?: boolean } }): PromptKind => {
+  if (e.command !== undefined || e.isMeta === true) return 'none'
+  if (e.turnId !== undefined) return 'same'
+  const kind = e.origin?.kind
+  if (kind === undefined) return 'new'           // an engine too old to say where a prompt came from: the person typed it
+  if (PERSON.has(kind)) return 'new'
+  if (kind === 'plugin' && e.origin?.asUser === true) return 'new'
+  return 'same'
 }
 
 /**
- * Whether an answer holds a report: the three-part heading, or the confidence
- * line every report form ends with (Claude sometimes writes a plain summary
- * with its confidence line and no headings).
+ * On a submitted prompt. The person's new message, once nothing is working, clears
+ * the bar: the next turn starts fresh, so nothing from an earlier turn can be shown
+ * wrongly. Anything else, or a run still busy (a turn or a subagent working), stays.
  */
-const hasReport = (answer: string): boolean => REPORT.test(answer) || CONFIDENCE.test(answer)
+export const onPrompt = (run: Run | null, kind: PromptKind = 'new'): Run | null =>
+  run === null || kind !== 'new' || !run.isDone || hasAgents(run) ? run : null
 
-/** Whether a turn's final answer finishes its task: a report with no "Waiting for you" part. */
-export const isFinishedAnswer = (answer: string): boolean => hasReport(answer) && !WAITING.test(answer)
+/** The bar's state, each one known from an event: working, subagent working, stopped, waiting for you, done. */
+export type BarState = 'working' | 'subagent working' | 'stopped' | 'stopped by an error' | 'waiting for you' | 'done'
 
-/** On the user's next message: a finished run is cleared, a paused one carries on. */
-export const onPrompt = (run: Run | null): Run | null =>
-  run === null || !run.isPaused ? null : { ...run, isDone: false, isPaused: false }
-
-/** The spinner word for the current moment. */
-export const spinnerWord = (run: Run): string =>
-  ['Understanding', 'Designing', 'Building', 'Verifying', 'Reporting'][run.current] ?? 'Working'
-
-/** The end-of-turn past tense: the furthest moment reached. */
-export const doneWord = (run: Run): string =>
-  ['Understood', 'Designed', 'Built', 'Verified', 'Reported'][run.reached] ?? 'Worked'
+/** Which state the bar shows. */
+export const barState = (run: Run): BarState => {
+  if (hasAgents(run)) return 'subagent working'
+  if (!run.isDone) return 'working'
+  if (run.stop === 'aborted') return 'stopped'
+  if (run.stop === 'error' || run.stop === 'refusal') return 'stopped by an error'
+  return run.asks === true ? 'waiting for you' : 'done'
+}

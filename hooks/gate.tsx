@@ -60,9 +60,14 @@ export async function gateCardRun($: EngineInterface, id: string, input: unknown
   return { result: `Design card recorded (${checked.card.size}). Edits that touch ${covered.join(', ') || 'no Complex area'} are open for this task.` }
 }
 
-/** A turn ended: a finished task (a report with no questions) frees the gate for the next one. */
+/** A turn ended: a finished task (one that gave its report) frees the gate for the next one. */
 export async function gateTurnEnd($: EngineInterface, answer: string): Promise<void> {
   if (isFinishedAnswer(answer)) await update($, gate, () => OPEN)
+}
+
+/** The conversation ended (/clear, a resume): the next one starts with no card. */
+export async function gateReset($: EngineInterface): Promise<void> {
+  await update($, gate, () => OPEN)
 }
 
 /** The card's box under its design_card row, or null for any other row. */

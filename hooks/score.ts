@@ -26,9 +26,9 @@ export const countTool = (s: Score, tool: string, command: string | undefined, i
   return s
 }
 
-/** Counts a task once, at the turn that finishes it (a report with no questions). */
+/** Counts a task at the turn that finishes it: one that answered with a report giving its confidence. */
 export const countFinish = (s: Score, before: Run | null, after: Run | null): Score => {
-  if (before === null || after === null || after.isPaused !== false) return s
+  if (before === null || after === null || !after.isDone || after.stop !== undefined || after.confidence === null) return s
   const size = after.size ?? 'Unsized'
   const confidence = after.confidence === null
     ? s.confidence

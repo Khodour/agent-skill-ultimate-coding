@@ -10,7 +10,7 @@
     "progressTracker": {
       "type": "boolean",
       "title": "Progress tracker",
-      "description": "The bar above the prompt with the five moments, the task size, checks and confidence; also the spinner word and the end-of-turn line.",
+      "description": "The bar above the prompt: working, subagent working, stopped, waiting for you or done, with the task size, checks and confidence.",
       "default": true
     },
     "scorecard": {
@@ -29,6 +29,12 @@
       "type": "boolean",
       "title": "Design-card gate",
       "description": "Edits that touch money, access, personal data, migrations, concurrency or a public API wait for a design card covering them (adds the design_card tool).",
+      "default": true
+    },
+    "reportCheck": {
+      "type": "boolean",
+      "title": "Report check",
+      "description": "After a turn that changed code, if Claude stops without the skill's report and Confidence line, it is asked once to add them. Skipped when the project's own CLAUDE.md or AGENTS.md sets its own report format.",
       "default": true
     }
   }

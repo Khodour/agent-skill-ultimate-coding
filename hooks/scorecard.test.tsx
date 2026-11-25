@@ -20,7 +20,7 @@ test('a finished task shows in the scorecard; a paused one does not', async ($, 
 
   await $.tool.call({ tool: 'Skill', skill: 'agent-skill-ultimate-coding:agent-skill-ultimate-coding' } as never)
   await $.tool.call({ tool: 'Write', file_path: '/a.js', content: 'x' } as never)
-  await end('### 1. What was done\n### 3. Waiting for you\n1. Which one?')
+  await end('Before I change anything: which of the two files?')
   expect((await ui.find({ type: 'Text', text: /Tasks finished/ }))?.text).toBe('Tasks finished  0')
 
   await $.tool.call({ tool: 'Bash', command: 'npm test' } as never)

@@ -10,8 +10,10 @@ test('a finished task counts once, by size and confidence', async () => {
 })
 
 test('a paused task is not counted yet; one with no card counts as Unsized', async () => {
-  const paused = onAnswer(startRun(), '### 1. What was done\n### 3. Waiting for you\n1. ?')
+  const paused = onAnswer(startRun(), 'Before I change anything: which file?')
   expect(countFinish(emptyScore(), startRun(), paused)).toEqual(emptyScore())
+  const asks = onAnswer(startRun(), '### 1. What was done\n**Confidence: Medium 🟡** x\n### 3. Waiting for you\n1. ?')
+  expect(countFinish(emptyScore(), startRun(), asks).confidence.Medium).toBe(1)   // a report that asks questions is finished
   const done = onAnswer(startRun(), '### 1. What was done\n**Confidence: Low 🔴** no tests')
   expect(countFinish(emptyScore(), startRun(), done).tasks.Unsized).toBe(1)
   expect(countFinish(emptyScore(), null, null)).toEqual(emptyScore())

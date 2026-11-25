@@ -58,6 +58,17 @@ test('plain edits are never held, and a finished task frees the gate', async ($,
   expect((await call($, MONEY_EDIT)).deny).toContain('touches money')                  // a new task needs its own card
 })
 
+test('a report that asks questions also frees the gate: the next task needs its own card', async ($, on) => {
+  engine($, on)
+  await $.session.start({ cwd: '/p', surface: 'terminal', isInteractive: true })
+  await call($, MONEY_EDIT)
+  await call($, { tool: CARD, ...FULL, money: 'integer cents' })
+  expect((await call($, MONEY_EDIT)).deny).toBe(undefined)
+  const answer = '### 1. What was done\n**Confidence: Medium 🟡** x\n### 3. Waiting for you\n1. commit?'
+  await $.turn.complete({ answer, durationMs: 1, isAborted: false, turnId: 't', reason: 'completed' } as never)
+  expect((await call($, MONEY_EDIT)).deny).toContain('touches money')
+})
+
 test('after an Arabic message, the gate asks for the card in Arabic', async ($, on) => {
   engine($, on)
   on('prompt.submit', (_, e) => ({ text: e.text }))
