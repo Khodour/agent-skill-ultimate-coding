@@ -42,6 +42,10 @@ Every task in the suite runs **with and without** the skill and is scored by an 
 | Claude Opus 5.5 | 10 hardest tests | 0.68 | ✅ **0.97** |
 
 <p align="center">
+  <img src="docs/assets/failure-guards.svg" alt="Nine ways coding agents fail, each with the guard Ultimate Coding puts on it. Presentation and UI: look at the result like a user. State management: one source of truth, derived values. Data management: parse at the edge, no bad states. APIs and outside services: never invent names, fields or keys. Business logic: design card with edges and done when. Security and access: 5 security MUSTs plus check-diff. Repeated code: reuse before inventing. Codebase awareness: read and mirror the project first. Errors and exceptions: no swallowed errors, fail loud." width="100%">
+</p>
+
+<p align="center">
   <img src="docs/assets/eval-results.svg" alt="Behaviours the skill takes to a 100% pass rate, per model. Claude Haiku 5.5: query inside a loop 0% to 100%; gift card 0% to 100%; double submits 0% to 100%; AI refunds need a human 33% to 100%; rule out of the route 33% to 100%; parameterized queries 67% to 100%. Claude Sonnet 5.5: database rules out of the web layer, gift card, coupon, bill split and reproducing test each 0% to 100%; double submits, failed cart read and AI summary 33% to 100%; AI refunds 67% to 100%. Claude Opus 5.5, 10 hardest tests: database rules 0% to 100%; gift card 0% to 100%; double submits 33% to 100%." width="100%">
 </p>
 
@@ -64,6 +68,8 @@ Passing runs, without → with the skill. ✅ marks a behaviour that passed ever
 | A bug fix finds the root cause | 0/3 → 2/3 | passed before | not run |
 | A business rule is kept out of the route | 1/3 → ✅ 3/3 | passed before | not run |
 | Queries built from user input stay parameterized | 2/3 → ✅ 3/3 | passed before | not run |
+| Debug logs never write raw errors or request bodies | 0/5 → ✅ 5/5 | not run | not run |
+| A public endpoint that sends paid email gets a rate limit in the code | 0/5 → ✅ 5/5 | not run | not run |
 | A failed cart read never wipes the saved cart | 2/3 → 2/3 | 1/3 → ✅ 3/3 | passed before |
 | An AI support bot needs a human to approve refunds | 1/3 → ✅ 3/3 | 2/3 → ✅ 3/3 | passed before |
 | An AI summary is cached and survives a failed call | passed before | 1/3 → ✅ 3/3 | not run |
@@ -96,7 +102,7 @@ The last two rows are the only places where the skill scored lower: on small tas
 
 Applied to every task, whatever its size. Only you can override one, and the agent will flag it in its report.
 
-- 🔒 **Security:** data never becomes code · check access for every action **and every record** · never hand-roll auth or crypto · secrets stay out of code, git, logs and apps · never weaken a safety check
+- 🔒 **Security:** data never becomes code · check access for every action **and every record** · never hand-roll auth or crypto · secrets stay out of code, git, logs and apps, and logs never hold personal data or raw errors · never weaken a safety check
 - 💾 **Data:** all-or-nothing writes, safe to repeat · never delete or overwrite data without an explicit OK · never break what is shipped
 - 🧾 **Honesty:** prove it, don't claim it · never weaken a test · never invent names, APIs or packages · fix the cause, not the symptom
 - ⚠️ **Actions:** confirm before anything irreversible or touching production
@@ -138,7 +144,7 @@ Built by **[Khodour](https://www.linkedin.com/in/kodr-fouani-b75523179/)**, an A
 
 ## In Claude Code
 
-Extra on-screen help, each one switchable in `/config`: a progress bar above the prompt, check-diff results under each edit, a `/uc-score` session scorecard, and a design-card check before edits to money, auth, personal data, migrations, concurrency or public APIs. Only the design-card check costs tokens.
+Extra on-screen help, each one switchable in `/config`: a status bar above the prompt (working, waiting for you, done or stopped, with checks and confidence), check-diff results under each edit, a `/uc-score` session scorecard, a design-card check before edits to money, auth, personal data, migrations, concurrency or public APIs, and a report check that asks Claude once to end a coding task with its report and confidence (skipped when your project's `CLAUDE.md` or `AGENTS.md` sets its own format, or when you ask for a different reply). Only the design-card and report checks cost tokens, and only when they step in.
 
 ## License
 
