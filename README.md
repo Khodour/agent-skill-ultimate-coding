@@ -42,10 +42,10 @@ Every task in the suite runs **with and without** the skill and is scored by an 
 | Claude Opus 5.5 | 10 hardest tests | 0.68 | ✅ **0.97** |
 
 <p align="center">
-  <img src="docs/assets/eval-results.svg" alt="Pass rates without and with the skill, per model. Claude Haiku 5.5: query inside a loop 0% to 100%; gift card 0% to 100%; double submits 0% to 100%; AI refunds need a human 33% to 100%; rule out of the route 33% to 100%; parameterized queries 67% to 100%; bill split 0% to 67%; root cause 0% to 67%; coupon 0% to 20%. Claude Sonnet 5.5: database rules out of the web layer, gift card, coupon, bill split and reproducing test each 0% to 100%; double submits, failed cart read and AI summary 33% to 100%; AI refunds 67% to 100%; installed library API 0% to 33%. Claude Opus 5.5, 10 hardest tests: database rules 0% to 100%; gift card 0% to 100%; double submits 33% to 100%; coupon 0% to 67%." width="100%">
+  <img src="docs/assets/eval-results.svg" alt="Behaviours the skill takes to a 100% pass rate, per model. Claude Haiku 5.5: query inside a loop 0% to 100%; gift card 0% to 100%; double submits 0% to 100%; AI refunds need a human 33% to 100%; rule out of the route 33% to 100%; parameterized queries 67% to 100%. Claude Sonnet 5.5: database rules out of the web layer, gift card, coupon, bill split and reproducing test each 0% to 100%; double submits, failed cart read and AI summary 33% to 100%; AI refunds 67% to 100%. Claude Opus 5.5, 10 hardest tests: database rules 0% to 100%; gift card 0% to 100%; double submits 33% to 100%." width="100%">
 </p>
 
-The chart shows the behaviours where the skill makes a difference. On the remaining tasks, both versions perform well, and small fixes stay small. [Run the evals yourself](#evals).
+The chart shows the behaviours the skill takes to 100%. Partial gains and the two small regressions are in the table below. On the remaining tasks, both versions perform well, and small fixes stay small. [Run the evals yourself](#evals).
 
 <details>
 <summary>The numbers behind the chart</summary>
