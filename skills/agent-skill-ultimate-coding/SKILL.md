@@ -88,7 +88,14 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
   Every line that names a risk ends as code, a test, or a ⚠️ Warning in the report. Code that contradicts the card is a bug. Two full worked examples: `references/examples.md`.
 - Choose the simplest thing that works. Build only what was asked: no options, flags or hooks "for later" (the off-switch MUST 8 asks for is not "for later").
 - One job per piece. Simple interfaces that hide the details. Each decision (how we search, price, authenticate) lives in one place.
-- Business rules live outside handlers, views and UI components; those edges only parse, call the rule, and respond. A status is a state machine: one table of allowed moves, one function that moves it. Errors follow one model: expected ones typed and mapped to responses in one place, unexpected ones fail loudly (`references/design.md`, `references/correctness.md`).
+- Business rules live outside handlers, views and UI components; those edges only parse, call the rule, and respond. Rules that need the database count too:
+
+  ```
+  ❌ handler: BEGIN → SELECT … → check the rule → INSERT … → COMMIT → respond
+  ✅ handler: input = parse(request) → result = transfer(db, user.id, input) → respond(result)
+     transfer(db, userId, input): every rule, its queries and the transaction; no request object
+  ```
+- A status is a state machine: one table of allowed moves, one function that moves it. Errors follow one model: expected ones typed and mapped to responses in one place, unexpected ones fail loudly (`references/design.md`, `references/correctness.md`).
 - Place code where its kind already lives: find the closest existing example (a model, an endpoint, a screen) and mirror its folder nesting, file split, naming and wiring. Only when the project has no pattern: feature first, then kind inside.
 - Shape the data: parse input once at the edge, make bad states impossible, snapshot historical facts (the price paid, not today's price). Money is integer cents or decimals, and when an amount is split, the parts add up exactly to the whole: give the leftover cents to some shares by a clear rule, never round every share the same way.
 - For multi-step work, write a short plan with a check after each step, and start with a thin slice that works end to end.
