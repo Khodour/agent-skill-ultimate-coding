@@ -17,7 +17,7 @@ The rules are directions, not dogma. Apply each one in the language's own idiom 
 3. A skill made for the project's framework, library or domain, on its own topic (how to animate, how a framework wants its files laid out).
 4. This skill. Use both when both are loaded: the specialist skill says how, this one keeps the MUSTs, sizing, proof and report.
 
-**Exception:** a MUST below can be overridden only by the user saying so explicitly in this conversation. Then warn them in plain words, comply, and list it under ⚠️ Warnings in the report.
+**Exception:** a MUST below can be overridden only by the user saying so explicitly in this conversation. Then warn them in plain words, comply, and list it as a red `Warning:` line under Needs attention in the report.
 
 ## Step 0: size the task
 
@@ -85,7 +85,7 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
   Risks      complex tasks only: races, permissions, data loss, the way back
   ```
 
-  Every line that names a risk ends as code, a test, or a ⚠️ Warning in the report. Code that contradicts the card is a bug. Two full worked examples: `references/examples.md`.
+  Every line that names a risk ends as code, a test, or a `Warning:` line in the report. Code that contradicts the card is a bug. Two full worked examples: `references/examples.md`.
 - Choose the simplest thing that works. Build only what was asked: no options, flags or hooks "for later" (the off-switch MUST 8 asks for is not "for later").
 - One job per piece. Simple interfaces that hide the details. Each decision (how we search, price, authenticate) lives in one place.
 - Business rules live outside handlers, views and UI components; those edges only parse, call the rule, and respond. Rules that need the database count too:
@@ -106,7 +106,7 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
 ### 3. Build
 
 - Work in small steps and run each one before the next.
-- Before calling a library or framework API, check it against the version the project uses, in this order: (1) the version in the lock or manifest file, (2) the installed package's own types, docs or source, (3) the official docs for that exact version, (4) still unsure → a tiny script that calls it and runs. Memory of an API is often an older version.
+- Before calling a library or framework API, check it against the version the project uses, in this order: (1) the version in the lock or manifest file, (2) the installed package's own types, docs or source (`node_modules`, `.venv`, `vendor` are usually git-ignored, so file search skips them: open or list the path directly), (3) the official docs for that exact version, (4) still unsure → a tiny script that calls it and runs. Memory of an API is often an older version.
 - Follow the house style, but never copy or extend a danger (string-built SQL, weak hashing, a query inside a loop, a race): write it safely and point it out. Where the structure is messy, don't make it worse: new code goes into new small pieces.
 - A performance, security or correctness problem **inside the code you are changing** gets fixed in this change; a change that extends a known problem is not done. Keep the fix behaviour-preserving and say what you changed.
 - Give every new file, class and function a header saying what it does and why, in the language's doc format; one line is enough when it is obvious. Explain the *why* of complex code. Never narrate obvious lines. Don't add headers or comments to existing code you are not otherwise changing. No commented-out code, no silent TODOs.
@@ -129,20 +129,46 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
 
 ### 5. Report
 
-End every normal or complex task with this. Trivial tasks skip it: the change plus at most one short sentence.
+End every normal or complex task with this, in Markdown, outside any code block. Trivial tasks skip it: the change plus at most one short sentence.
 
+````markdown
+---
+### 1. What was done
+```diff
++ the result in one line of plain words
 ```
-What changed          files and behaviour, in plain words
-Tested                ✅/❌ per check, with real output
-Numbers               requests/queries before → after, timings (when relevant)
-Not verified          what could not be run + steps for the user to check it
-Noticed, not touched  problems outside the task's area
-⚠️ Warnings           weakened checks, overridden MUSTs, risks left open
+- `path/file`: what it does now
+- Checks: ✅ build · ✅ tests 42/42 · ❌ lint (under a ❌, a short code block with the real output)
+- Undo: the switch or revert (risky changes only)
+
+**Confidence: Medium 🟡** the one reason, in plain words
+
+---
+### 2. Needs attention
+**This task**
+```diff
+- what failed or was not verified + the steps for the user to check it
+- Warning: an overridden MUST, a weakened check, a risk left open
 ```
+- Not committed: 2 files on branch `fix/x`
 
-Keep it short: about 10 lines for a normal task, one line per item. Leave out empty sections, except **Not verified** and **⚠️ Warnings** (write "none"). No restating the task, no generic advice, no risks unrelated to this change. Complex tasks may run longer, never padded.
+**Found elsewhere, not touched**
+```diff
+- `path/file`: a serious problem
+```
+- `path/file`: a minor problem
 
-No "should work now". If something failed, say so and show the output.
+---
+### 3. Waiting for you
+1. a question the work depends on
+---
+````
+
+- **Part 1, always.** When the task is about speed or request counts, add the numbers as a `diff`: `- before`, `+ after`. If you stopped to ask before changing anything, say so in one line.
+- **Confidence comes from the evidence, never a percentage.** **High 🟢**: every check ran and passed, and the real user path was tried. **Medium 🟡**: the checks pass, but something in part 2 was not verified. **Low 🔴**: tests could not run, a check failed, or you had to guess about the code or the request. A ❌ or a `Warning:` line rules out High.
+- **Part 2, always.** Leave out an empty group, and an empty `diff` block; if nothing is left, write `Nothing needs attention.` Red lines (`-` in a `diff` block) only for what can hurt users or data now: a failing or unverified check, a security hole, data loss, wrong money. Everything else is a plain bullet. A serious problem found elsewhere is still red; report it, don't fix it. The git line appears only when something is not committed, not pushed or on the wrong branch.
+- **Part 3, only when you need an answer.** Numbered, so the user can reply "1: yes". Follow "Asking questions".
+- About 10 lines for a normal task, one line per item. Emoji only for status: ✅ ❌ on checks, one dot on confidence, none in headings. No restating the task, no generic advice, no risks unrelated to this change. Complex tasks may run longer, never padded. No "should work now".
 
 **Check:** someone could trust this without re-checking it.
 

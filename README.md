@@ -67,7 +67,6 @@ Passing runs, without → with the skill. ✅ marks a behaviour that passed ever
 | A failed cart read never wipes the saved cart | 2/3 → 2/3 | 1/3 → ✅ 3/3 | passed before |
 | An AI support bot needs a human to approve refunds | 1/3 → ✅ 3/3 | 2/3 → ✅ 3/3 | passed before |
 | An AI summary is cached and survives a failed call | passed before | 1/3 → ✅ 3/3 | not run |
-| Code uses the API of the installed library version | passed before | 0/3 → 1/3 | passed before |
 | A typo fix gets a short reply | passed before | 3/3 → 2/3 | passed before |
 | A small change gets a short report | 3/3 → 0/3 | passed before | not run |
 
