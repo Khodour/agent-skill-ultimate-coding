@@ -6,7 +6,7 @@ append_system_prompt: "This session has no repository and no files to edit. Give
 allowed_tools: [Read, Glob, Grep, Skill]
 ---
 
-Add `POST /cart/coupon` that applies a coupon code to the signed-in customer's cart. A coupon is either a percent or a fixed amount off, has an expiry date, and each customer can use it only once.
+Add `POST /cart/coupon` that applies a coupon code to the signed-in customer's cart. A coupon is either a percent or a fixed amount off, has an expiry date, and each customer can use it only once. The response returns the cart's discount and new total in cents.
 
 ```js
 // Express + node-postgres. coupons(code, kind 'percent'|'fixed', value, expires_at)
