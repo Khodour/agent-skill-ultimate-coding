@@ -1,5 +1,5 @@
 {
-  "description": "SessionStart adds one line of context (also after /clear or compaction) so Claude loads the skill for every coding task; agents often skip skills for short requests. PostToolUse runs the skill's check-diff script on each edited file and hands Claude, as additionalContext, any known danger in that file's added lines not yet committed. It always exits 0, so it can never break a session.",
+  "description": "SessionStart adds one line of context (also after /clear or compaction) so Claude loads the skill for every coding task; agents often skip skills for short requests. PostToolUse runs the skill's check-diff script on each edited file and hands Claude, as additionalContext, any known danger in that file's added lines not yet committed. It always exits 0, so it can never break a session. The hooks module (register.tsx) shows a toast when the skill loads; Claude Code versions without hooks modules ignore it.",
   "hooks": {
     "SessionStart": [
       {
@@ -23,5 +23,8 @@
         ]
       }
     ]
-  }
+  },
+  "modules": [
+    "./register.tsx"
+  ]
 }
