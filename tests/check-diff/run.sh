@@ -2,10 +2,10 @@
 # Tests for check-diff.sh: every file in bad/ must raise the rule named by its file
 # name (bad/<rule-id>.<ext>), and every file in good/ must raise nothing. Also checks
 # the known-prefix secret patterns, git mode (only added lines count) and the
-# "check-diff: ok" mark. Run: bash run.sh   (exit 0 = all pass)
+# "check-diff: ok" mark. Run: bash tests/check-diff/run.sh   (exit 0 = all pass)
 set -u
 here=$(cd "$(dirname "$0")" && pwd)
-tool="$here/../check-diff.sh"
+tool="$here/../../skills/agent-skill-ultimate-coding/scripts/check-diff.sh"
 fail=0
 
 pass() { echo "ok    $1"; }

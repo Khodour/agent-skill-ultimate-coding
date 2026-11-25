@@ -85,7 +85,7 @@ Report the error in the language's normal way (exception, error value, `Result`)
    the shell loads the inputs, calls it, saves the result
 ```
 
-### 5. All-or-nothing, safe to repeat (MUST)
+### 5. All-or-nothing, safe to repeat (MUST 6)
 **When a change touches stored state** (database, files, outside systems):
 
 - **One transaction** for multi-step changes: all of it happens or none of it does.

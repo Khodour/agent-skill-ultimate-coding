@@ -3,9 +3,9 @@
 Where code lives, what it is called, and how it explains itself. Read this when a task creates files or folders, names things, or writes comments.
 
 **Contents**
-- Structure rules 1–3
-- Naming and settings rules 4–5
-- Comment rules 6–8
+- Structure rules: 1 Mirror the project's layout; 2 A clean root; 3 Size signal
+- Naming and settings rules: 4 Names tell the truth; 5 Settings live outside the code
+- Comment rules 6–8: 6 Every new file, class and function has a header; 7 Explain the *why* of complex code; 8 Comments stay true
 
 ---
 
@@ -87,7 +87,7 @@ URLs, limits, feature switches and anything that differs between environments go
 
 ## Comments
 
-### 6. Every file, class and function has a header
+### 6. Every new file, class and function has a header
 Say **what it does and why it exists**, in the language's own doc format. One line is enough when it is obvious. Name the caller only when that is not obvious, because caller lists go stale.
 
 ```python
@@ -114,6 +114,8 @@ Obvious pieces get one line:
 ✅ /** Full name for display: "First Last". */
 ❌ a five-line header on a one-line getter
 ```
+
+Existing code you are not otherwise changing keeps its comments as they are: a one-line fix stays a one-line diff.
 
 ### 7. Explain the *why* of complex code
 Complex conditions, queries, calculations, business rules and workarounds get a comment saying **why** they exist. Link workarounds to the bug or issue. Never narrate what the code already says.

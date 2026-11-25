@@ -33,7 +33,7 @@ Today's models already know SOLID, DRY and SQL injection. What they lack is **di
 
 ## Proven with evals
 
-Real tasks, run **with and without** the skill using Claude Code's `plugin eval` and graded by a separate judge. On a small, fast model (Claude Haiku 5.5) the average score across the whole suite rose from **0.77 to 0.94**, at the same cost per task as the previous version.
+Real tasks, run **with and without** the skill using Claude Code's `plugin eval` and graded by a separate judge. On a small, fast model (Claude Haiku 5.5) the average score across the whole suite (35 cases, 3 runs each) rose from **0.82 to 0.96**.
 
 <p align="center">
   <img src="docs/assets/eval-results.svg" alt="Dumbbell chart of pass rates without and with the skill. Claude Haiku 5.5: fixes a query inside a loop 0% to 100%; bug fix with a reproducing test 20% to 100%; safe against double submits 0% to 100%; parameterized query 20% to 100%; held-out failed cart read keeps the cart 80% to 100%; held-out coupon used once under races 0% to 40%; bill split adds up 0% to 33%. Default model: reproducing test 0% to 100%; bill split 33% to 100%; double submits 67% to 100%; runs the tests 67% to 100%." width="100%">
