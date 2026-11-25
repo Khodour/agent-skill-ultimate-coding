@@ -24,12 +24,13 @@ The rules are directions, not dogma. Apply each one in the language's own idiom 
 | Size | Examples | What runs |
 |---|---|---|
 | **Trivial** | Typo, text or colour change, rename, one config value. No new logic. | Make the change → run the project's checks → reply with the change and at most one short sentence. No design card, no new tests, no report sections. |
-| **Normal** | New feature, bug fix, new screen or endpoint, any new function or calculation, even a short one | Design card + all five moments. Tests by risk. Real-user test when users can see the change. |
+| **Small** | One self-contained function, written or fixed: a formatter, a parser, a pure calculation. Only if it reads and writes no stored data, makes no network or file calls, shares no state, and touches no money, auth, UI or public API. | Short card (Job, Edges, Done when) → code → project checks → tests by risk (a bug fix still starts with a failing test) → one Confidence line as the report. |
+| **Normal** | New feature, bug fix, new screen or endpoint, any function or calculation that is not Small | Design card + all five moments. Tests by risk. Real-user test when users can see the change. |
 | **Complex** | Money, auth, permissions, personal data, data migrations, concurrency, public API changes | Design card with Risks + all five moments + read the matching reference files in full + independent review + concurrency or stress checks. |
 
-When unsure, go one size up. A task that adds or changes logic (a condition, a loop, a calculation, a query) is never trivial, however small.
+When unsure, go one size up. A task that adds or changes logic (a condition, a loop, a calculation, a query) is never trivial, however small. A task is Small only when every condition in its row holds; one miss makes it Normal.
 
-**Normal and complex tasks start with the design card** (see Design): write it in your reply before any code, even when the task looks small or there are no files. No card, no code.
+**Small, normal and complex tasks start with the design card** (see Design; small tasks use its short form): write it in your reply before any code, even when the task looks small or there are no files. No card, no code.
 
 ## The MUSTs (never skipped, at any size)
 
@@ -85,6 +86,8 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
   Risks      complex tasks only: races, permissions, data loss, the way back
   ```
 
+  **Small tasks** write only the `Job`, `Edges` and `Done when` lines, then any assumptions (one short line each) right under the card, before the code.
+
   Every line that names a risk ends as code, a test, or a `Warning:` line in the report. Code that contradicts the card is a bug. Two full worked examples: `references/examples.md`.
 - Choose the simplest thing that works. Build only what was asked: no options, flags or hooks "for later" (the off-switch MUST 8 asks for is not "for later").
 - One job per piece. Simple interfaces that hide the details. Each decision (how we search, price, authenticate) lives in one place.
@@ -129,7 +132,7 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
 
 ### 5. Report
 
-End every normal or complex task with this, in Markdown, outside any code block. Trivial tasks skip it: the change plus at most one short sentence.
+End every normal or complex task with this, in Markdown, outside any code block. Trivial tasks skip it: the change plus at most one short sentence. Small tasks end with only the Confidence line below, and nothing after it; when something was not run, the same line says so and gives the command to run it (``**Confidence: Low 🔴** tests written, not run: `pytest test_duration.py` ``).
 
 ````markdown
 ---
@@ -165,10 +168,10 @@ End every normal or complex task with this, in Markdown, outside any code block.
 ````
 
 - **Part 1, always.** When the task is about speed or request counts, add the numbers as a `diff`: `- before`, `+ after`. If you stopped to ask before changing anything, say so in one line.
-- **Confidence comes from the evidence, never a percentage.** **High 🟢**: every check ran and passed, and the real user path was tried. **Medium 🟡**: the checks pass, but something in part 2 was not verified. **Low 🔴**: tests could not run, a check failed, or you had to guess about the code or the request. A ❌ or a `Warning:` line rules out High.
+- **Confidence comes from the evidence, never a percentage.** **High 🟢**: every check ran and passed, and the real user path was tried. **Medium 🟡**: the checks pass, but something in part 2 was not verified. **Low 🔴**: tests could not run, a check failed, or you had to guess about the code or the request. A ❌, a `Warning:` line, or any check listed as not run rules out High. In the three-part report, each check not run also goes under Needs attention as a red line.
 - **Part 2, always.** Leave out an empty group, and an empty `diff` block; if nothing is left, write `Nothing needs attention.` Red lines (`-` in a `diff` block) only for what can hurt users or data now: a failing or unverified check, a security hole, data loss, wrong money. Everything else is a plain bullet. A serious problem found elsewhere is still red; report it, don't fix it. The git line appears only when something is not committed, not pushed or on the wrong branch.
 - **Part 3, only when you need an answer.** Numbered, so the user can reply "1: yes". Follow "Asking questions".
-- About 10 lines for a normal task, one line per item. Emoji only for status: ✅ ❌ on checks, one dot on confidence, none in headings. No restating the task, no generic advice, no risks unrelated to this change. Complex tasks may run longer, never padded. No "should work now".
+- About 10 lines for a normal task, one line per item. Emoji only for status: ✅ ❌ on checks, one dot on confidence, none in headings. No summary before the report (the report is the summary), no restating the task, no generic advice, no risks unrelated to this change. Complex tasks may run longer, never padded. No "should work now".
 
 **Check:** someone could trust this without re-checking it.
 
