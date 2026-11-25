@@ -97,7 +97,7 @@ If a check blocks you, fix the cause. Follow this order:
 
 ### 7. Safe errors, careful logs
 - Users see a simple message. Stack traces, SQL and internal paths stay in the logs.
-- Logs **never** contain passwords, tokens, card numbers or personal data in plain form.
+- Logs **never** contain passwords, tokens, card numbers or personal data in plain form. That includes whole request bodies and raw error messages: a database error often repeats the value that failed (the email in a duplicate-key error). Log the error's name and code, or scrub the message first.
 - Log security events: logins, failed logins, permission denials, changes to roles and admin settings.
 
 ### 8. Limit everything public or expensive
