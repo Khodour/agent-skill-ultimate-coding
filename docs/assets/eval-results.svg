@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="536" viewBox="0 0 900 536" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="960" viewBox="0 0 900 960" role="img" aria-labelledby="title desc">
 <title id="title">Eval pass rates without and with the skill</title>
-<desc id="desc">Claude Haiku 5.5: Fixes a query inside a loop it edits 0% to 100%, Bug fix comes with a reproducing test 20% to 100%, Order code is safe against double submits 0% to 100%, Queries from user input stay parameterized 20% to 100%, A failed cart read keeps the saved cart 80% to 100%, A coupon is used once, even under races 0% to 40%, A bill split adds up exactly to the total 0% to 33%; Claude Code default model: Bug fix comes with a reproducing test 0% to 100%, A bill split adds up exactly to the total 33% to 100%, Order code is safe against double submits 67% to 100%, Runs the tests before calling a fix done 67% to 100%</desc>
+<desc id="desc">Claude Haiku 5.5: Fixes a query inside a loop it edits 0% to 100%, Gift card: rules apart, safe under races 0% to 100%, Order code is safe against double submits 0% to 100%, AI support bot needs a human to refund 33% to 100%, Business rule kept out of the route 33% to 100%, Queries from user input stay parameterized 67% to 100%, A bill split adds up exactly to the total 0% to 67%, A bug fix finds the root cause 0% to 67%, Coupon: rules apart, used once per customer 0% to 20%; Claude Sonnet 5.5: Database rules kept out of the web layer 0% to 100%, Gift card: rules apart, safe under races 0% to 100%, Coupon: rules apart, used once per customer 0% to 100%, A bill split adds up exactly to the total 0% to 100%, A bug fix comes with a reproducing test 0% to 100%, Order code is safe against double submits 33% to 100%, A failed cart read keeps the saved cart 33% to 100%, AI summary is cached and survives a failed call 33% to 100%, AI support bot needs a human to refund 67% to 100%, Uses the API of the installed library version 0% to 33%; Claude Opus 5.5 (10 hardest tests): Database rules kept out of the web layer 0% to 100%, Gift card: rules apart, safe under races 0% to 100%, Order code is safe against double submits 33% to 100%, Coupon: rules apart, used once per customer 0% to 67%</desc>
 <!-- README chart, generated: pass rate per behaviour, without (orange) and with the skill (blue); a full pass is marked in green. -->
 <style>
   .head   { fill: #0b0b0b; font: 700 17px -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
@@ -40,9 +40,9 @@
 <rect class="pass-bg" x="632" y="53" width="22" height="22" rx="11"/><text class="pass" x="637" y="68.5" style="font: 700 12.5px -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">✓</text><text class="legend" x="662" y="68">passes every run</text>
 <rect class="accent" x="20" y="87" width="4" height="17" rx="2"/>
 <text class="panel" x="32" y="100">Claude Haiku 5.5</text>
-<line class="grid" x1="360.0" y1="114" x2="360.0" y2="324"/>
-<line class="grid" x1="550.0" y1="114" x2="550.0" y2="324"/>
-<line class="grid" x1="740.0" y1="114" x2="740.0" y2="324"/>
+<line class="grid" x1="360.0" y1="114" x2="360.0" y2="384"/>
+<line class="grid" x1="550.0" y1="114" x2="550.0" y2="384"/>
+<line class="grid" x1="740.0" y1="114" x2="740.0" y2="384"/>
 <text class="label" x="20" y="133.5">Fixes a query inside a loop it edits</text>
 <linearGradient id="gain6" gradientUnits="userSpaceOnUse" x1="360.0" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
 <line class="gain" stroke="url(#gain6)" x1="360.0" y1="129" x2="740.0" y2="129"/>
@@ -50,13 +50,13 @@
 <circle class="with" cx="740.0" cy="129" r="6.5"/>
 <rect class="pass-bg" x="764" y="118" width="116" height="22" rx="11"/>
 <text class="value" x="776" y="133.5">0% → <tspan class="pass">✓ 100%</tspan></text>
-<text class="label" x="20" y="163.5">Bug fix comes with a reproducing test</text>
-<linearGradient id="gain13" gradientUnits="userSpaceOnUse" x1="436.0" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
-<line class="gain" stroke="url(#gain13)" x1="436.0" y1="159" x2="740.0" y2="159"/>
-<circle class="without" cx="436.0" cy="159" r="6.5"/>
+<text class="label" x="20" y="163.5">Gift card: rules apart, safe under races</text>
+<linearGradient id="gain13" gradientUnits="userSpaceOnUse" x1="360.0" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain13)" x1="360.0" y1="159" x2="740.0" y2="159"/>
+<circle class="without" cx="360.0" cy="159" r="6.5"/>
 <circle class="with" cx="740.0" cy="159" r="6.5"/>
 <rect class="pass-bg" x="764" y="148" width="116" height="22" rx="11"/>
-<text class="value" x="776" y="163.5">20% → <tspan class="pass">✓ 100%</tspan></text>
+<text class="value" x="776" y="163.5">0% → <tspan class="pass">✓ 100%</tspan></text>
 <text class="label" x="20" y="193.5">Order code is safe against double submits</text>
 <linearGradient id="gain20" gradientUnits="userSpaceOnUse" x1="360.0" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
 <line class="gain" stroke="url(#gain20)" x1="360.0" y1="189" x2="740.0" y2="189"/>
@@ -64,69 +64,158 @@
 <circle class="with" cx="740.0" cy="189" r="6.5"/>
 <rect class="pass-bg" x="764" y="178" width="116" height="22" rx="11"/>
 <text class="value" x="776" y="193.5">0% → <tspan class="pass">✓ 100%</tspan></text>
-<text class="label" x="20" y="223.5">Queries from user input stay parameterized</text>
-<linearGradient id="gain27" gradientUnits="userSpaceOnUse" x1="436.0" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
-<line class="gain" stroke="url(#gain27)" x1="436.0" y1="219" x2="740.0" y2="219"/>
-<circle class="without" cx="436.0" cy="219" r="6.5"/>
+<text class="label" x="20" y="223.5">AI support bot needs a human to refund</text>
+<linearGradient id="gain27" gradientUnits="userSpaceOnUse" x1="485.4" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain27)" x1="485.4" y1="219" x2="740.0" y2="219"/>
+<circle class="without" cx="485.4" cy="219" r="6.5"/>
 <circle class="with" cx="740.0" cy="219" r="6.5"/>
 <rect class="pass-bg" x="764" y="208" width="116" height="22" rx="11"/>
-<text class="value" x="776" y="223.5">20% → <tspan class="pass">✓ 100%</tspan></text>
-<text class="label" x="20" y="253.5">A failed cart read keeps the saved cart</text>
-<linearGradient id="gain34" gradientUnits="userSpaceOnUse" x1="664.0" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
-<line class="gain" stroke="url(#gain34)" x1="664.0" y1="249" x2="740.0" y2="249"/>
-<circle class="without" cx="664.0" cy="249" r="6.5"/>
+<text class="value" x="776" y="223.5">33% → <tspan class="pass">✓ 100%</tspan></text>
+<text class="label" x="20" y="253.5">Business rule kept out of the route</text>
+<linearGradient id="gain34" gradientUnits="userSpaceOnUse" x1="485.4" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain34)" x1="485.4" y1="249" x2="740.0" y2="249"/>
+<circle class="without" cx="485.4" cy="249" r="6.5"/>
 <circle class="with" cx="740.0" cy="249" r="6.5"/>
 <rect class="pass-bg" x="764" y="238" width="116" height="22" rx="11"/>
-<text class="value" x="776" y="253.5">80% → <tspan class="pass">✓ 100%</tspan></text>
-<text class="label" x="20" y="283.5">A coupon is used once, even under races</text>
-<linearGradient id="gain41" gradientUnits="userSpaceOnUse" x1="360.0" x2="512.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
-<line class="gain" stroke="url(#gain41)" x1="360.0" y1="279" x2="512.0" y2="279"/>
-<circle class="without" cx="360.0" cy="279" r="6.5"/>
-<circle class="with" cx="512.0" cy="279" r="6.5"/>
-<text class="value" x="776" y="283.5">0% → <tspan class="strong">40%</tspan></text>
+<text class="value" x="776" y="253.5">33% → <tspan class="pass">✓ 100%</tspan></text>
+<text class="label" x="20" y="283.5">Queries from user input stay parameterized</text>
+<linearGradient id="gain41" gradientUnits="userSpaceOnUse" x1="614.6" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain41)" x1="614.6" y1="279" x2="740.0" y2="279"/>
+<circle class="without" cx="614.6" cy="279" r="6.5"/>
+<circle class="with" cx="740.0" cy="279" r="6.5"/>
+<rect class="pass-bg" x="764" y="268" width="116" height="22" rx="11"/>
+<text class="value" x="776" y="283.5">67% → <tspan class="pass">✓ 100%</tspan></text>
 <text class="label" x="20" y="313.5">A bill split adds up exactly to the total</text>
-<linearGradient id="gain47" gradientUnits="userSpaceOnUse" x1="360.0" x2="485.4" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
-<line class="gain" stroke="url(#gain47)" x1="360.0" y1="309" x2="485.4" y2="309"/>
+<linearGradient id="gain48" gradientUnits="userSpaceOnUse" x1="360.0" x2="614.6" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain48)" x1="360.0" y1="309" x2="614.6" y2="309"/>
 <circle class="without" cx="360.0" cy="309" r="6.5"/>
-<circle class="with" cx="485.4" cy="309" r="6.5"/>
-<text class="value" x="776" y="313.5">0% → <tspan class="strong">33%</tspan></text>
-<text class="tick" x="360.0" y="338" text-anchor="middle">0%</text>
-<text class="tick" x="550.0" y="338" text-anchor="middle">50%</text>
-<text class="tick" x="740.0" y="338" text-anchor="middle">100%</text>
-<rect class="accent" x="20" y="361" width="4" height="17" rx="2"/>
-<text class="panel" x="32" y="374">Claude Code default model</text>
-<line class="grid" x1="360.0" y1="388" x2="360.0" y2="508"/>
-<line class="grid" x1="550.0" y1="388" x2="550.0" y2="508"/>
-<line class="grid" x1="740.0" y1="388" x2="740.0" y2="508"/>
-<text class="label" x="20" y="407.5">Bug fix comes with a reproducing test</text>
-<linearGradient id="gain61" gradientUnits="userSpaceOnUse" x1="360.0" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
-<line class="gain" stroke="url(#gain61)" x1="360.0" y1="403" x2="740.0" y2="403"/>
-<circle class="without" cx="360.0" cy="403" r="6.5"/>
-<circle class="with" cx="740.0" cy="403" r="6.5"/>
-<rect class="pass-bg" x="764" y="392" width="116" height="22" rx="11"/>
-<text class="value" x="776" y="407.5">0% → <tspan class="pass">✓ 100%</tspan></text>
-<text class="label" x="20" y="437.5">A bill split adds up exactly to the total</text>
-<linearGradient id="gain68" gradientUnits="userSpaceOnUse" x1="485.4" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
-<line class="gain" stroke="url(#gain68)" x1="485.4" y1="433" x2="740.0" y2="433"/>
-<circle class="without" cx="485.4" cy="433" r="6.5"/>
-<circle class="with" cx="740.0" cy="433" r="6.5"/>
-<rect class="pass-bg" x="764" y="422" width="116" height="22" rx="11"/>
-<text class="value" x="776" y="437.5">33% → <tspan class="pass">✓ 100%</tspan></text>
-<text class="label" x="20" y="467.5">Order code is safe against double submits</text>
-<linearGradient id="gain75" gradientUnits="userSpaceOnUse" x1="614.6" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
-<line class="gain" stroke="url(#gain75)" x1="614.6" y1="463" x2="740.0" y2="463"/>
-<circle class="without" cx="614.6" cy="463" r="6.5"/>
+<circle class="with" cx="614.6" cy="309" r="6.5"/>
+<text class="value" x="776" y="313.5">0% → <tspan class="strong">67%</tspan></text>
+<text class="label" x="20" y="343.5">A bug fix finds the root cause</text>
+<linearGradient id="gain54" gradientUnits="userSpaceOnUse" x1="360.0" x2="614.6" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain54)" x1="360.0" y1="339" x2="614.6" y2="339"/>
+<circle class="without" cx="360.0" cy="339" r="6.5"/>
+<circle class="with" cx="614.6" cy="339" r="6.5"/>
+<text class="value" x="776" y="343.5">0% → <tspan class="strong">67%</tspan></text>
+<text class="label" x="20" y="373.5">Coupon: rules apart, used once per customer</text>
+<linearGradient id="gain60" gradientUnits="userSpaceOnUse" x1="360.0" x2="436.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain60)" x1="360.0" y1="369" x2="436.0" y2="369"/>
+<circle class="without" cx="360.0" cy="369" r="6.5"/>
+<circle class="with" cx="436.0" cy="369" r="6.5"/>
+<text class="value" x="776" y="373.5">0% → <tspan class="strong">20%</tspan></text>
+<text class="tick" x="360.0" y="398" text-anchor="middle">0%</text>
+<text class="tick" x="550.0" y="398" text-anchor="middle">50%</text>
+<text class="tick" x="740.0" y="398" text-anchor="middle">100%</text>
+<rect class="accent" x="20" y="421" width="4" height="17" rx="2"/>
+<text class="panel" x="32" y="434">Claude Sonnet 5.5</text>
+<line class="grid" x1="360.0" y1="448" x2="360.0" y2="748"/>
+<line class="grid" x1="550.0" y1="448" x2="550.0" y2="748"/>
+<line class="grid" x1="740.0" y1="448" x2="740.0" y2="748"/>
+<text class="label" x="20" y="467.5">Database rules kept out of the web layer</text>
+<linearGradient id="gain74" gradientUnits="userSpaceOnUse" x1="360.0" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain74)" x1="360.0" y1="463" x2="740.0" y2="463"/>
+<circle class="without" cx="360.0" cy="463" r="6.5"/>
 <circle class="with" cx="740.0" cy="463" r="6.5"/>
 <rect class="pass-bg" x="764" y="452" width="116" height="22" rx="11"/>
-<text class="value" x="776" y="467.5">67% → <tspan class="pass">✓ 100%</tspan></text>
-<text class="label" x="20" y="497.5">Runs the tests before calling a fix done</text>
-<linearGradient id="gain82" gradientUnits="userSpaceOnUse" x1="614.6" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
-<line class="gain" stroke="url(#gain82)" x1="614.6" y1="493" x2="740.0" y2="493"/>
-<circle class="without" cx="614.6" cy="493" r="6.5"/>
+<text class="value" x="776" y="467.5">0% → <tspan class="pass">✓ 100%</tspan></text>
+<text class="label" x="20" y="497.5">Gift card: rules apart, safe under races</text>
+<linearGradient id="gain81" gradientUnits="userSpaceOnUse" x1="360.0" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain81)" x1="360.0" y1="493" x2="740.0" y2="493"/>
+<circle class="without" cx="360.0" cy="493" r="6.5"/>
 <circle class="with" cx="740.0" cy="493" r="6.5"/>
 <rect class="pass-bg" x="764" y="482" width="116" height="22" rx="11"/>
-<text class="value" x="776" y="497.5">67% → <tspan class="pass">✓ 100%</tspan></text>
-<text class="tick" x="360.0" y="522" text-anchor="middle">0%</text>
-<text class="tick" x="550.0" y="522" text-anchor="middle">50%</text>
-<text class="tick" x="740.0" y="522" text-anchor="middle">100%</text>
+<text class="value" x="776" y="497.5">0% → <tspan class="pass">✓ 100%</tspan></text>
+<text class="label" x="20" y="527.5">Coupon: rules apart, used once per customer</text>
+<linearGradient id="gain88" gradientUnits="userSpaceOnUse" x1="360.0" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain88)" x1="360.0" y1="523" x2="740.0" y2="523"/>
+<circle class="without" cx="360.0" cy="523" r="6.5"/>
+<circle class="with" cx="740.0" cy="523" r="6.5"/>
+<rect class="pass-bg" x="764" y="512" width="116" height="22" rx="11"/>
+<text class="value" x="776" y="527.5">0% → <tspan class="pass">✓ 100%</tspan></text>
+<text class="label" x="20" y="557.5">A bill split adds up exactly to the total</text>
+<linearGradient id="gain95" gradientUnits="userSpaceOnUse" x1="360.0" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain95)" x1="360.0" y1="553" x2="740.0" y2="553"/>
+<circle class="without" cx="360.0" cy="553" r="6.5"/>
+<circle class="with" cx="740.0" cy="553" r="6.5"/>
+<rect class="pass-bg" x="764" y="542" width="116" height="22" rx="11"/>
+<text class="value" x="776" y="557.5">0% → <tspan class="pass">✓ 100%</tspan></text>
+<text class="label" x="20" y="587.5">A bug fix comes with a reproducing test</text>
+<linearGradient id="gain102" gradientUnits="userSpaceOnUse" x1="360.0" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain102)" x1="360.0" y1="583" x2="740.0" y2="583"/>
+<circle class="without" cx="360.0" cy="583" r="6.5"/>
+<circle class="with" cx="740.0" cy="583" r="6.5"/>
+<rect class="pass-bg" x="764" y="572" width="116" height="22" rx="11"/>
+<text class="value" x="776" y="587.5">0% → <tspan class="pass">✓ 100%</tspan></text>
+<text class="label" x="20" y="617.5">Order code is safe against double submits</text>
+<linearGradient id="gain109" gradientUnits="userSpaceOnUse" x1="485.4" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain109)" x1="485.4" y1="613" x2="740.0" y2="613"/>
+<circle class="without" cx="485.4" cy="613" r="6.5"/>
+<circle class="with" cx="740.0" cy="613" r="6.5"/>
+<rect class="pass-bg" x="764" y="602" width="116" height="22" rx="11"/>
+<text class="value" x="776" y="617.5">33% → <tspan class="pass">✓ 100%</tspan></text>
+<text class="label" x="20" y="647.5">A failed cart read keeps the saved cart</text>
+<linearGradient id="gain116" gradientUnits="userSpaceOnUse" x1="485.4" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain116)" x1="485.4" y1="643" x2="740.0" y2="643"/>
+<circle class="without" cx="485.4" cy="643" r="6.5"/>
+<circle class="with" cx="740.0" cy="643" r="6.5"/>
+<rect class="pass-bg" x="764" y="632" width="116" height="22" rx="11"/>
+<text class="value" x="776" y="647.5">33% → <tspan class="pass">✓ 100%</tspan></text>
+<text class="label" x="20" y="677.5">AI summary is cached and survives a failed call</text>
+<linearGradient id="gain123" gradientUnits="userSpaceOnUse" x1="485.4" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain123)" x1="485.4" y1="673" x2="740.0" y2="673"/>
+<circle class="without" cx="485.4" cy="673" r="6.5"/>
+<circle class="with" cx="740.0" cy="673" r="6.5"/>
+<rect class="pass-bg" x="764" y="662" width="116" height="22" rx="11"/>
+<text class="value" x="776" y="677.5">33% → <tspan class="pass">✓ 100%</tspan></text>
+<text class="label" x="20" y="707.5">AI support bot needs a human to refund</text>
+<linearGradient id="gain130" gradientUnits="userSpaceOnUse" x1="614.6" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain130)" x1="614.6" y1="703" x2="740.0" y2="703"/>
+<circle class="without" cx="614.6" cy="703" r="6.5"/>
+<circle class="with" cx="740.0" cy="703" r="6.5"/>
+<rect class="pass-bg" x="764" y="692" width="116" height="22" rx="11"/>
+<text class="value" x="776" y="707.5">67% → <tspan class="pass">✓ 100%</tspan></text>
+<text class="label" x="20" y="737.5">Uses the API of the installed library version</text>
+<linearGradient id="gain137" gradientUnits="userSpaceOnUse" x1="360.0" x2="485.4" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain137)" x1="360.0" y1="733" x2="485.4" y2="733"/>
+<circle class="without" cx="360.0" cy="733" r="6.5"/>
+<circle class="with" cx="485.4" cy="733" r="6.5"/>
+<text class="value" x="776" y="737.5">0% → <tspan class="strong">33%</tspan></text>
+<text class="tick" x="360.0" y="762" text-anchor="middle">0%</text>
+<text class="tick" x="550.0" y="762" text-anchor="middle">50%</text>
+<text class="tick" x="740.0" y="762" text-anchor="middle">100%</text>
+<rect class="accent" x="20" y="785" width="4" height="17" rx="2"/>
+<text class="panel" x="32" y="798">Claude Opus 5.5 (10 hardest tests)</text>
+<line class="grid" x1="360.0" y1="812" x2="360.0" y2="932"/>
+<line class="grid" x1="550.0" y1="812" x2="550.0" y2="932"/>
+<line class="grid" x1="740.0" y1="812" x2="740.0" y2="932"/>
+<text class="label" x="20" y="831.5">Database rules kept out of the web layer</text>
+<linearGradient id="gain151" gradientUnits="userSpaceOnUse" x1="360.0" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain151)" x1="360.0" y1="827" x2="740.0" y2="827"/>
+<circle class="without" cx="360.0" cy="827" r="6.5"/>
+<circle class="with" cx="740.0" cy="827" r="6.5"/>
+<rect class="pass-bg" x="764" y="816" width="116" height="22" rx="11"/>
+<text class="value" x="776" y="831.5">0% → <tspan class="pass">✓ 100%</tspan></text>
+<text class="label" x="20" y="861.5">Gift card: rules apart, safe under races</text>
+<linearGradient id="gain158" gradientUnits="userSpaceOnUse" x1="360.0" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain158)" x1="360.0" y1="857" x2="740.0" y2="857"/>
+<circle class="without" cx="360.0" cy="857" r="6.5"/>
+<circle class="with" cx="740.0" cy="857" r="6.5"/>
+<rect class="pass-bg" x="764" y="846" width="116" height="22" rx="11"/>
+<text class="value" x="776" y="861.5">0% → <tspan class="pass">✓ 100%</tspan></text>
+<text class="label" x="20" y="891.5">Order code is safe against double submits</text>
+<linearGradient id="gain165" gradientUnits="userSpaceOnUse" x1="485.4" x2="740.0" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain165)" x1="485.4" y1="887" x2="740.0" y2="887"/>
+<circle class="without" cx="485.4" cy="887" r="6.5"/>
+<circle class="with" cx="740.0" cy="887" r="6.5"/>
+<rect class="pass-bg" x="764" y="876" width="116" height="22" rx="11"/>
+<text class="value" x="776" y="891.5">33% → <tspan class="pass">✓ 100%</tspan></text>
+<text class="label" x="20" y="921.5">Coupon: rules apart, used once per customer</text>
+<linearGradient id="gain172" gradientUnits="userSpaceOnUse" x1="360.0" x2="614.6" y1="0" y2="0"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+<line class="gain" stroke="url(#gain172)" x1="360.0" y1="917" x2="614.6" y2="917"/>
+<circle class="without" cx="360.0" cy="917" r="6.5"/>
+<circle class="with" cx="614.6" cy="917" r="6.5"/>
+<text class="value" x="776" y="921.5">0% → <tspan class="strong">67%</tspan></text>
+<text class="tick" x="360.0" y="946" text-anchor="middle">0%</text>
+<text class="tick" x="550.0" y="946" text-anchor="middle">50%</text>
+<text class="tick" x="740.0" y="946" text-anchor="middle">100%</text>
 </svg>
