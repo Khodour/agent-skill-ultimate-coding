@@ -1,6 +1,6 @@
 /**
  * Feature: check-diff's verdict under each edit. After a successful file edit
- * it runs the skill's own check-diff on that file's added lines and keeps the
+ * it runs the skill's own check-diff on that file's changed lines and keeps the
  * result, which is drawn under the edit's row: clean in green, dangers in red.
  * It is for the person only; the command hook in hooks.json still hands the
  * findings to Claude.

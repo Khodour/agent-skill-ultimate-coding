@@ -22,6 +22,7 @@ Read the **whole diff** as a strict reviewer would, in this order (most importan
 - [ ] Does it do what "done" said, including edge cases and errors?
 - [ ] All MUSTs hold? Pay special attention to input reaching SQL/shell/HTML, access checks per record, secrets, transactions, and anything shipped that could break.
 - [ ] Races: what happens with two users, a double click, a retry?
+- [ ] Read the removed lines too: did an access check, a raised error or a validation disappear without coming back somewhere else? Repeated edits drop these quietly.
 
 **3. Complexity**
 - [ ] Could a new developer understand it in one read?

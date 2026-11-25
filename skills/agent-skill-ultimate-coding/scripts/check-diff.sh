@@ -1,22 +1,29 @@
 #!/usr/bin/env bash
 # check-diff: flags known dangers in the lines a change ADDS (string-built SQL,
-# TLS checks turned off, secrets in code, swallowed errors, I/O inside loops, ...).
+# TLS checks turned off, secrets in code, swallowed errors, I/O inside loops, ...),
+# and safety checks a change REMOVES without adding back (access checks, raised
+# errors, error handlers, validation).
 #
 # Why it exists: agents (weak models above all) agree with written rules and then
 # write the usual code anyway. A tool's output is followed far more reliably than
 # prose, so the Verify step runs this and the Claude Code plugin runs it after
 # every file edit (hooks/hooks.json).
 #
-# It only reads added lines, so old code in the project creates no noise. Every
-# finding is a signal, not a verdict: fix it, or mark a false alarm on that same
-# line with a comment containing "check-diff: ok <reason>".
+# It only reads the lines a change touches, so old code in the project creates no
+# noise. Every finding is a signal, not a verdict: fix it, or mark a false alarm on
+# that same line with a comment containing "check-diff: ok <reason>". A removed
+# check has no line left to mark, so one added comment containing
+# "check-diff: ok removed-guard <reason>" anywhere in that file covers the file.
+# Studies of repeated AI edits found later edits quietly delete defensive code;
+# that is why removals are checked too.
 #
 # Usage:
-#   check-diff.sh                 added lines vs HEAD, plus new untracked files
-#   check-diff.sh <base>          lines this branch adds since it left <base>, e.g. main
-#   check-diff.sh --files a b     every line of the given files (no git needed)
+#   check-diff.sh                 changed lines vs HEAD, plus new untracked files
+#   check-diff.sh <base>          lines this branch changes since it left <base>, e.g. main
+#   check-diff.sh --files a b     every line of the given files (no git needed, so
+#                                 removed checks cannot be seen)
 #   check-diff.sh --hook          Claude Code hook: checks the edited file named in
-#                                 the hook JSON on stdin (its uncommitted added lines)
+#                                 the hook JSON on stdin (its uncommitted changes)
 # Exit: 0 = nothing found, 1 = findings, 3 = usage error. In --hook mode it always
 #       exits 0 and hands findings to Claude as JSON "additionalContext".
 #       Needs only bash, git and a POSIX awk.
@@ -37,7 +44,7 @@ FILES=()
 case "${1:-}" in
   --files) MODE="files"; shift; FILES=("$@") ;;
   --hook)  MODE="hook" ;;
-  -h|--help) sed -n '2,21p' "$0"; exit 0 ;;
+  -h|--help) sed -n '2,29p' "$0"; exit 0 ;;
   "") ;;
   -*) echo "check-diff: unknown option $1 (see --help)" >&2; exit 3 ;;
   *)  BASE="$1" ;;
@@ -116,7 +123,7 @@ if [ "$MODE" = "git" ] || { [ "$MODE" = "hook" ] && [ "$HOOK_GIT" = 1 ]; }; then
   fi
 fi
 
-# Prints the added lines of the change as a unified diff with no context.
+# Prints the change's added and removed lines as a unified diff with no context.
 collect() {
   if [ "$MODE" = "files" ] || [ "$INREPO" = 0 ]; then
     existing_files | dot_paths | as_new_files
@@ -145,7 +152,45 @@ function secretish(v) {
 function code_ext(p,    e) {
   e = p; sub(/^.*\./, "", e); return tolower(e)
 }
-BEGIN { n = 0 }
+# True when the line is a whole-line comment in the current file's language.
+function is_comment(l) {
+  return (hash_lang && l ~ /^[ \t]*#/) || (slash_lang && l ~ /^[ \t]*(\/\/|\/\*|\*)/) ||
+         (dash_lang && l ~ /^[ \t]*--/) || (quote_lang && l ~ /^[ \t]*'/)
+}
+# The kind of safety check a line holds ("access check", "raised error",
+# "validation"), or "" for none; the first matching kind wins. Also sets gtok, the
+# check's name (the decorator or function called, or the error raised), so a check
+# that a change folds into a helper or moves elsewhere can be recognised by name.
+# Removed error handlers are not checks: without one, errors get louder, not quieter.
+# Words inside string literals (log messages) and lines with no code punctuation
+# (docstring prose) do not count; neither does a definition such as
+# "def validate_x(...):", since removing the calls is what weakens a check.
+function guard_kind(l,    lc, t, code) {
+  gsub(/"([^"\\]|\\.)*"|'([^'\\]|\\.)*'/, "\"\"", l)
+  if (l ~ /^[ \t]*(export[ \t]+|async[ \t]+|static[ \t]+|public[ \t]+|private[ \t]+|protected[ \t]+)*(def|function|func|fn|fun)[ \t]/ ||
+      (l ~ /^[ \t]*(async[ \t]+|static[ \t]+|public[ \t]+|private[ \t]+|protected[ \t]+)*[A-Za-z_$][A-Za-z0-9_$]*[ \t]*\([^)]*\)[ \t]*\{[ \t]*$/ &&
+       l !~ /^[ \t]*(if|for|while|switch|catch|with|elif|else|return)[ \t(]/))
+    return ""
+  code = (l ~ /[(@=!?{;:[]/)                     # "[" last: "[=" would open an awk class
+  lc = tolower(l)
+  if (code && match(lc, /login_required|permission_required|user_passes_test|preauthorize|@secured|rolesallowed|\[authorize|authoriz[a-z_]*[!(]|authenticat[a-z_]*[!(]|before_action[ \t]+:(authenticate|authorize|require)|require[s_]?_?(auth|login|admin|role|permission|user)[a-z_]*|ha[sv]e?_?perm[a-z_]*|check_?perm[a-z_]*|(^|[^a-z0-9_])can(not)?[?(]|is_?admin|is_?authenticated|verify_?(token|signature|csrf|jwt|hmac|webhook)|csrf_protect|protect_from_forgery|ratelimit|rate_limit|throttl[a-z_]*|limiter\.|(owner|user)[_.]?id[ \t]*(==|!=)|(==|!=)=?[ \t]*[a-z0-9_.]*(owner|user)[_.]?id([^a-z0-9_]|$)/)) {
+    gtok = substr(lc, RSTART, RLENGTH); gsub(/[^a-z0-9_]/, "", gtok); return "access check"
+  }
+  # raise/throw only where a statement can start, so prose in docstrings ("it would
+  # never raise on bad input", ":raises X:") is not taken for code.
+  if (match(l, /(^[ \t]*|[;{}:)][ \t]*|(\|\||&&|\?\?|=>|[^A-Za-z0-9_](or|and|then|else|do))[ \t]+)(raise|throw)([ \t(;]|$)/)) {
+    t = substr(l, RSTART + RLENGTH); sub(/^[ \t(]*(new[ \t]+)?/, "", t)
+    gtok = (match(t, /^[A-Za-z_][A-Za-z0-9_.:]*/) ? substr(t, 1, RLENGTH) : "raise"); return "raised error"
+  }
+  if (match(l, /raise_for_status\(|(^|[^A-Za-z0-9_.])(panic|die)\(|(^|[^A-Za-z0-9_])abort\([ \t]*4|return[ \t]+(nil,[ \t]*)?err([ \t;,)]|$)|return[ \t].*(Errorf|errors\.New|Err)\(|(status|status_code|StatusCode)[ \t]*(\(|=|:)[ \t]*4[0-9][0-9]|Http(Response)?(Forbidden|BadRequest|NotFound|Unauthorized)|PermissionDenied|AccessDenied|(^|[^A-Za-z0-9_])(Forbidden|Unauthorized|BadRequest)\(/)) {
+    gtok = substr(l, RSTART, RLENGTH); gsub(/[^A-Za-z0-9_]/, "", gtok); return "raised error"
+  }
+  if (code && match(l, /(^|[^A-Za-z0-9_.])assert[ \t(]|[A-Za-z_]*[Vv]alidat[A-Za-z_]*\(|is_valid\(|full_clean\(|safeParse\(|[Ss]anitiz[A-Za-z_]*\(/)) {
+    gtok = substr(l, RSTART, RLENGTH); gsub(/[^A-Za-z0-9_]/, "", gtok); return "validation"
+  }
+  return ""
+}
+BEGIN { n = 0; nr = 0 }
 # File headers are read only inside a header block (from "diff --git" to the first
 # "@@"), so a removed "-- x" or an added "++ x" line is never taken for a header.
 /^diff --git / { inhdr = 1; next }
@@ -164,6 +209,11 @@ inhdr && /^\+\+\+ / {
           || file ~ /\.(g|designer|generated)\.cs$|\.pb\.go$|_pb2\.py$|\.pbxproj$/ \
           || file ~ /check-diff/
   ext = code_ext(file); loop = 0; prevnum = -9; prevtxt = ""
+  hash_lang  = (ext ~ /^(py|rb|sh|bash|zsh|pl|r|ex|exs|cr|jl|nim|ps1|psm1|coffee|tf|cmake|yml|yaml|toml|properties|conf|ini)$/)
+  slash_lang = (ext ~ /^(js|jsx|ts|tsx|mjs|cjs|go|java|kt|kts|cs|c|cc|cpp|cxx|h|hpp|hh|m|mm|swift|rs|scala|php|dart|groovy|gradle|fs|fsx|sol|zig)$/)
+  dash_lang  = (ext ~ /^(sql|lua|hs|elm|ada|adb|ads)$/)
+  quote_lang = (ext ~ /^(vb|vbs|bas)$/)
+  markup     = (ext ~ /^(html?|xhtml|jinja2?|j2|njk|hbs|handlebars|mustache|erb|haml|slim|twig|liquid|ejs|jsp|cshtml|razor)$/)
   # With --files and an absolute path, only the file name counts: a project that
   # lives under some folder named "tests" must not lose its checks.
   tpath = file; if (filesmode && tpath ~ /^\//) sub(/^.*\//, "", tpath)
@@ -184,16 +234,14 @@ inhdr { next }                                  # index, mode, rename and binary
   lnum++
   l = substr($0, 2)
   sub(/\r$/, "", l)                             # Windows line endings
+  if (l ~ /check-diff: ok removed-guard/) ackfile[file] = 1
   # Acknowledged false alarms, and minified or bundled lines nobody writes by hand.
   if (l ~ /check-diff: ok/ || length(l) > 400) { prevnum = lnum; prevtxt = l; next }
   lc = tolower(l)
   match(l, /^[ \t]*/); ind = RLENGTH
-  hash_lang  = (ext ~ /^(py|rb|sh|bash|zsh|pl|r|ex|exs|cr|jl|nim|ps1|psm1|coffee|tf|cmake|yml|yaml|toml|properties|conf|ini)$/)
-  slash_lang = (ext ~ /^(js|jsx|ts|tsx|mjs|cjs|go|java|kt|kts|cs|c|cc|cpp|cxx|h|hpp|hh|m|mm|swift|rs|scala|php|dart|groovy|gradle|fs|fsx|sol|zig)$/)
-  dash_lang  = (ext ~ /^(sql|lua|hs|elm|ada|adb|ads)$/)
-  quote_lang = (ext ~ /^(vb|vbs|bas)$/)
-  comment = (hash_lang && l ~ /^[ \t]*#/) || (slash_lang && l ~ /^[ \t]*(\/\/|\/\*|\*)/) ||
-            (dash_lang && l ~ /^[ \t]*--/) || (quote_lang && l ~ /^[ \t]*'/)
+  comment = is_comment(l)
+  # Safety checks this change adds, to balance the ones it removes (see END).
+  if (!comment && !testfile && !markup && (k = guard_kind(l)) != "") { addf[file SUBSEP k]++; addtok[k SUBSEP gtok] = 1 }
 
   # Data never becomes code (MUST 1).
   if (!comment && lc ~ /(select[ \t].*[ \t]from[ \t]|insert[ \t]+into[ \t]|update[ \t].*[ \t]set[ \t]|delete[ \t]+from[ \t])/ &&
@@ -299,8 +347,32 @@ inhdr { next }                                  # index, mode, rename and binary
   prevnum = lnum; prevtxt = l
   next
 }
+# Removed lines: remember each safety check, judged in END once every added line
+# is known. Deleted files are skipped by "skip" (their "+++" is /dev/null): removing
+# a whole dead module is not weakening anything. Test files are left to MUST 10, and
+# templates and markup only show or hide things, which is not the server check MUST 2 means.
+/^-/ {
+  if (skip || testfile || markup) next
+  l = substr($0, 2); sub(/\r$/, "", l)
+  if (length(l) > 400 || is_comment(l)) next
+  if ((k = guard_kind(l)) != "") {
+    nr++; rfile[nr] = file; rline[nr] = lnum + 1; rkind[nr] = k; rtok[nr] = gtok
+    remf[file SUBSEP k]++
+  }
+  next
+}
 END {
   for (i = 1; i <= n; i++) print out[i]
+  # A removed check is fine when its file adds as many checks of that kind as it
+  # removes (moved, reworded, re-indented), or when a check of the same name is added
+  # anywhere in the change (folded into a helper, moved to another file). Kinds alone
+  # are not balanced across files: an unrelated new check elsewhere must not hide a loss.
+  for (i = 1; i <= nr; i++) {
+    f = rfile[i]; k = rkind[i]
+    if (ackfile[f] || remf[f SUBSEP k] <= addf[f SUBSEP k] || ((k SUBSEP rtok[i]) in addtok)) continue
+    if (k == "access check") must = "(MUST 2, 5)"; else if (k == "validation") must = "(MUST 5)"; else must = "(MUST 12)"
+    print f ":" rline[i] "  [removed-guard] " k " removed and not added back -> keep it; if it is truly not needed, say why in a comment containing \"check-diff: ok removed-guard <reason>\" " must
+  }
 }
 AWK
 
@@ -311,7 +383,7 @@ findings=$(collect | awk -v filesmode="$FILESMODE" "$RULES")
 [ -z "$findings" ] && exit 0
 count=$(printf '%s\n' "$findings" | wc -l | tr -d ' ')
 report=$(
-  echo "check-diff: $count possible problem(s) in added lines. Signals, not verdicts: fix each one,"
+  echo "check-diff: $count possible problem(s) in this change. Signals, not verdicts: fix each one,"
   echo "or, if it is a false alarm, add a comment containing \"check-diff: ok <reason>\" on that line."
   printf '%s\n' "$findings"
 )

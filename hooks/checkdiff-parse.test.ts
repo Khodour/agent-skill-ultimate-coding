@@ -14,6 +14,16 @@ test('a finding is read with its line, rule and MUST', async () => {
   })
 })
 
+test('a removed safety check is read like any other finding', async () => {
+  const report = 'check-diff: 1 possible problem(s) in this change. Signals, not verdicts: fix each one,\n' +
+    'or, if it is a false alarm, add a comment containing "check-diff: ok <reason>" on that line.\n' +
+    'api/docs.py:12  [removed-guard] access check removed and not added back -> keep it; if it is truly not needed, say why in a comment containing "check-diff: ok removed-guard <reason>" (MUST 2, 5)'
+  expect(parseCheck(0, hook(report))).toEqual({
+    status: 'found',
+    findings: [{ line: 12, rule: 'removed-guard', message: 'access check removed and not added back' }],
+  })
+})
+
 test('no output is clean; a bad exit or bad output is an error', async () => {
   expect(parseCheck(0, '')).toEqual({ status: 'clean' })
   expect(parseCheck(3, '').status).toBe('error')

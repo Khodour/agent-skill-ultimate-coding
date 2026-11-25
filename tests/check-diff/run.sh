@@ -201,5 +201,57 @@ assert "q\"\\x.py:1  [dynamic-code]" in d["hookSpecificOutput"]["additionalConte
 then pass "hook JSON stays valid for a name with a quote and a backslash"; else bad "hook JSON for a tricky name: $out"; fi
 cd "$here"
 
+# Removed safety checks ([removed-guard]): a committed file loses a check in the working
+# tree. Each case: expected (removed-guard or none), description, path, before, after
+# (printf format strings, so \n and \t work).
+removed_case() {
+  new_repo; mkdir -p "$(dirname "$3")"; printf "$4" > "$3"; git add . && $G commit -q -m a; printf "$5" > "$3"
+  local out; out=$(bash "$tool" 2>&1)
+  if [ "$1" = none ]; then expect_not "removed, quiet: $2" "$out" 'removed-guard'
+  else expect "removed, flagged: $2" "$out" '\[removed-guard\]'; fi
+}
+removed_case removed-guard "Python auth decorator"   v.py   '@login_required\ndef view(r):\n    return ok(r)\n' 'def view(r):\n    return ok(r)\n'
+removed_case removed-guard "Python raise"             f.py   'def f(u):\n    if not u.active:\n        raise PermissionDenied()\n    return u\n' 'def f(u):\n    return u\n'
+removed_case removed-guard "Python rate limit"        r.py   '@limiter.limit("5/minute")\ndef login(r):\n    return go(r)\n' 'def login(r):\n    return go(r)\n'
+removed_case removed-guard "Python form validation"   g.py   'def save(form):\n    form.full_clean()\n    form.save()\n' 'def save(form):\n    form.save()\n'
+removed_case removed-guard "Go return err"            m.go   'x, err := load()\nif err != nil {\n\treturn err\n}\nuse(x)\n' 'x, _ := load()\nuse(x)\n'
+removed_case removed-guard "JS throw"                 a.js   'if (!input.ok) {\n  throw new BadInput(input);\n}\ngo(input);\n' 'go(input);\n'
+removed_case removed-guard "Ruby raise with modifier" s.rb   'def pay(o)\n  raise Unpaid unless o.paid?\n  ship(o)\nend\n' 'def pay(o)\n  ship(o)\nend\n'
+removed_case none "removed try/catch lets errors out" t.js 'try {\n  go();\n} catch (e) {\n  report(e);\n}\n' 'go();\n'
+removed_case none "raise in docstring prose"          d.py   'def f(x):\n    """It would never raise on bad input.\n    :raises ValueError: when x is bad\n    """\n    return x\n' 'def f(x):\n    """Returns x."""\n    return x\n'
+removed_case none "template permission markup"        p.html '{%% if user.can("orders.view") %%}<a href="/o">Orders</a>{%% endif %%}\n<p>x</p>\n' '<p>x</p>\n'
+removed_case none "guard words inside a log string"   lg.py  'log.info("[LIMITS] rate limiting on, login_required for /api")\nx = 1\n' 'x = 1\n'
+removed_case none "guard words in docstring prose"    dp.py  'def f():\n    """Resets the counter, otherwise check_rate_limit\n    would see hits from the last run.\n    """\n' 'def f():\n    """Resets the counter."""\n'
+removed_case none "a method named like a validator"   vm.js  'const o = {\n  sanitizedKey() {\n    return 1;\n  },\n};\n' 'const o = {};\n'
+removed_case removed-guard "bare raise with no punctuation" br.py 'def f(u):\n    if u is None:\n        raise PermissionDenied\n    return u\n' 'def f(u):\n    return u\n'
+removed_case none "five checks folded into one helper" h.py 'a = sanitize_text(d.get("a"))\nb = sanitize_text(d.get("b"))\nc = sanitize_text(d.get("c"))\n' 'def arg(k):\n    return sanitize_text(d.get(k))\na = arg("a")\nb = arg("b")\nc = arg("c")\n'
+removed_case removed-guard "Java @PreAuthorize"       C.java '@PreAuthorize("hasRole(ADMIN)")\npublic void wipe() { db.wipe(); }\n' 'public void wipe() { db.wipe(); }\n'
+removed_case removed-guard "C# [Authorize]"           C.cs   '[Authorize]\npublic class AdminController {}\n' 'public class AdminController {}\n'
+removed_case removed-guard "Ruby before_action"       c.rb   'before_action :authenticate_user!\ndef show; end\n' 'def show; end\n'
+removed_case removed-guard "record owner check"       o.ts   'if (doc.ownerId !== user.id) throw new Forbidden();\nreturn doc;\n' 'return doc;\n'
+removed_case removed-guard "owner check with a quiet return" own.py 'def get(doc, user):\n    if doc.owner_id != user.id:\n        return None\n    return doc\n' 'def get(doc, user):\n    return doc\n'
+removed_case none "reworded error message"            w.py   'raise ValueError("bad")\n' 'raise ValueError("amount must be positive")\n'
+removed_case none "check moved within the file"       mv.py  'def f(u):\n    if not u:\n        raise NotFound()\n    a = 1\n    b = 2\n    return u\n' 'def f(u):\n    a = 1\n    b = 2\n    if not u:\n        raise NotFound()\n    return u\n'
+removed_case none "removed comment line"              cm.py  '# raise if missing\nx = 1\n' 'x = 1\n'
+removed_case none "test file loses an assert"         tests/test_x.py 'def test_a():\n    assert f() == 1\n    assert g() == 2\n' 'def test_a():\n    assert f() == 1\n'
+removed_case none "look-alike names (scan, throwaway)" n.py 'results = scan(d)\nthrowaway = 1\n' 'x = 1\n'
+removed_case none "acknowledged in the file"          k.py   'def f(r):\n    require_login(r)\n    return go(r)\n' 'def f(r):\n    # check-diff: ok removed-guard login now enforced by the router middleware\n    return go(r)\n'
+
+new_repo; printf 'def f(u):\n    if not u:\n        raise NotFound()\n    return u\n' > a.py && git add . && $G commit -q -m a
+printf 'def f(u):\n    check(u)\n    return u\n' > a.py; printf 'def check(u):\n    if not u:\n        raise NotFound()\n' > helpers.py
+expect_not "removed, quiet: check moved into a new helper file" "$(bash "$tool" 2>&1)" 'removed-guard'
+
+new_repo; printf '@login_required\ndef view(r):\n    return ok(r)\n' > dead.py && printf 'x = 1\n' > keep.py && git add . && $G commit -q -m a && rm dead.py
+expect_not "removed, quiet: a whole deleted file" "$(bash "$tool" 2>&1)" 'removed-guard'
+
+new_repo; printf 'def f(u):\n    if not u:\n        raise NotFound()\n    return u\n' > a.py && printf 'x = 1\n' > b.py && git add . && $G commit -q -m a
+printf 'def f(u):\n    return u\n' > a.py; printf 'x = 1\nraise Unrelated()\n' > b.py
+expect "removed, flagged: an unrelated new check in another file does not hide the loss" "$(bash "$tool" 2>&1)" 'a.py:[0-9]*  \[removed-guard\]'
+
+new_repo; printf 'def f(u):\n    if not u:\n        raise NotFound()\n    return u\n' > a.py && git add . && $G commit -q -m a && printf 'def f(u):\n    return u\n' > a.py
+out=$(printf '{"tool_input":{"file_path":"%s"}}' "$tmp/r/a.py" | CLAUDE_PROJECT_DIR="$tmp/r" bash "$tool" --hook 2>&1)
+expect "removed, flagged: hook mode inside the project" "$out" '\[removed-guard\] raised error removed'
+cd "$here"
+
 [ $fail -eq 0 ] && echo "ALL PASS" || echo "SOME FAILED"
 exit $fail
