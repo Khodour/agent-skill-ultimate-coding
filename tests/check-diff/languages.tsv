@@ -128,7 +128,7 @@ none	d.go	out, _ := exec.Command("git", "status").Output()
 none	d.rb	system("git", "status")
 none	d.php	$out = self::run(['sh', '-c', 'echo 1000 > /proc/self/oom_score_adj'], 10);
 none	d.php	$p = proc_open([PHP_BINARY, __FILE__, "--db=$name," . $path], $spec, $pipes);
-secret	Sources/Api.swift	static let API_KEY: String = "2e8173243c94dd28abb81d276494505e"
+secret	Sources/Api.swift	static let API_KEY: String = "f00dfacecafe0123beef4567deadc0de"
 none	Tests/AuthTests/Helpers.swift	static func basicAuth(user: String = "user", password: String = "password1") -> Endpoint {
 none	CheckoutTests.swift	let token = "abcd1234efgh5678"
 none	d.js	const m = re.exec(text)
