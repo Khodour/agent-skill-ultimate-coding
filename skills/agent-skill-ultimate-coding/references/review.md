@@ -5,7 +5,7 @@ The last two moments: check the work, then report it honestly. Read this at the 
 **Contents**
 - Self-review checklist
 - Independent review (complex tasks)
-- Report template and example
+- Report example
 
 ---
 
@@ -71,44 +71,39 @@ scenario that triggers it. Say "no problems found" if there are none.
 
 ---
 
-## Report template
+## Report example
 
-Every normal or complex task ends with this. Trivial tasks skip it: the change plus at most one short sentence.
+The format and its rules are in SKILL.md (Report). A normal task, written out in full:
 
-```text
-What changed          files and behaviour, in plain words
-Tested                ✅/❌ per check, with real output
-Numbers               requests/queries before → after, timings (when relevant)
-Not verified          what could not be run + steps for the user to check it
-Noticed, not touched  problems outside the task's area
-⚠️ Warnings           weakened checks, overridden MUSTs, risks left open
+````markdown
+---
+### 1. What was done
+```diff
++ Invoices can take a discount code
+```
+- `discounts/`: new model, API and tests
+- `invoices/total.py`: `calculate()` applies the discount
+- Checks: ✅ build · ✅ 14 unit tests · ✅ browser test on staging (apply, remove, expired code, code above total)
+- A code above the total gave −50: added a test, fixed, retested
+- Invoice page: 4 queries, unchanged
+
+**Confidence: Medium 🟡** PDF export with a discount was not tried
+
+---
+### 2. Needs attention
+**This task**
+```diff
+- PDF export with a discount not verified (no PDF tool locally): open a discounted invoice → Export PDF → the discount line should appear
+```
+- Not committed: 6 files on branch `feature/discount-codes`
+
+**Found elsewhere, not touched**
+```diff
+- `invoices/list.py`: search is built by string concatenation (SQL injection)
 ```
 
-Leave out sections that are empty, except **Not verified** and **⚠️ Warnings**: write "none" so the reader knows you checked. Keep a normal task's report to about 10 lines, one line per item: no restating the task, no generic advice, no risks unrelated to this change. Complex tasks may run longer, never padded.
-
-### Example
-
-```text
-What changed
-  Invoices can now take a discount code. New: discounts/ (model, api,
-  tests). Changed: invoices/total.calculate() applies the discount.
-
-Tested
-  ✅ 14 unit tests (discount math, expiry, rounding): all pass
-  ✅ Browser test on staging: apply, remove, expired code, code above total
-  ❌→✅ Code above total gave −50; added test, fixed, retested
-
-Numbers
-  Invoice page: 4 queries → 4 (unchanged)
-
-Not verified
-  PDF export with a discount: no PDF tool locally. To check: open any
-  discounted invoice → Export PDF → the discount line should appear.
-
-Noticed, not touched
-  invoices/list builds its search with string concatenation (SQL
-  injection risk). Suggest fixing it in a separate task.
-
-⚠️ Warnings
-  none
-```
+---
+### 3. Waiting for you
+1. Fix the injection in `invoices/list.py` as a separate task now? Recommended: yes, it is reachable by any signed-in user.
+---
+````

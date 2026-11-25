@@ -20,7 +20,7 @@ Before changing an area, learn how it works: who calls it, its tests, the patter
 **Libraries: trust the installed version, not memory.** APIs change between versions, and a remembered signature is often from an older one. Before using a library call you have not seen in this project, check it in this order:
 
 1. **The version in use:** the lock or manifest file (`package-lock.json`, `poetry.lock`, `go.sum`, `Cargo.lock`, `composer.lock`, `Gemfile.lock`, …).
-2. **The installed package itself:** its type definitions, docstrings or source where the ecosystem keeps installed packages (`node_modules/<pkg>`, the Python environment's `site-packages/<pkg>`, `vendor/`, the module cache).
+2. **The installed package itself:** its type definitions, docstrings or source where the ecosystem keeps installed packages (`node_modules/<pkg>`, the Python environment's `site-packages/<pkg>`, `vendor/`, the module cache). These folders are usually git-ignored, so file search and glob tools skip them: open or list the path directly (for example `.venv/lib/python3.12/site-packages/<pkg>/__init__.py`) instead of concluding the package is missing.
 3. **The official docs for that exact version**, when a docs tool or the web is available.
 4. **Still unsure:** a tiny script or test that calls the API and runs.
 
@@ -66,13 +66,13 @@ With enough users, someone depends on every behaviour. Public APIs, old app vers
 - **Never delete, drop, empty or overwrite stored data without the user's explicit OK** (MUST 7), even to "fix" a failing migration.
 
 ### 6. Clean the area you touch, report the rest
-Inside the files you are changing: remove dead code, unused imports and small rot. Outside them, don't touch anything; list what you noticed under "Noticed, not touched" in the report.
+Inside the files you are changing: remove dead code, unused imports and small rot. Outside them, don't touch anything; list what you noticed under "Found elsewhere, not touched" in the report.
 
-**A real problem inside the code you are changing is fixed, not extended.** If the function you are editing has an N+1 query, an injection, a race or a money bug, fix it in this change (keeping its behaviour) and say so in the report. "Noticed, not touched" is for code you are *not* changing.
+**A real problem inside the code you are changing is fixed, not extended.** If the function you are editing has an N+1 query, an injection, a race or a money bug, fix it in this change (keeping its behaviour) and say so in the report. "Found elsewhere, not touched" is for code you are *not* changing.
 
 ```text
 task: "show each author's avatar in list_posts()", which loads every author separately
-❌ add avatar to the per-post author lookup, list the N+1 under "Noticed, not touched"
+❌ add avatar to the per-post author lookup, list the N+1 under "Found elsewhere, not touched"
 ✅ one batched lookup for all authors (same results), avatar added, the fix named in the report
 ```
 
