@@ -136,8 +136,14 @@ read -r -d '' RULES <<'AWK'
 function flag(id, msg) {
   out[++n] = file ":" lnum "  [" id "] " msg
 }
+# A config value that looks like a real secret: 8+ characters with no spaces, mixing
+# letters and digits (so "true", "3600000" and "Enter your password" are not flagged).
+function secretish(v) {
+  sub(/[ \t]*(#.*)?$/, "", v); gsub(/^["']|["']$/, "", v)
+  return length(v) >= 8 && v !~ /[ \t]/ && v ~ /[A-Za-z]/ && v ~ /[0-9]/
+}
 function code_ext(p,    e) {
-  e = p; sub(/^.*\./, "", e); return e
+  e = p; sub(/^.*\./, "", e); return tolower(e)
 }
 BEGIN { n = 0 }
 # File headers are read only inside a header block (from "diff --git" to the first
@@ -152,15 +158,17 @@ inhdr && /^\+\+\+ / {
   sub(/^b\//, "", file)
   skip = (file == "/dev/null")
   if (!filesmode)
-    skip = skip || file ~ /(^|\/)(node_modules|bower_components|vendor|dist|build|coverage|site-packages|\.?venv|\.next|\.git)\// \
+    skip = skip || file ~ /(^|\/)(node_modules|bower_components|vendor|dist|build|coverage|site-packages|\.?venv|\.next|\.git|Pods|Carthage|DerivedData|\.build|obj|target|\.gradle|\.dart_tool|_build|deps)\// \
           || file ~ /\.(lock|min\.js|map|svg|png|jpe?g|gif|pdf|ico|woff2?|md|mdx|txt|rst|adoc|csv|tsv)$/ \
-          || file ~ /(package-lock|yarn\.lock|pnpm-lock)/ \
+          || file ~ /(package-lock|yarn\.lock|pnpm-lock|packages\.lock\.json|Package\.resolved|go\.sum|gradle\.lockfile)/ \
+          || file ~ /\.(g|designer|generated)\.cs$|\.pb\.go$|_pb2\.py$|\.pbxproj$/ \
           || file ~ /check-diff/
   ext = code_ext(file); loop = 0; prevnum = -9; prevtxt = ""
   # With --files and an absolute path, only the file name counts: a project that
   # lives under some folder named "tests" must not lose its checks.
   tpath = file; if (filesmode && tpath ~ /^\//) sub(/^.*\//, "", tpath)
-  testfile = (tpath ~ /(^|\/)(tests?|spec|__tests__|fixtures?)\/|[._-](test|spec)\.[A-Za-z]+$|(^|\/)test_[^\/]*\.py$|(^|\/)tests\.py$/)
+  testfile = (tolower(tpath) ~ /(^|\/)(tests?|spec|__tests__|fixtures?)\/|[._-](test|spec)\.[a-z]+$|(^|\/)test_[^\/]*\.py$|(^|\/)tests\.py$/ ||
+              tpath ~ /[a-z0-9]Tests?\.[A-Za-z]+$/)
   next
 }
 /^@@ / {
@@ -180,66 +188,94 @@ inhdr { next }                                  # index, mode, rename and binary
   if (l ~ /check-diff: ok/ || length(l) > 400) { prevnum = lnum; prevtxt = l; next }
   lc = tolower(l)
   match(l, /^[ \t]*/); ind = RLENGTH
-  hash_lang  = (ext ~ /^(py|rb|sh|bash|zsh|pl|r)$/)
-  slash_lang = (ext ~ /^(js|jsx|ts|tsx|mjs|cjs|go|java|kt|kts|cs|c|cc|cpp|h|hpp|swift|rs|scala|php|dart)$/)
-  comment = (hash_lang && l ~ /^[ \t]*#/) || (slash_lang && l ~ /^[ \t]*(\/\/|\/\*|\*)/)
+  hash_lang  = (ext ~ /^(py|rb|sh|bash|zsh|pl|r|ex|exs|cr|jl|nim|ps1|psm1|coffee|tf|cmake|yml|yaml|toml|properties|conf|ini)$/)
+  slash_lang = (ext ~ /^(js|jsx|ts|tsx|mjs|cjs|go|java|kt|kts|cs|c|cc|cpp|cxx|h|hpp|hh|m|mm|swift|rs|scala|php|dart|groovy|gradle|fs|fsx|sol|zig)$/)
+  dash_lang  = (ext ~ /^(sql|lua|hs|elm|ada|adb|ads)$/)
+  quote_lang = (ext ~ /^(vb|vbs|bas)$/)
+  comment = (hash_lang && l ~ /^[ \t]*#/) || (slash_lang && l ~ /^[ \t]*(\/\/|\/\*|\*)/) ||
+            (dash_lang && l ~ /^[ \t]*--/) || (quote_lang && l ~ /^[ \t]*'/)
 
   # Data never becomes code (MUST 1).
   if (!comment && lc ~ /(select[ \t].*[ \t]from[ \t]|insert[ \t]+into[ \t]|update[ \t].*[ \t]set[ \t]|delete[ \t]+from[ \t])/ &&
-      lc ~ /["'`][ \t]*\+|\+[ \t]*["'`]|\$\{|#\{|\.format\(|["'][ \t]*%[ \t]*[(A-Za-z_]|(^|[^A-Za-z0-9_])f["']|sprintf\(|(=|<|>|[ \t]in|[ \t]like|values)[ \t]*\(?[ \t]*'?\$[A-Za-z_]|["'][ \t]*\.[ \t]*[$A-Za-z_]/)
+      lc ~ /["'`][ \t]*(\+|\.\.|\|\||&[ \t]*[a-z_])|\+[ \t]*["'`]|\$\{|#\{|\$@?"|@\$"|\\\(|withformat:|format!\(|::format\(|\.formatted\(|\.format\(|["'][ \t]*%[ \t]*[(A-Za-z_]|(^|[^A-Za-z0-9_])f["']|sprintf\(|(=|<|>|[ \t]in|[ \t]like|values)[ \t]*\(?[ \t]*'?\$[A-Za-z_]|["'][ \t]*\.[ \t]*[$A-Za-z_]/)
     flag("sql-string", "SQL built from strings -> pass values as query parameters (MUST 1)")
-  if (!comment && l ~ /(^|[^.>A-Za-z0-9_])(eval|exec|shell_exec|passthru)\(|new[ \t]+Function\(|shell[ \t]*=[ \t]*True|os\.system\(|Runtime\.getRuntime\(\)\.exec\(/)
+  if (!comment && (l ~ /(^|[^.>A-Za-z0-9_])(eval|exec|shell_exec|passthru)\(|new[ \t]+Function\(|shell[ \t]*=[ \t]*True|os\.(system|popen|execute)\(|Runtime\.getRuntime\(\)\.exec\(|loadstring\(|Code\.eval_(string|quoted)\(/ ||
+      l ~ /["'](sh|bash|zsh|cmd|cmd\.exe|powershell|pwsh)["'][ \t]*[,)][^;]*(["'](-c|\/c)["'][ \t]*[,)][ \t]*(\.arg\([ \t]*)?[A-Za-z_$]|["'](-c|\/c)[ \t][^"']*["'][ \t]*\+)/ ||
+      l ~ /(^|[^.>A-Za-z0-9_:])(system|popen|execSync)\([ \t]*([A-Za-z_$][A-Za-z0-9_]*[ \t]*\)|[^)]*(#\{|\$\{|["'`][ \t]*(\+|\.|&)))/ ||
+      lc ~ /(^|[ \t;|(])(invoke-expression|iex)[ \t]/))
     flag("dynamic-code", "code or a shell string built at runtime -> use an argument list or a safe API (MUST 1)")
-  if (l ~ /innerHTML[ \t]*\+?=|outerHTML[ \t]*=|dangerouslySetInnerHTML|document\.write\(|mark_safe\(|\|[ \t]*safe[ \t]*\}|v-html=|\.html_safe/ || (file ~ /\.blade\.php$/ && l ~ /\{!!/))
+  if (l ~ /innerHTML[ \t]*\+?=|outerHTML[ \t]*=|dangerouslySetInnerHTML|document\.write\(|mark_safe\(|\|[ \t]*safe[ \t]*\}|v-html=|\.html_safe/ || (file ~ /\.blade\.php$/ && l ~ /\{!!/) ||
+      l ~ /Html\.Raw\(|\[innerHTML\][ \t]*=|bypassSecurityTrust(Html|Script|Url|ResourceUrl)\(|\{@html[ \t]|template\.(HTML|JS)\(|\|[ \t]*raw[ \t]*(\}|\|)|<%==|\{\{\{|th:utext=|loadHTMLString|echo[ \t]+\$_(GET|POST|REQUEST|COOKIE)/ ||
+      l ~ /\.loadData(WithBaseURL)?\([^)]*text\/html/)
     flag("raw-html", "raw HTML from data -> escape it or use text APIs (MUST 1)")
 
   # Never weaken a safety check (MUST 5) or open access (MUST 2).
   if (l ~ /verify[ \t]*=[ \t]*False|rejectUnauthorized["']?[ \t]*:[ \t]*false|InsecureSkipVerify[ \t]*:[ \t]*true|NODE_TLS_REJECT_UNAUTHORIZED|SSL_VERIFYPEER[^;]*(0|false|FALSE)|_create_unverified_context|CERT_NONE|TrustAll|trustAll/ ||
-      l ~ /curl[^|;]*[ \t](-k|--insecure)([ \t]|$)/)
+      l ~ /curl[^|;]*[ \t](-k|--insecure)([ \t]|$)/ ||
+      l ~ /(Server|Remote)Certificate(Custom)?ValidationCallback.*(=>|\{)[ \t]*\$?true|DangerousAcceptAnyServerCertificateValidator|[Hh]ostname[Vv]erifier[^;]*->[ \t]*true|NoopHostnameVerifier|ALLOW_ALL_HOSTNAME_VERIFIER|VERIFY_NONE|verify:[ \t]*:verify_none/ ||
+      l ~ /["']verify_peer(_name)?["'][ \t]*=>[ \t]*false|danger_accept_invalid_(certs|hostnames)\([ \t]*true|badCertificateCallback[^;]*=>[ \t]*true|usesCleartextTraffic="true"|cleartextTrafficPermitted="true"/ ||
+      (l ~ /NSAllowsArbitraryLoads/ && l !~ /<false\/>/))
     flag("tls-off", "TLS verification turned off -> fix the certificate or CA bundle instead (MUST 5)")
   if (l ~ /chmod[ \t]+(-R[ \t]+)?0?777|0o777|0777/)
     flag("open-perms", "world-writable permissions -> grant the least access that works (MUST 5)")
-  if (l ~ /csrf_exempt|csrf\.exempt|csrf\(\)\.disable|csrf[ \t]*:[ \t]*false|Access-Control-Allow-Origin["']?[ \t]*[,:][ \t]*["']\*|origin[ \t]*:[ \t]*["']\*["']|AllowAny|permitAll\(\)/)
+  if (l ~ /csrf_exempt|csrf\.exempt|csrf\(\)\.disable|csrf[ \t]*:[ \t]*false|Access-Control-Allow-Origin["']?[ \t]*[,:][ \t]*["']\*|origin[ \t]*:[ \t]*["']\*["']|AllowAnyOrigin|AllowAny([^A-Za-z]|$)|SetIsOriginAllowed\([^)]*=>[ \t]*true|permitAll\(\)/)
     flag("safety-off", "CSRF, CORS or access check opened -> keep it on and allow only what is needed (MUST 2, 5)")
 
   # Secrets stay outside code (MUST 4).
-  if ((lc ~ /(api[_-]?key|secret|passw(or)?d|token|private[_-]?key|access[_-]?key)["']?[ \t]*(:|=|:=|=>)[ \t]*["'][^"' \t][^"' \t][^"' \t][^"' \t][^"' \t][^"' \t][^"' \t][^"' \t]/ &&
+  if ((lc ~ /(api[_-]?key|secret|passw(or)?d|token|private[_-]?key|access[_-]?key)["']?[ \t]*(:[ \t]*[a-z_&'][a-z0-9_<>?&' ]*)?(:|=|:=|=>)[ \t]*@?["'][^"' \t][^"' \t][^"' \t][^"' \t][^"' \t][^"' \t][^"' \t][^"' \t]/ &&
        !testfile && lc !~ /env|getenv|environ|example|changeme|xxxx|placeholder|dummy|your[_-]|<|\$\{|\{\{/) ||
       l ~ /AKIA[0-9A-Z][0-9A-Z][0-9A-Z][0-9A-Z][0-9A-Z][0-9A-Z][0-9A-Z][0-9A-Z][0-9A-Z][0-9A-Z][0-9A-Z][0-9A-Z]|-----BEGIN [A-Z ]*PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9]|xox[abposr]-[A-Za-z0-9]|(^|[^A-Za-z0-9_-])sk-[A-Za-z0-9_-][A-Za-z0-9_-][A-Za-z0-9_-][A-Za-z0-9_-][A-Za-z0-9_-][A-Za-z0-9_-][A-Za-z0-9_-][A-Za-z0-9_-][A-Za-z0-9_-][A-Za-z0-9_-][A-Za-z0-9_-][A-Za-z0-9_-][A-Za-z0-9_-][A-Za-z0-9_-][A-Za-z0-9_-][A-Za-z0-9_-]/)
     flag("secret", "secret written in code -> read it from the environment or a secret store; rotate it if it was ever committed (MUST 4)")
+  else if (!testfile && lc !~ /env|example|changeme|xxxx|placeholder|dummy|your[_-]|\$\{|\$\(|\{\{/ &&
+           ((ext ~ /^(yml|yaml|properties|env|ini|conf|toml)$/ &&
+             match(lc, /^[ \t]*[a-z0-9_.-]*(api[_-]?key|secret|passw(or)?d|token|private[_-]?key|access[_-]?key)[a-z0-9_.-]*[ \t]*[:=][ \t]*/) &&
+             secretish(substr(l, RSTART + RLENGTH))) ||
+            (match(lc, /<string>[^<]*<\/string>/) && secretish(substr(l, RSTART + 8, RLENGTH - 17)) &&
+             (lc ~ /<key>[^<]*(api[_-]?key|secret|passw|token|private[_-]?key|access[_-]?key)[^<]*<\/key>/ ||
+              (lnum == prevnum + 1 && tolower(prevtxt) ~ /<key>[^<]*(api[_-]?key|secret|passw|token|private[_-]?key|access[_-]?key)[^<]*<\/key>/)))))
+    flag("secret", "secret written in config -> read it from the environment or a secret store; rotate it if it was ever committed (MUST 4)")
 
   # Never hand-roll auth or crypto (MUST 3).
   if (!comment && !testfile && lc ~ /passw|token|secret|otp|salt|nonce|reset|session/ &&
-      (lc ~ /md5|sha1([^0-9]|$)/ || l ~ /Math\.random\(|random\.(random|randint|choice|choices)\(|(^|[^A-Za-z_])rand\(\)|mt_rand\(|new Random\(/))
+      (lc ~ /md5|sha1([^0-9]|$)/ || l ~ /Math\.random\(|random\.(random|randint|choice|choices)\(|(^|[^A-Za-z_])rand\(\)|mt_rand\(|new Random\(|uniqid\(|ThreadLocalRandom|Random\.next(Int|Long|Double|Bytes)\(|(^|[^A-Za-z_.])Random\(\)\.next|rand\.(Intn|Int63n?|Int31n?|Float64|Uint32|Uint64|Perm)\(|(^|[^A-Za-z_.:])rand\([0-9]/))
     flag("weak-secret", "weak hash or predictable random for a secret -> use the platform's password hasher or secure random (MUST 3)")
 
   # Fix the cause, never swallow it (MUST 12). One-line forms here, two-line forms below.
-  if (l ~ /^[ \t]*except([ \t(][^:]*)?:[ \t]*(pass|\.\.\.)[ \t]*(#.*)?$|catch[ \t]*(\([^)]*\))?[ \t]*\{[ \t]*\}|\.catch\([ \t]*(\([^)]*\)|[A-Za-z_]*)[ \t]*=>[ \t]*(\{[ \t]*\}|null|undefined)[ \t]*\)|(^|[^A-Za-z0-9_])rescue[^;]*;[ \t]*end|(^|[^A-Za-z_])_[ \t]*=[ \t]*err([^A-Za-z]|$)/)
+  if (l ~ /rescue[ \t]+nil([^A-Za-z_]|$)|rescue[ \t]+_[ \t]*->[ \t]*(nil|:ok)|^[ \t]*pcall\(/ ||
+      lc ~ /on[ \t]+error[ \t]+resume[ \t]+next/ || (ext == "rs" && l ~ /\.ok\(\)[ \t]*;[ \t]*$/) ||
+      l ~ /^[ \t]*except([ \t(][^:]*)?:[ \t]*(pass|\.\.\.)[ \t]*(#.*)?$|catch[ \t]*(\([^)]*\))?[ \t]*\{[ \t]*\}|\.catch\([ \t]*(\([^)]*\)|[A-Za-z_]*)[ \t]*=>[ \t]*(\{[ \t]*\}|null|undefined)[ \t]*\)|(^|[^A-Za-z0-9_])rescue[^;]*;[ \t]*end|(^|[^A-Za-z_])_[ \t]*=[ \t]*err([^A-Za-z]|$)/)
     flag("swallowed-error", "error swallowed -> handle it, or log it and re-raise (MUST 12)")
   else if (lnum == prevnum + 1 && prevtxt ~ /^[ \t]*except([ \t(][^:]*)?:[ \t]*$|catch[ \t]*(\([^)]*\))?[ \t]*\{[ \t]*$|^[ \t]*rescue([ \t].*)?$/ && l ~ /^[ \t]*(pass|\.\.\.|\}|end)[ \t]*$/) {
     lnum--; flag("swallowed-error", "error swallowed -> handle it, or log it and re-raise (MUST 12)"); lnum++
   }
 
   # Never weaken a test (MUST 10).
-  if (l ~ /(^|[^A-Za-z0-9_])(it|describe|test|context)\.(only|skip)\(|(^|[^A-Za-z0-9_.])(fit|fdescribe|xit|xdescribe|xtest)\(|@pytest\.mark\.(skip|xfail)([^a-z]|$)|@unittest\.skip|@Disabled|@Ignore|t\.Skip\(/)
+  if (l ~ /\[(Fact|Theory)\([^]]*Skip[ \t]*=|\[Ignore[](]|XCTSkip|@Test\([^)]*\.disabled|#\[ignore([^A-Za-z]|$)|markTest(Skipped|Incomplete)\(|@tag[ \t]+:skip|(^|[^A-Za-z0-9_.])x(it|describe|context|specify)[ \t]+["']/ ||
+      (testfile && l ~ /^[ \t]*(skip|pending)([ \t]+["']|\(|[ \t]*$)|skip:[ \t]*(true|["'])/) ||
+      l ~ /(^|[^A-Za-z0-9_])(it|describe|test|context)\.(only|skip)\(|(^|[^A-Za-z0-9_.])(fit|fdescribe|xit|xdescribe|xtest)\(|@pytest\.mark\.(skip|xfail)([^a-z]|$)|@unittest\.skip|@Disabled|@Ignore|t\.Skip\(/)
     flag("skipped-test", "test skipped or focused -> run every test; fix the test or the code (MUST 10)")
 
   # Exact money (references/correctness.md).
-  if (!comment && lc ~ /price|amount|total|cost|balance|money|fee|tax|salary|payment|refund/ &&
-      l ~ /parseFloat\(|(^|[^A-Za-z_])float\(|Float\(|toFixed\(|(^|[^A-Za-z_])(double|Double|float|Float|f32|f64|float64)([^A-Za-z_0-9]|$)/)
+  lm = lc
+  gsub(/(price|amount|total|cost|balance|money|fee|tax|salary|payment|refund)_?(width|height|size|length|offset|padding|margin|radius|duration|count|time|seconds|distance|scale|angle|opacity|alpha|frames|pixels|items|rows|pages|steps|weight|lines|scrolled)/, "", lm)
+  if (!comment && lm ~ /price|amount|total|cost|balance|money|fee|tax|salary|payment|refund/ &&
+      l ~ /parseFloat\(|(^|[^A-Za-z_])[fF]loat\(|toFixed\(|(^|[^A-Za-z_])(double|Double|float|Float|f32|f64|float64)([^A-Za-z_0-9]|$)/)
     flag("float-money", "money in binary floating point -> integer cents or a decimal type (correctness.md)")
 
   # Clean code (structure.md): no leftovers.
-  if (l ~ /(^|[^A-Za-z_])debugger[ \t]*;?[ \t]*$|breakpoint\(\)|pdb\.set_trace|binding\.pry|var_dump\(/)
+  if (l ~ /(^|[^A-Za-z_])debugger[ \t]*;?[ \t]*$|breakpoint\(\)|pdb\.set_trace|binding\.(pry|irb)|var_dump\(|Debugger\.(Break|Launch)\(|dbg!\(|(^|[^A-Za-z_.])byebug([^A-Za-z_]|$)|(^|[^A-Za-z0-9_>:$.])dd\(|IEx\.pry|(^|[^A-Za-z_.])debugger\(\)/)
     flag("debug-leftover", "debugger or dump left in -> remove it")
   if (l ~ /(TODO|FIXME|HACK)([^A-Za-z]|$)/)
     flag("todo", "TODO added -> fix it now, or list it in the report (no silent TODOs)")
   # Commented-out code: the comment's text has the shape of a statement, not prose.
-  c = l; sub(/^[ \t]*(\/\/|#)[ \t]*/, "", c)
-  if (comment && (c ~ /^(const|let|var)[ \t]+[A-Za-z_$][A-Za-z0-9_$]*[ \t]*=/ ||
+  c = l; sub(/^[ \t]*(\/\/|#|--|')[ \t]*/, "", c)
+  if (comment && (c ~ /^(const|let|var|val|local|Dim|dim)[ \t]+(mut[ \t]+)?[A-Za-z_$][A-Za-z0-9_$]*[ \t]*(:[^=]*)?=/ ||
+                  c ~ /^[A-Za-z_][A-Za-z0-9_, ]*[ \t]*:=[ \t]*[^ \t]/ ||
+                  c ~ /^\[[A-Za-z_][A-Za-z0-9_.]*[ \t]+[A-Za-z_][^]]*\];[ \t]*$/ ||
+                  c ~ /^[A-Za-z_][A-Za-z0-9_<>,.]*[*]?[ \t]+[*]?[A-Za-z_][A-Za-z0-9_]*[ \t]*=[ \t]*[^= \t].*;[ \t]*$/ ||
                   c ~ /^[A-Za-z_$][A-Za-z0-9_$.]*\(.*\);[ \t]*$/ ||
                   c ~ /^(if|for|while)[ \t]*\(.*\)[ \t]*\{[ \t]*$/ ||
-                  c ~ /^(def|function)[ \t]+[A-Za-z_$][A-Za-z0-9_$]*[ \t]*\(/ ||
+                  c ~ /^(def|function|func|fn|fun)[ \t]+[A-Za-z_$][A-Za-z0-9_$]*[ \t]*\(/ ||
                   c ~ /^import[ \t].*[ \t]from[ \t]+["']|^from[ \t]+[A-Za-z_.]+[ \t]+import[ \t]+[A-Za-z_*]/ ||
                   c ~ /^\$?[A-Za-z_][A-Za-z0-9_.]*(\[[^]]*\])?[ \t]*=[ \t]*[^= \t].*[;)][ \t]*$/ ||
                   c ~ /^return[ \t]+[^ \t].*;[ \t]*$/))
@@ -252,7 +288,7 @@ inhdr { next }                                  # index, mode, rename and binary
   else if (loop && lnum == prevnum + 1 && l !~ /^[ \t]*$/ && ind <= loopind)
     loop = 0
   else if (loop && !loopflagged && !testfile && ind > loopind &&
-           l ~ /await[ \t]|\.query\(|\.execute\(|\.objects\.|\.find(One|By[A-Za-z]*|_by|All)\(|\.(save|first|get_or_create)\(|fetch\(|axios\.|requests\.(get|post|put|patch|delete)\(|http\.(Get|Post|Do)\(|DB::/) {
+           l ~ /await[ \t]|\.await([^A-Za-z_]|$)|\.(Query|QueryRow|QueryContext|QueryRowContext|Exec|ExecContext)\(|(^|[^A-Za-z0-9_])[A-Z][A-Za-z0-9]*(\.|::)(find|find_by|where|first|query)\(|\.query\(|\.execute\(|\.objects\.|\.find(One|By[A-Za-z]*|_by|All)\(|\.(save|first|get_or_create)\(|fetch\(|axios\.|requests\.(get|post|put|patch|delete)\(|http\.(Get|Post|Do)\(|DB::/) {
     flag("io-in-loop", "query or network call inside a loop (N+1) -> fetch everything in one query or call before the loop (performance.md)")
     loopflagged = 1
   }
