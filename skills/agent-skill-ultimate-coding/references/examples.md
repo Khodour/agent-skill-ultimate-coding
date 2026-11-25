@@ -44,18 +44,26 @@ def search(db, text):
     return active_products(db).filter(name__icontains=text).order_by("-created_at")
 ```
 
-**Step 3: prove it.** The new test passes; the full suite passes (`212 passed`).
+**Step 3: prove it.** The new test passes; the full suite passes (`212 passed`); on the local site, searching for a deleted product returns nothing.
 
 **Report:**
 
-```text
-What changed   search() now starts from active_products(), so deleted products
-               are excluded (catalog/search.py). New test reproduces the bug.
-Tested         ✅ new test: failed before the fix, passes after
-               ✅ full suite: 212 passed
-Not verified   none
-⚠️ Warnings    none
+````markdown
+---
+### 1. What was done
+```diff
++ Deleted products no longer appear in search
 ```
+- `catalog/search.py`: `search()` starts from `active_products()`
+- Checks: ✅ new test (failed before the fix, passes after) · ✅ full suite 212 passed · ✅ searched on the local site
+
+**Confidence: High 🟢** every check ran, and the real search was tried
+
+---
+### 2. Needs attention
+Nothing needs attention.
+---
+````
 
 Short, because the task was small. No restating the request, no generic advice.
 
@@ -134,17 +142,28 @@ The handler checks that `from` is the signed-in member before calling `Transfer`
 
 **Report:**
 
-```text
-What changed   New loyalty.Transfer + POST /loyalty/transfers. One transaction:
-               idempotent insert, rows locked in id order, conditional debit, credit.
-Tested         ✅ 7 unit tests (limits, same account, not enough points, unknown receiver)
-               ✅ same requestID sent 3 times → 1 transfer row, balances moved once
-               ✅ 20 parallel transfers of 10 from a 100-point account → 10 succeed,
-                  10 get ErrNotEnoughPoints, final balance 0
-               ✅ independent review: found a missing sender check in the handler → fixed, retested
-Numbers        3 statements per transfer, all by primary key
-Not verified   load on the production database size; run the parallel test on staging
-⚠️ Warnings    none
+````markdown
+---
+### 1. What was done
+```diff
++ Members can transfer points to each other, safely under retries and parallel requests
 ```
+- `loyalty/transfer.go`: `Transfer` in one transaction: idempotent insert, rows locked in id order, conditional debit, credit
+- `loyalty/handler.go`: `POST /loyalty/transfers`, checks the sender is the signed-in member
+- Checks: ✅ 7 unit tests (limits, same account, not enough points, unknown receiver) · ✅ same requestID 3 times → 1 transfer · ✅ 20 parallel transfers of 10 from 100 points → 10 succeed, final balance 0
+- Independent review found a missing sender check in the handler: fixed, retested
+- 3 statements per transfer, all by primary key
+
+**Confidence: Medium 🟡** not tried at production data size
+
+---
+### 2. Needs attention
+**This task**
+```diff
+- Load at production database size not verified: run the parallel test on staging
+```
+- Not committed: 4 files on branch `feature/point-transfers`
+---
+````
 
 Longer than A, because a complex task has more to prove. Every Risk in the card has an answer in the code, a test, or the report.

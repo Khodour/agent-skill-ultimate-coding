@@ -85,7 +85,7 @@ Before saying done, follow `review.md`: read the whole diff as a reviewer would,
 
 **Scope:** every feature the task touched, plus the features that share code with it. Sweep the whole app only for big tasks or before a release.
 
-**If the tool is missing** (no browser automation, no emulator): test at the API or function level, give the user a short manual checklist, and list what was not tested by hand under "Not verified".
+**If the tool is missing** (no browser automation, no emulator): test at the API or function level, give the user a short manual checklist, and list what was not tested by hand under "Needs attention".
 
 ---
 
