@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Tests for check-diff.sh: every file in bad/ must raise the rule named by its file
-# name (bad/<rule-id>.<ext>), and every file in good/ must raise nothing. Also checks
+# name (bad/<rule-id>.<ext>), every file in good/ must raise nothing, and every row of
+# languages.tsv (one idiom per row, ~25 languages) must raise its rule or stay quiet. Also checks
 # the known-prefix secret patterns, git mode (only added lines count) and the
 # "check-diff: ok" mark. Run: bash tests/check-diff/run.sh   (exit 0 = all pass)
 set -u
@@ -24,6 +25,21 @@ for f in "$here"/good/*; do
 done
 
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
+
+# Language table (languages.tsv): each row is "expect<TAB>file<TAB>code", where <NL> in
+# the code starts a new line and expect is a rule id or "none" (the file must stay quiet).
+# It proves each rule in the idioms of every mainstream language, and no false alarms.
+n=0
+while IFS="$(printf '\t')" read -r expect file code; do
+  case "$expect" in ''|'#'*) continue ;; esac
+  n=$((n + 1)); mkdir -p "$tmp/lang/$n/$(dirname "$file")"
+  printf '%s\n' "$code" | awk '{ gsub(/<NL>/, "\n"); print }' > "$tmp/lang/$n/$file"
+  out=$(cd "$tmp/lang/$n" && bash "$tool" --files "$file" 2>&1)
+  if [ "$expect" = none ]; then
+    if printf '%s' "$out" | grep -q '\['; then bad "lang: $file stays quiet: $code -> $out"; else pass "lang: $file quiet: $code"; fi
+  elif printf '%s' "$out" | grep -q "\[$expect\]"; then pass "lang: $file [$expect]: $code"
+  else bad "lang: $file expected [$expect]: $code -> got: ${out:-nothing}"; fi
+done < "$here/languages.tsv"
 
 # Known secret prefixes, assembled at run time so no secret-shaped text is stored here.
 printf 'key = "%s%s"\n' "AKIA" "ABCDEFGHIJKLMNOP" > "$tmp/aws.py"
