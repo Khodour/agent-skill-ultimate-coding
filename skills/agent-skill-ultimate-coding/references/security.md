@@ -3,11 +3,11 @@
 Rules 1–5 are MUSTs (also listed in `SKILL.md`). Read this file in full when a task touches auth, permissions, secrets, personal data, files, uploads, payments or dependencies.
 
 **Contents**
-- 1 Data never becomes code (MUST)
-- 2 Check access per action and per record (MUST)
-- 3 Never hand-roll auth or crypto (MUST)
-- 4 Secrets stay outside the code (MUST)
-- 5 Never weaken a safety check (MUST), with the known-fixes table
+- 1 Data never becomes code (MUST 1)
+- 2 Check access per action and per record (MUST 2)
+- 3 Never hand-roll auth or crypto (MUST 3)
+- 4 Secrets stay outside the code (MUST 4)
+- 5 Never weaken a safety check (MUST 5), with the known-fixes table
 - 6 Least privilege, safe defaults
 - 7 Safe errors, careful logs
 - 8 Limit everything public or expensive
@@ -15,7 +15,7 @@ Rules 1–5 are MUSTs (also listed in `SKILL.md`). Read this file in full when a
 
 ---
 
-### 1. Data never becomes code (MUST)
+### 1. Data never becomes code (MUST 1)
 Input never gets glued into SQL, shell commands, HTML, file paths or templates.
 
 | Destination | Safe way |
@@ -38,7 +38,7 @@ Input never gets glued into SQL, shell commands, HTML, file paths or templates.
 ✅ run(["convert", filename, "out.png"])
 ```
 
-### 2. Check access on the server, for every action and every record (MUST)
+### 2. Check access on the server, for every action and every record (MUST 2)
 Deny by default. "Is this user logged in?" is not enough; also ask "**may this user touch this record?**" Never rely on the UI hiding a button.
 
 ```text
@@ -49,7 +49,7 @@ Deny by default. "Is this user logged in?" is not enough; also ask "**may this u
                        if !user.canView(invoice) → 403
 ```
 
-### 3. Never hand-roll auth or crypto (MUST)
+### 3. Never hand-roll auth or crypto (MUST 3)
 - Use the platform's proven library for login, sessions, tokens and encryption.
 - Passwords: a slow, salted hash (bcrypt, scrypt, Argon2). Never MD5, SHA-1 or plain SHA-256 for passwords.
 - Tokens: random (from a secure random source), they expire, and they can be revoked (for example on sign-out or password change).
@@ -60,7 +60,7 @@ Deny by default. "Is this user logged in?" is not enough; also ask "**may this u
 ✅ token = library.createSession(user, expiresIn = 1 day)
 ```
 
-### 4. Secrets stay outside the code (MUST)
+### 4. Secrets stay outside the code (MUST 4)
 - Never in source code, git, logs, URLs, error messages, or shipped apps (mobile, desktop, frontend bundles: anything the user can download can be read).
 - Load them from environment variables or a secret store. Add secret files to `.gitignore` before the first commit.
 - **A leaked secret is rotated, not just deleted:** git history and copies keep it forever.
@@ -71,7 +71,7 @@ Deny by default. "Is this user logged in?" is not enough; also ask "**may this u
 ✅ an authenticated admin action, or a deploy-time command
 ```
 
-### 5. Never weaken a safety check to make something work (MUST)
+### 5. Never weaken a safety check to make something work (MUST 5)
 If a check blocks you, fix the cause. Follow this order:
 
 1. **Fix the cause yourself.** Most blocked checks have a known safe fix (table below).

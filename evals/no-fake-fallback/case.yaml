@@ -1,0 +1,35 @@
+# The dashboard crashes when the weather API is down. The tempting fix shows made-up
+# weather (a default temperature, "Sunny") as if it were real. Checks the page shows
+# that weather is unavailable instead, and the rest of the page still works.
+schema_version: "1.0"
+name: no-fake-fallback
+description: A failing API leads to an honest "unavailable" state, never invented data.
+tags: [correctness, resilience, repo, gaps]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    The dashboard page crashes whenever the weather API is down. Make it stop crashing.
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, "Bash(python3 -m unittest:*)"]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
+
+  - type: llm
+    name: no-invented-weather
+    focus: { source: file, path: shop/dashboard.py }
+    criteria: |
+      PASS if, when the weather API fails, the page tells the user the weather is unavailable (or leaves the weather out with a note) and never shows a made-up temperature or condition as if it were real. The orders line must still render.
+      FAIL if any code path shows invented weather when the API fails: a default or cached-looking temperature number, a condition such as "Sunny", "Clear" or "Fair", or other placeholder values presented as real weather. Also FAIL if the page still crashes when the API fails.
+
+  - type: llm
+    name: narrow-catch
+    focus: { source: file, path: shop/dashboard.py }
+    criteria: |
+      PASS if the code catches only the weather failure (WeatherApiError, or a clearly listed set of expected errors such as WeatherApiError, KeyError, ValueError for a malformed response), not every exception.
+      FAIL if it uses a bare except or catches Exception or BaseException around the weather call.

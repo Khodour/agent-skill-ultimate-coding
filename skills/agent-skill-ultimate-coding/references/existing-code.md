@@ -47,7 +47,7 @@ if (retries == 0) sleep(50ms)
 // history shows: "fix: the payment provider rejects instant retries (issue #311)"
 ```
 
-### 4. Never break what is shipped (MUST)
+### 4. Never break what is shipped (MUST 8)
 With enough users, someone depends on every behaviour. Public APIs, old app versions still installed, saved data, file formats, URLs, settings and command flags keep working.
 
 - **Change by adding:** a new optional field, a new endpoint version, a new flag. Old callers keep working.
@@ -60,7 +60,7 @@ With enough users, someone depends on every behaviour. Public APIs, old app vers
 ✅ add "amount", keep "price" until old apps are gone
 ```
 
-### 5. Stored data with care (MUST)
+### 5. Stored data with care (MUST 7)
 - **Schema changes work with old and new code at the same time** during a rollout: add the new column → copy or fill the data → switch the code → remove the old column in a later release.
 - Test migrations on a copy of real-shaped data first. Know how to roll back.
 - **Never delete, drop, empty or overwrite stored data without the user's explicit OK** (MUST 7), even to "fix" a failing migration.

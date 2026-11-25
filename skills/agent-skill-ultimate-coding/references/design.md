@@ -5,8 +5,8 @@ How to shape code so it stays small, clear and easy to change. Read this when a 
 Examples are pseudocode. Apply each idea in the language's own way.
 
 **Contents**
-- Design rules 1–8 (5: rules in the middle, tools at the edge)
-- Simplicity rules 9–14
+- Design rules: 1 Reuse before inventing; 2 One job per piece; 3 Deep, not shallow; 4 Add, don't edit; 5 Rules in the middle, tools at the edge; 6 Compose, don't inherit; 7 Talk to neighbours only; 8 Tie-breaker: easier to change
+- Simplicity rules: 9 Simplest thing that works; 10 Build only what is asked; 11 Merge the same knowledge; 12 When rules collide; 13 Small working slice first; 14 Cut before calling it done
 - Build or use (rule 15)
 - Size signal
 

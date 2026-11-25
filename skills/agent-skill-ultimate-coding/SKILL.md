@@ -1,6 +1,7 @@
 ---
 name: agent-skill-ultimate-coding
 description: "Load this before writing, editing, fixing, debugging, refactoring, reviewing or testing ANY code, in any language: features, bug fixes, errors and stack traces, reports of wrong behaviour, one-line changes, single functions, SQL, API handlers, scripts, UI, config. Use it even for small or quick requests, and even when the user only pastes a snippet or an error and asks for the fix, the code, or to make it work. It sizes the task first, so trivial work stays light, then adds senior-engineer discipline: must-follow safety rules (injection, access checks, secrets, data loss, races, breaking shipped code), tests by risk, and honest proof before calling work done."
+license: MIT
 ---
 
 # Ultimate Coding
@@ -55,7 +56,7 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
 
 **Actions**
 
-13. **Confirm before anything irreversible or touching production:** deleting files, force-pushing, deploying, sending emails or messages, payments, publishing, stress tests. Skip the question only if the user already clearly said to go ahead.
+13. **Confirm before anything irreversible or touching production:** deleting files, force-pushing, deploying, sending emails or messages, payments, publishing, stress tests outside local or staging. Skip the question only if the user already clearly said to go ahead.
 
 ## The five moments
 
@@ -85,7 +86,7 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
   ```
 
   Every line that names a risk ends as code, a test, or a ⚠️ Warning in the report. Code that contradicts the card is a bug. Two full worked examples: `references/examples.md`.
-- Choose the simplest thing that works. Build only what was asked: no options, flags or hooks "for later".
+- Choose the simplest thing that works. Build only what was asked: no options, flags or hooks "for later" (the off-switch MUST 8 asks for is not "for later").
 - One job per piece. Simple interfaces that hide the details. Each decision (how we search, price, authenticate) lives in one place.
 - Business rules live outside handlers, views and UI components; those edges only parse, call the rule, and respond. A status is a state machine: one table of allowed moves, one function that moves it. Errors follow one model: expected ones typed and mapped to responses in one place, unexpected ones fail loudly (`references/design.md`, `references/correctness.md`).
 - Place code where its kind already lives: find the closest existing example (a model, an endpoint, a screen) and mirror its folder nesting, file split, naming and wiring. Only when the project has no pattern: feature first, then kind inside.
@@ -101,7 +102,7 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
 - Before calling a library or framework API, check it against the version the project uses, in this order: (1) the version in the lock or manifest file, (2) the installed package's own types, docs or source, (3) the official docs for that exact version, (4) still unsure → a tiny script that calls it and runs. Memory of an API is often an older version.
 - Follow the house style, but never copy or extend a danger (string-built SQL, weak hashing, a query inside a loop, a race): write it safely and point it out. Where the structure is messy, don't make it worse: new code goes into new small pieces.
 - A performance, security or correctness problem **inside the code you are changing** gets fixed in this change; a change that extends a known problem is not done. Keep the fix behaviour-preserving and say what you changed.
-- Give every file, class and function a header saying what it does and why, in the language's doc format; one line is enough when it is obvious. Explain the *why* of complex code. Never narrate obvious lines. No commented-out code, no silent TODOs.
+- Give every new file, class and function a header saying what it does and why, in the language's doc format; one line is enough when it is obvious. Explain the *why* of complex code. Never narrate obvious lines. Don't add headers or comments to existing code you are not otherwise changing. No commented-out code, no silent TODOs.
 - Clean only the area you touch; list problems in code you are *not* changing in the report. When a task needs both restructuring and a behaviour change, do them as two separate steps, one after the other.
 - A hand-written file over ~400 lines or a function over ~50 is a signal: check it is not doing more than one job.
 - When stuck: if the same fix fails twice, stop and look for the real cause. After a third failure, explain what you tried and ask.
@@ -111,10 +112,10 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
 ### 4. Verify
 
 - Run every check the project already has: build, type checker, linter, formatter, tests.
-- Run `scripts/check-diff.sh` from this skill's folder inside the project (needs bash and git; `--files <paths>` works without git). It flags known dangers in the lines you added. Fix each finding, or mark a false alarm on that line with a comment containing `check-diff: ok <reason>`. As a Claude Code plugin it also runs after every file edit.
+- Run `scripts/check-diff.sh` from this skill's folder inside the project (needs bash and git; `--files <paths>` works without git). It flags known dangers in the lines you added. Run it, don't read it, and re-run it until it reports nothing. Fix each finding, or mark a false alarm on that line with a comment containing `check-diff: ok <reason>`. As a Claude Code plugin it also runs after every file edit.
 - Add tests by risk: **always** for bug fixes (reproduce the bug with a failing test first) and real logic (money, rules, permissions, calculations); **never** for trivial changes; suggest them for everything else. If you cannot run tests, still write them into the change (or the reply when there are no files) and mark them not run.
 - **When users can see or use the change:** finish with a real-user test. Use the real interface (browser, emulator, terminal, HTTP calls, public API) on a safe environment, never production. Try the happy path, then act like a careless human (see the checklist in `references/testing.md`). Compare results with expected values worked out separately. When the app has more than one language, repeat it in the other language, and right to left if supported. Every bug found becomes a test, then gets fixed and retested.
-- **When the software has users or clients and the change touches data paths:** test with a large dataset and send 10–20 requests at the same item at once. Hot paths and releases get a real stress test on staging (`references/performance.md`).
+- **When the software has users or clients and the change touches data paths:** test with a large dataset and send 10–20 requests at the same item at once, locally or on staging (no confirmation needed there). Hot paths and releases get a real stress test on staging (`references/performance.md`).
 - Review your own diff with `references/review.md`. **Complex tasks** also get an independent review: a separate reviewer (a subagent, if your agent has them) receives the diff and the touched files with a narrow job such as "find bugs in this change". Without subagents, do a second, separate pass with the checklist. Fix what is found and re-run the checks.
 
 **Check:** I *showed* it works, including the human mistakes.
