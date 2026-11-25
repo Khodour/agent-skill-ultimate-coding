@@ -3,3 +3,6 @@ evals/results/
 
 # OS files
 .DS_Store
+
+# Written by Claude Code when it loads the plugin from this folder (--plugin-dir): editor types
+tsconfig.json

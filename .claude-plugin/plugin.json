@@ -1,8 +1,35 @@
 {
   "name": "agent-skill-ultimate-coding",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Understand, design, build, verify and report like a careful senior engineer: must-follow safety rules, task sizing, and proof before calling work done.",
   "author": { "name": "Khodour" },
   "license": "MIT",
-  "keywords": ["coding", "code-quality", "security", "testing", "best-practices", "agent-skill"]
+  "types": "./types/index.d.ts",
+  "keywords": ["coding", "code-quality", "security", "testing", "best-practices", "agent-skill"],
+  "userConfig": {
+    "progressTracker": {
+      "type": "boolean",
+      "title": "Progress tracker",
+      "description": "The bar above the prompt with the five moments, the task size, checks and confidence; also the spinner word and the end-of-turn line.",
+      "default": true
+    },
+    "scorecard": {
+      "type": "boolean",
+      "title": "Session scorecard (/uc-score)",
+      "description": "A /uc-score panel summing up the session: tasks by size, confidence, cards, edits, checks and check-diff results.",
+      "default": true
+    },
+    "checkDiffLine": {
+      "type": "boolean",
+      "title": "check-diff line under edits",
+      "description": "Show check-diff's verdict under each file edit. Claude still gets the findings either way.",
+      "default": true
+    },
+    "designCardGate": {
+      "type": "boolean",
+      "title": "Design-card gate",
+      "description": "Edits that touch money, access, personal data, migrations, concurrency or a public API wait for a design card covering them (adds the design_card tool).",
+      "default": true
+    }
+  }
 }

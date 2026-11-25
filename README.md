@@ -83,7 +83,8 @@ The last two rows are the only places where the skill scored lower: on small tas
 | Size | Examples | What runs |
 |---|---|---|
 | 🟢 **Trivial** | Typo, text change, rename, one config value | The change and the project's checks |
-| 🟡 **Normal** | Feature, bug fix, new function | A short design before code, tests by risk, a concise report |
+| 🔵 **Small** | One self-contained function: a formatter, a parser, a pure calculation | A three-line design, tests by risk, a one-line confidence report |
+| 🟡 **Normal** | Feature, bug fix, anything touching data, files or the network | A short design before code, tests by risk, a concise report |
 | 🔴 **Complex** | Payments, auth, personal data, migrations, concurrency, public APIs | Everything above, plus an independent review and concurrency checks |
 
 - **Lightweight.** The core stays short; detailed guidance loads only when a task needs it.
@@ -134,6 +135,10 @@ Issues and pull requests are welcome. A new rule should work in any language, pr
 ## About the author
 
 Built by **[Khodour](https://www.linkedin.com/in/kodr-fouani-b75523179/)**, an Anthropic-certified AI architect and senior software engineer with more than 25 years of experience shipping production software with large teams.
+
+## In Claude Code
+
+Extra on-screen help, each one switchable in `/config`: a progress bar above the prompt, check-diff results under each edit, a `/uc-score` session scorecard, and a design-card check before edits to money, auth, personal data, migrations, concurrency or public APIs. Only the design-card check costs tokens.
 
 ## License
 
