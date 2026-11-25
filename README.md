@@ -21,39 +21,41 @@
 
 ---
 
-Today's models already know SOLID, DRY and SQL injection. What they lack is **discipline**: they agree with the rules, then skip them. This skill ties the rules to the moments of a real task, makes the agent write a short design card before any code, checks every edit with a small script, and asks for proof before "done".
+AI coding agents already know the principles of good engineering. What they lack is consistency: they agree with the rules, then skip them under pressure. This skill builds that discipline into every task. The agent sizes the work, plans before it codes, checks each edit automatically, and proves the result before calling it done.
 
-| ❌ The agent habit | ✅ With the skill |
+| ❌ Without the skill | ✅ With the skill |
 |---|---|
-| Says "fixed ✅" without running anything | Shows output that proves it, or says what wasn't verified |
-| Weakens a test, or switches off SSL or CSRF, to make an error go away | Fixes the cause |
-| Invents function names, API fields or packages | Checks they exist, in the version the project installs |
-| Ignores double clicks, races, retries and old app versions | Transactions, safe-to-repeat actions, backward compatibility |
-| Over-builds a one-word fix | Sizes the task first, so trivial work stays light |
+| Reports "fixed" without running anything | Shows proof, or states clearly what was not verified |
+| Weakens a test or a security check to make an error disappear | Fixes the root cause |
+| Invents functions, API fields or packages | Verifies they exist in the installed version |
+| Overlooks double submits, race conditions and retries | Writes safe, repeatable, backward-compatible changes |
+| Over-engineers a one-line fix | Matches the effort to the size of the task |
 
 ## Proven with evals
 
-Real tasks, run **with and without** the skill using Claude Code's `plugin eval` and graded by a separate judge. On a small, fast model (Claude Haiku 5.5) the average score across the whole suite (35 cases, 3 runs each) rose from **0.82 to 0.96**.
+Every task in the suite runs **with and without** the skill and is scored by an independent judge. On Claude Haiku 5.5, the average score rises from **0.82 to 0.96**.
 
 <p align="center">
-  <img src="docs/assets/eval-results.svg" alt="Dumbbell chart of pass rates without and with the skill. Claude Haiku 5.5: fixes a query inside a loop 0% to 100%; bug fix with a reproducing test 20% to 100%; safe against double submits 0% to 100%; parameterized query 20% to 100%; held-out failed cart read keeps the cart 80% to 100%; held-out coupon used once under races 0% to 40%; bill split adds up 0% to 33%. Default model: reproducing test 0% to 100%; bill split 33% to 100%; double submits 67% to 100%; runs the tests 67% to 100%." width="100%">
+  <img src="docs/assets/eval-results.svg" alt="Pass rates without and with the skill. Claude Haiku 5.5: fixes a query inside a loop 0% to 100%; bug fix with a reproducing test 20% to 100%; safe against double submits 0% to 100%; parameterized queries 20% to 100%; failed cart read keeps the saved cart 80% to 100%; coupon used once under races 0% to 40%; bill split adds up 0% to 33%. Claude Code default model: reproducing test 0% to 100%; bill split 33% to 100%; double submits 67% to 100%; runs the tests 67% to 100%." width="100%">
 </p>
 
-The chart shows only where the skill changed the result. Everywhere else both arms passed (security basics, migrations, API compatibility, project layout, state changes, error handling, translations), and the skill didn't get in the way: trivial fixes stay short. *Held-out* cases were written after the skill was finished, and the skill is never changed to pass them. [Run them yourself](#evals).
+The chart shows the behaviours where the skill makes a difference. On the remaining tasks, both versions perform well, and small fixes stay small. [Run the evals yourself](#evals).
 
 <details>
 <summary>The numbers behind the chart</summary>
 
-| Behaviour | Default model | Claude Haiku 5.5 |
+Passing runs, without → with the skill. ✅ marks a behaviour that passed every run.
+
+| Behaviour | Claude Code default model | Claude Haiku 5.5 |
 |---|:---:|:---:|
-| A bug fix comes with a test that reproduces the bug | 0/3 → 3/3 | 1/5 → 5/5 |
-| Editing a function with a query inside a loop fixes it | already passed | 0/5 → 5/5 |
-| Order code is safe against double submits | 2/3 → 3/3 | 0/5 → 5/5 |
-| A query built from user input stays parameterized | already passed | 1/5 → 5/5 |
-| A bill split adds up exactly to the total | 1/3 → 3/3 | 0/3 → 1/3 |
-| The agent runs the tests before calling a fix done | 2/3 → 3/3 | already passed |
-| *Held out:* a coupon is used once per customer, even with two requests at once | not run | 0/5 → 2/5 |
-| *Held out:* a failed cart read never wipes the saved cart | not run | 4/5 → 5/5 |
+| A bug fix comes with a test that reproduces the bug | 0/3 → ✅ 3/3 | 1/5 → ✅ 5/5 |
+| Editing code with a query inside a loop fixes it | passed before | 0/5 → ✅ 5/5 |
+| Order code is safe against double submits | 2/3 → ✅ 3/3 | 0/5 → ✅ 5/5 |
+| Queries built from user input stay parameterized | passed before | 1/5 → ✅ 5/5 |
+| A bill split adds up exactly to the total | 1/3 → ✅ 3/3 | 0/3 → 1/3 |
+| The agent runs the tests before calling a fix done | 2/3 → ✅ 3/3 | passed before |
+| A coupon is used once, even with simultaneous requests | not run | 0/5 → 2/5 |
+| A failed cart read never wipes the saved cart | not run | 4/5 → ✅ 5/5 |
 
 </details>
 
@@ -65,18 +67,18 @@ The chart shows only where the skill changed the result. Everywhere else both ar
 
 | Size | Examples | What runs |
 |---|---|---|
-| 🟢 **Trivial** | Typo, text, rename, one config value (no new logic) | The change, the project's checks, one short sentence |
-| 🟡 **Normal** | Feature, bug fix, any new function | A design card before code, the five moments, tests by risk, a short report |
-| 🔴 **Complex** | Money, auth, personal data, migrations, concurrency, public APIs | All of the above, plus the matching reference files, an independent review and concurrency checks |
+| 🟢 **Trivial** | Typo, text change, rename, one config value | The change and the project's checks |
+| 🟡 **Normal** | Feature, bug fix, new function | A short design before code, tests by risk, a concise report |
+| 🔴 **Complex** | Payments, auth, personal data, migrations, concurrency, public APIs | Everything above, plus an independent review and concurrency checks |
 
-- **`SKILL.md` stays short.** Detail lives in `references/` (design, structure, correctness, security, testing, existing code, performance, resilience, UI, AI features, review, worked examples), and the agent reads a file only when the task touches its topic.
-- **A checker, not only rules.** `scripts/check-diff.sh` reads only the lines a change adds and flags known dangers with the fix: SQL built from strings, TLS checks turned off, secrets in code, swallowed errors, skipped tests, money in floats, a query inside a loop. It needs only bash and git, and as a Claude Code plugin it runs after every file edit.
-- **Who wins when rules disagree:** your instruction → the project's own rules (`CLAUDE.md`, `AGENTS.md`) → a skill made for the project's framework → this skill.
-- **Cost:** a few thousand tokens and one tool call per task.
+- **Lightweight.** The core stays short; detailed guidance loads only when a task needs it.
+- **Automated checks.** A built-in checker scans every edit for common dangers, such as unsafe SQL, disabled security checks, hard-coded secrets and swallowed errors.
+- **Respects your project.** Your instructions and your project's own rules always come first.
+- **Low overhead.** A few thousand tokens per task.
 
 ## The MUST rules
 
-Never skipped, at any task size. Only you can override one, and the agent warns and records it.
+Applied to every task, whatever its size. Only you can override one, and the agent will flag it in its report.
 
 - 🔒 **Security:** data never becomes code · check access for every action **and every record** · never hand-roll auth or crypto · secrets stay out of code, git, logs and apps · never weaken a safety check
 - 💾 **Data:** all-or-nothing writes, safe to repeat · never delete or overwrite data without an explicit OK · never break what is shipped
@@ -92,11 +94,11 @@ Never skipped, at any task size. Only you can override one, and the agent warns 
 /plugin install agent-skill-ultimate-coding@agent-skill-ultimate-coding
 ```
 
-**Any agent:** copy `skills/agent-skill-ultimate-coding/` (with `references/` and `scripts/`) into your agent's skills folder, such as `~/.claude/skills/` for Claude Code, or `~/.agents/skills/` for Codex, Cursor, Gemini CLI and Copilot. Only Claude Code has been tested so far; reports from other agents are welcome.
+**Other agents:** copy the `skills/agent-skill-ultimate-coding/` folder into your agent's skills folder (for example `~/.agents/skills/` for Codex, Cursor, Gemini CLI and Copilot). Tested on Claude Code; feedback from other agents is welcome.
 
 ### Make it always on (recommended)
 
-The plugin loads the skill on every coding task by itself. If you copied the folder or use another agent, add this line to your project's `CLAUDE.md` or `AGENTS.md`:
+The plugin loads the skill automatically. If you installed it manually, add this line to your project's `CLAUDE.md` or `AGENTS.md`:
 
 ```markdown
 For every coding task, load the agent-skill-ultimate-coding skill first and follow it. Any task that adds or changes logic starts with its design card, written in your reply before any code.
@@ -108,19 +110,19 @@ For every coding task, load the agent-skill-ultimate-coding skill first and foll
 claude plugin eval . --no-publish --judge-model sonnet --max-cost-usd 10
 ```
 
-Each case runs with and without the skill and reports the difference. Cases that build a real project (`repo-*`, `held-out-*`) also need `--scaffold` and `--allow-tools`; read their `scaffold.sh` first.
+Each case runs with and without the skill and reports the difference. Some cases build a sample project and need `--scaffold`; review their `scaffold.sh` before running them.
 
 ## Contributing
 
-Issues, forks and pull requests are welcome. Every rule must be language-neutral, say what failure it prevents, and change what an agent does.
+Issues and pull requests are welcome. A new rule should work in any language, prevent a real failure, and measurably change what the agent does.
 
 ## About the author
 
-Built by **[Khodour](https://www.linkedin.com/in/kodr-fouani-b75523179/)**, an Anthropic-certified AI architect and senior software engineer with 25+ years of shipping production software with large teams.
+Built by **[Khodour](https://www.linkedin.com/in/kodr-fouani-b75523179/)**, an Anthropic-certified AI architect and senior software engineer with more than 25 years of experience shipping production software with large teams.
 
 ## License
 
-[MIT](LICENSE): free to use, change, fork and share, including commercially.
+[MIT](LICENSE). Free to use, modify and share, including for commercial use.
 
 ## Star history
 
