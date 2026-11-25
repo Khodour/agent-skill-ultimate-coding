@@ -33,10 +33,16 @@ AI coding agents already know the principles of good engineering. What they lack
 
 ## Proven with evals
 
-Every task in the suite runs **with and without** the skill and is scored by an independent judge. On Claude Haiku 5.5, the average score rises from **0.82 to 0.96**.
+Every task in the suite runs **with and without** the skill and is scored by an independent judge. The skill raises the average score on every Claude model:
+
+| Model | Tests | Without the skill | With the skill |
+|---|---|:---:|:---:|
+| Claude Haiku 5.5 | Full suite | 0.82 | ✅ **0.96** |
+| Claude Sonnet 5.5 | Full suite | 0.83 | ✅ **0.97** |
+| Claude Opus 5.5 | 10 hardest tests | 0.68 | ✅ **0.97** |
 
 <p align="center">
-  <img src="docs/assets/eval-results.svg" alt="Pass rates without and with the skill. Claude Haiku 5.5: fixes a query inside a loop 0% to 100%; bug fix with a reproducing test 20% to 100%; safe against double submits 0% to 100%; parameterized queries 20% to 100%; failed cart read keeps the saved cart 80% to 100%; coupon used once under races 0% to 40%; bill split adds up 0% to 33%. Claude Code default model: reproducing test 0% to 100%; bill split 33% to 100%; double submits 67% to 100%; runs the tests 67% to 100%." width="100%">
+  <img src="docs/assets/eval-results.svg" alt="Pass rates without and with the skill, per model. Claude Haiku 5.5: query inside a loop 0% to 100%; gift card 0% to 100%; double submits 0% to 100%; AI refunds need a human 33% to 100%; rule out of the route 33% to 100%; parameterized queries 67% to 100%; bill split 0% to 67%; root cause 0% to 67%; coupon 0% to 20%. Claude Sonnet 5.5: database rules out of the web layer, gift card, coupon, bill split and reproducing test each 0% to 100%; double submits, failed cart read and AI summary 33% to 100%; AI refunds 67% to 100%; installed library API 0% to 33%. Claude Opus 5.5, 10 hardest tests: database rules 0% to 100%; gift card 0% to 100%; double submits 33% to 100%; coupon 0% to 67%." width="100%">
 </p>
 
 The chart shows the behaviours where the skill makes a difference. On the remaining tasks, both versions perform well, and small fixes stay small. [Run the evals yourself](#evals).
@@ -46,16 +52,26 @@ The chart shows the behaviours where the skill makes a difference. On the remain
 
 Passing runs, without → with the skill. ✅ marks a behaviour that passed every run.
 
-| Behaviour | Claude Code default model | Claude Haiku 5.5 |
-|---|:---:|:---:|
-| A bug fix comes with a test that reproduces the bug | 0/3 → ✅ 3/3 | 1/5 → ✅ 5/5 |
-| Editing code with a query inside a loop fixes it | passed before | 0/5 → ✅ 5/5 |
-| Order code is safe against double submits | 2/3 → ✅ 3/3 | 0/5 → ✅ 5/5 |
-| Queries built from user input stay parameterized | passed before | 1/5 → ✅ 5/5 |
-| A bill split adds up exactly to the total | 1/3 → ✅ 3/3 | 0/3 → 1/3 |
-| The agent runs the tests before calling a fix done | 2/3 → ✅ 3/3 | passed before |
-| A coupon is used once, even with simultaneous requests | not run | 0/5 → 2/5 |
-| A failed cart read never wipes the saved cart | not run | 4/5 → ✅ 5/5 |
+| Behaviour | Haiku 5.5 | Sonnet 5.5 | Opus 5.5 |
+|---|:---:|:---:|:---:|
+| Editing code with a query inside a loop fixes it | 0/3 → ✅ 3/3 | passed before | not run |
+| Database rules are kept out of the web layer | 0/5 → 1/5 | 0/3 → ✅ 3/3 | 0/3 → ✅ 3/3 |
+| A gift card's rules are kept apart and its balance is safe under races | 0/5 → ✅ 5/5 | 0/3 → ✅ 3/3 | 0/3 → ✅ 3/3 |
+| A coupon's rules are kept apart and it is used once per customer | 0/5 → 1/5 | 0/3 → ✅ 3/3 | 0/3 → 2/3 |
+| Order code is safe against double submits | 0/3 → ✅ 3/3 | 1/3 → ✅ 3/3 | 1/3 → ✅ 3/3 |
+| A bill split adds up exactly to the total | 0/3 → 2/3 | 0/3 → ✅ 3/3 | passed before |
+| A bug fix comes with a test that reproduces the bug | passed before | 0/3 → ✅ 3/3 | passed before |
+| A bug fix finds the root cause | 0/3 → 2/3 | passed before | not run |
+| A business rule is kept out of the route | 1/3 → ✅ 3/3 | passed before | not run |
+| Queries built from user input stay parameterized | 2/3 → ✅ 3/3 | passed before | not run |
+| A failed cart read never wipes the saved cart | 2/3 → 2/3 | 1/3 → ✅ 3/3 | passed before |
+| An AI support bot needs a human to approve refunds | 1/3 → ✅ 3/3 | 2/3 → ✅ 3/3 | passed before |
+| An AI summary is cached and survives a failed call | passed before | 1/3 → ✅ 3/3 | not run |
+| Code uses the API of the installed library version | passed before | 0/3 → 1/3 | passed before |
+| A typo fix gets a short reply | passed before | 3/3 → 2/3 | passed before |
+| A small change gets a short report | 3/3 → 0/3 | passed before | not run |
+
+The last two rows are the only places where the skill scored lower: on small tasks its reply can run a little long.
 
 </details>
 
@@ -123,9 +139,3 @@ Built by **[Khodour](https://www.linkedin.com/in/kodr-fouani-b75523179/)**, an A
 ## License
 
 [MIT](LICENSE). Free to use, modify and share, including for commercial use.
-
-## Star history
-
-<a href="https://star-history.com/#Khodour/agent-skill-ultimate-coding&Date">
-  <img src="https://api.star-history.com/svg?repos=Khodour/agent-skill-ultimate-coding&type=Date" alt="Star history chart" width="600">
-</a>
