@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'For every coding task (writing, fixing, debugging, refactoring, reviewing or testing code, even a small fix), load the agent-skill-ultimate-coding:agent-skill-ultimate-coding skill first and follow it. Any task that adds or changes logic starts with its checklist in the task list (TaskCreate), before any code.'"
+            "command": "echo 'For every coding task (writing, fixing, debugging, refactoring, reviewing or testing code, even a small fix), load the agent-skill-ultimate-coding:agent-skill-ultimate-coding skill first and follow it. Any task that adds or changes logic starts with its checklist, before any code: in the checklist tool when you have it, otherwise in your task list.'"
           }
         ]
       }

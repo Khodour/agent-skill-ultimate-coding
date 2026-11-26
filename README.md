@@ -37,15 +37,18 @@ AI coding agents already know the principles of good engineering. What they lack
 
 ## Proven with evals
 
-Every task in the suite runs **with and without** the skill and is scored by an independent judge. The skill raises the average score on every Claude model:
+Every task in the suite runs **with and without** the skill and is scored by independent graders. **Held-out** tasks were written before any tuning and never used to change the skill, so they show how it does on work it has not seen.
 
 | Model | Tests | Without the skill | With the skill | Measured on |
 |---|---|:---:|:---:|:---:|
-| Claude Sonnet 5.5 | Full suite, 61 tasks | 0.81 | ✅ **0.98** | 2.0.0 |
+| Claude Sonnet 5.5 | **Held-out, 13 tasks** (Python, Java, Ruby, TypeScript) | 0.71 | ✅ **0.97** | current main |
+| Claude Sonnet 5.5 | Full suite, 70 tasks | 0.82 | ✅ **0.98** | current main |
 | Claude Haiku 5.5 | Full suite | 0.82 | ✅ **0.96** | 1.6.0 |
 | Claude Opus 5.5 | 10 hardest tests | 0.68 | ✅ **0.97** | 1.6.0 |
 
-On Sonnet 5.5 with version 2.0.0, the skill scores a perfect result on 55 of the 61 tasks. It clearly raises the score on 17 of them; on the others the model already does the right thing, and the skill keeps it that way.
+On Sonnet 5.5 the skill scores a perfect result on 64 of the 70 tasks, and clearly raises the score on 18. On one task it scored a little lower (0.95 against 1.00: one report ran longer than the change needed). On the others the model already does the right thing, and the skill keeps it that way, including the misfire tasks that check it does *not* over-build a small change.
+
+**What it costs:** with the skill, an agent took 7.4 turns per task on average against 3.3 without, and about 1.6× the tokens: the price of reading the code first, writing the checklist and running the checks.
 
 <p align="center">
   <img src="docs/assets/eval-results.svg" alt="Behaviours the skill takes to a 100% pass rate, per model. Claude Haiku 5.5: query inside a loop 0% to 100%; gift card 0% to 100%; double submits 0% to 100%; AI refunds need a human 33% to 100%; rule out of the route 33% to 100%; parameterized queries 67% to 100%. Claude Sonnet 5.5: database rules out of the web layer, gift card, coupon, bill split and reproducing test each 0% to 100%; double submits, failed cart read and AI summary 33% to 100%; AI refunds 67% to 100%. Claude Opus 5.5, 10 hardest tests: database rules 0% to 100%; gift card 0% to 100%; double submits 33% to 100%." width="100%">
@@ -105,7 +108,7 @@ Every size starts the same way: the agent reads the code it will touch and looks
 - **Lightweight.** The core stays short; detailed guidance loads only when a task needs it.
 - **Automated checks.** A built-in checker scans every edit for common dangers, such as unsafe SQL, disabled security checks, hard-coded secrets and swallowed errors.
 - **Respects your project.** Your instructions and your project's own rules always come first.
-- **Low overhead.** A few thousand tokens per task.
+- **Measured overhead.** The core skill is about 6,500 tokens. A task adds only the topic files it needs, about 1,000–2,000 tokens each (security for an auth change, testing for new tests).
 
 ## The MUST rules
 

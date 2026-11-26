@@ -5,8 +5,8 @@ const hook = (report: string) =>
   JSON.stringify({ hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: report } })
 
 test('a finding is read with its line, rule and MUST', async () => {
-  const report = 'check-diff: 1 possible problem(s) in added lines. Signals, not verdicts: fix each one,\n' +
-    'or, if it is a false alarm, add a comment containing "check-diff: ok <reason>" on that line.\n' +
+  const report = 'check-diff: 1 possible problem(s) in added lines. Signals, not verdicts: fix each real one.\n' +
+    'A false alarm: leave the code as it is and list it in your report, one line with why.\n' +
     'app/tls.ts:7  [tls-off] TLS verification turned off -> fix the certificate or CA bundle instead (MUST 5)'
   expect(parseCheck(0, hook(report))).toEqual({
     status: 'found',
@@ -15,9 +15,9 @@ test('a finding is read with its line, rule and MUST', async () => {
 })
 
 test('a removed safety check is read like any other finding', async () => {
-  const report = 'check-diff: 1 possible problem(s) in this change. Signals, not verdicts: fix each one,\n' +
-    'or, if it is a false alarm, add a comment containing "check-diff: ok <reason>" on that line.\n' +
-    'api/docs.py:12  [removed-guard] access check removed and not added back -> keep it; if it is truly not needed, say why in a comment containing "check-diff: ok removed-guard <reason>" (MUST 2, 5)'
+  const report = 'check-diff: 1 possible problem(s) in this change. Signals, not verdicts: fix each real one.\n' +
+    'A false alarm: leave the code as it is and list it in your report, one line with why.\n' +
+    'api/docs.py:12  [removed-guard] access check removed and not added back -> keep it; if it is truly not needed, say why in your report (MUST 2, 5)'
   expect(parseCheck(0, hook(report))).toEqual({
     status: 'found',
     findings: [{ line: 12, rule: 'removed-guard', message: 'access check removed and not added back' }],

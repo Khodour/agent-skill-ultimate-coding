@@ -124,7 +124,7 @@ dynamic-code	d.c	system(cmd);
 dynamic-code	d.cs	Process.Start("cmd.exe", "/c " + userInput);
 dynamic-code	d.php	system("ls " . $dir);
 dynamic-code	d.ex	Code.eval_string(src)
-none	d.go	out, _ := exec.Command("git", "status").Output()
+none	d.go	out, err := exec.Command("git", "status").Output()
 none	d.rb	system("git", "status")
 none	d.php	$out = self::run(['sh', '-c', 'echo 1000 > /proc/self/oom_score_adj'], 10);
 none	d.php	$p = proc_open([PHP_BINARY, __FILE__, "--db=$name," . $path], $spec, $pipes);
@@ -200,3 +200,13 @@ none	w.swift	let resetToken = Int.random(in: 100000...999999)
 # --- todo
 todo	t.cs	// TODO: handle refunds
 todo	t.sql	-- TODO fix the index
+# --- false alarms found by review (2026-11-26): prose and logs that read like SQL, a bare await in a loop
+none	fa1.js	const msg = `Updated ${n} rows; select one from the list`;
+none	fa2.js	logger.info(`update ${user} set to active`);
+none	fa3.js	log.debug("delete from cache " + key);
+none	fa4.js	for (const id of ids) {<NL>  await sleep(100);
+sql-string	fa5.js	db.query("delete from cache where k = " + key);
+none	fa6.go	v, _ := m[key]
+none	fa7.go	for _, x := range xs {
+swallowed-error	fa8.go	rows, _ := db.Query("SELECT id FROM t WHERE a = ?", a)
+swallowed-error	fa9.go	out, _ := exec.Command("git", "status").Output()

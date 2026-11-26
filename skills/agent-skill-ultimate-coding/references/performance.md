@@ -97,7 +97,8 @@ Find the real slow point with a profiler, a query log or a request count, not by
 | Change | Check |
 |---|---|
 | Any task touching data | Count the queries or requests per action; more than expected → fix it |
-| Data paths (lists, search, writes) | **Big-data test:** fill with a large dataset and check speed. **Concurrency test:** send 10–20 requests at the same item at once and look for races, double charges and overselling. |
+| Data paths (lists, search, writes) | **Twice test:** run the write twice and check nothing doubles. |
+| Data paths in a complex task (money, stock, shared counters) or on a hot path | **Big-data test:** fill with a large dataset and check speed. **Concurrency test:** send 10–20 requests at the same item at once and look for races, double charges and overselling. |
 | Hot paths (login, checkout, search, the main list) or before a launch or big release | **Real stress test** on staging: ramp up to **3× the expected peak**; measure response time (p95), error rate, database connections, memory; find the breaking point. |
 
 **The target:** use the number in the project's rules. If there is none, ask the user: "How many users at the busiest time? If you're unsure, I'll use 100 at once as a starting point." Test to 3× that number.

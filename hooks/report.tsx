@@ -9,7 +9,8 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface } from 'claude-code'
 
 import type { PromptKind } from '../types'
-import { RULE_FILES, asksOwnReply, editedLines, reportNudge, ruleFolders, setsOwnFormat } from './report-rules'
+import { RULE_FILES, asksOwnReply, editedLines, globalRuleFile, reportNudge, ruleFolders, setsOwnFormat } from './report-rules'
+import { trackerTask } from './tracker'
 
 const lines = atom({ plugin: 'agent-skill-ultimate-coding', key: 'reportLines' } as const, 0)
 const ownReply = atom({ plugin: 'agent-skill-ultimate-coding', key: 'personSetReply' } as const, false)
@@ -41,6 +42,8 @@ async function projectHasFormat($: EngineInterface): Promise<boolean> {
   if (cwd in known) return known[cwd] === true
   const home = (await $.env.get('HOME')) ?? ''
   const paths = ruleFolders(cwd, home).flatMap(dir => RULE_FILES.map(file => `${dir}/${file}`))
+  const global = globalRuleFile(home)
+  if (global !== null) paths.push(global)
   const texts = await Promise.all(paths.map(p => $.fs.read(p).then(t => (typeof t === 'string' ? t : ''), () => '')))
   const found = texts.some(text => text !== '' && setsOwnFormat(text))
   await update($, formats, all => ({ ...(all as Record<string, boolean>), [cwd]: found }))
@@ -59,6 +62,7 @@ export async function reportStop($: EngineInterface, e: { stop_hook_active?: boo
     skillUsed: await read($, skillUsed),
     projectHasFormat: await projectHasFormat($),
     personSetReply: await read($, ownReply),
+    ...(await trackerTask($)),
   })
 }
 

@@ -54,6 +54,14 @@ export async function trackerList($: EngineInterface) {
   return r === null ? null : { list: r.list, isDone: r.isDone }
 }
 
+/** The task's size and whether it has a checklist, for the report check. */
+export async function trackerTask($: EngineInterface): Promise<{ size?: string; hasChecklist: boolean }> {
+  const r = await read($, run)
+  if (r === null) return { hasChecklist: false }
+  const size = r.list?.size ?? r.size
+  return { ...(size ? { size } : {}), hasChecklist: (r.list?.items.length ?? 0) > 0 }
+}
+
 /**
  * Whether the skill was loaded in this conversation. The atom says so once the
  * skill was called here; when it is empty (a resumed conversation, a state that

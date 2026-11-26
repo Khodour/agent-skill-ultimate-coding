@@ -28,7 +28,7 @@ graders:
   - type: regex
     name: reproducing-test-added
     target: { source: file, path: tests/test_cart.py }
-    pattern: '\b10\b'
+    pattern: 'line_total\(.*,\s*(qty\s*=\s*)?(10|BULK_MIN_QTY)\s*\)'
 
   - type: tool_used
     name: ran-the-tests

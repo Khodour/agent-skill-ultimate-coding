@@ -1,0 +1,44 @@
+# A refund fails silently; the user asks for logging. The project logs through its own
+# JSON helper, and the refund reason is customer text. Checks the agent uses the
+# project's logger with fields (never print or a message built from user text) and
+# that the failure still reaches the caller.
+schema_version: "1.0"
+name: structured-logging
+description: New logging goes through the project's own structured logger, with fields, never print or user text pasted into a message.
+tags: [observability, logging, repo]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    When a refund fails at the payment gateway we have no idea why. Add logging for it. The reason text comes from the customer.
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, "Bash(python3 -m unittest:*)"]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
+
+  - type: regex
+    name: uses-the-project-logger
+    target: { source: file, path: app/refunds.py }
+    pattern: 'log_event\([\s\S]{0,300}?order_id'
+
+  - type: regex
+    name: no-print-or-second-logger
+    target: { source: file, path: app/refunds.py }
+    match: not_contains
+    pattern: '\bprint\(|logging\.(getLogger|basicConfig|info|warning|error|exception)\('
+
+  - type: regex
+    name: no-message-built-from-input
+    target: { source: file, path: app/refunds.py }
+    match: not_contains
+    pattern: 'log_event\(\s*(f["'']|["''][^"'']*["'']\s*(%|\+|\.format))'
+
+  - type: regex
+    name: failure-still-raised
+    target: { source: file, path: app/refunds.py }
+    pattern: '\braise\b'

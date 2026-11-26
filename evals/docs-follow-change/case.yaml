@@ -1,0 +1,31 @@
+# Adds a command-line option to a tool whose options are documented in a reference
+# page the README points to. Checks the reference page gets the new option, in the
+# same change, with its default.
+schema_version: "1.0"
+name: docs-follow-change
+description: A new option is documented where the project documents its options, in the same change.
+tags: [documentation, repo]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Add a --timeout option to fetcher: seconds to wait for the server, default 30.
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, "Bash(python3 -m unittest:*)"]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
+
+  - type: regex
+    name: option-built
+    target: { source: file, path: fetcher/cli.py }
+    pattern: '--timeout'
+
+  - type: regex
+    name: reference-documents-it
+    target: { source: file, path: docs/reference.md }
+    pattern: '--timeout[^\n]*30'

@@ -10,10 +10,10 @@
 # every file edit (hooks/hooks.json).
 #
 # It only reads the lines a change touches, so old code in the project creates no
-# noise. Every finding is a signal, not a verdict: fix it, or mark a false alarm on
-# that same line with a comment containing "check-diff: ok <reason>". A removed
-# check has no line left to mark, so one added comment containing
-# "check-diff: ok removed-guard <reason>" anywhere in that file covers the file.
+# noise. Every finding is a signal, not a verdict: fix it, or list a false alarm in
+# the report with why. A team that wants a false alarm silenced for good can add a
+# comment containing "check-diff: ok <reason>" on that line, or, for a removed
+# check, "check-diff: ok removed-guard <reason>" anywhere in that file.
 # Studies of repeated AI edits found later edits quietly delete defensive code;
 # that is why removals are checked too.
 #
@@ -246,7 +246,9 @@ inhdr { next }                                  # index, mode, rename and binary
   # Data never becomes code (MUST 1).
   if (!comment && lc ~ /(select[ \t].*[ \t]from[ \t]|insert[ \t]+into[ \t]|update[ \t].*[ \t]set[ \t]|delete[ \t]+from[ \t])/ &&
       lc ~ /["'`][ \t]*(\+|\.\.|\|\||&[ \t]*[a-z_])|\+[ \t]*["'`]|\$\{|#\{|\$@?"|@\$"|\\\(|withformat:|format!\(|::format\(|\.formatted\(|\.format\(|["'][ \t]*%[ \t]*[(A-Za-z_]|(^|[^A-Za-z0-9_])f["']|sprintf\(|(=|<|>|[ \t]in|[ \t]like|values)[ \t]*\(?[ \t]*'?\$[A-Za-z_]|["'][ \t]*\.[ \t]*[$A-Za-z_]/)
-    flag("sql-string", "SQL built from strings -> pass values as query parameters (MUST 1)")
+    if ((lc ~ /["'`][ \t]*(select|insert|update|delete|with)[ \t]/ || lc ~ /(query|execute|exec|raw|sql|prepare|statement|stmt)[a-z_]*[ \t]*(\(|=|:=)/) &&
+        !(lc ~ /(^|[^a-z0-9_])(log|logger|logging|console|print|println|printf|puts|echo|warn|info|debug|trace)[a-z]*[ \t]*[.(]/ && lc !~ /(query|execute|exec|raw|prepare)[a-z_]*[ \t]*\(/))
+      flag("sql-string", "SQL built from strings -> pass values as query parameters (MUST 1)")
   if (!comment && (l ~ /(^|[^.>A-Za-z0-9_])(eval|exec|shell_exec|passthru)\(|new[ \t]+Function\(|shell[ \t]*=[ \t]*True|os\.(system|popen|execute)\(|Runtime\.getRuntime\(\)\.exec\(|loadstring\(|Code\.eval_(string|quoted)\(/ ||
       l ~ /["'](sh|bash|zsh|cmd|cmd\.exe|powershell|pwsh)["'][ \t]*[,)][^;]*(["'](-c|\/c)["'][ \t]*[,)][ \t]*(\.arg\([ \t]*)?[A-Za-z_$]|["'](-c|\/c)[ \t][^"']*["'][ \t]*\+)/ ||
       l ~ /(^|[^.>A-Za-z0-9_:])(system|popen|execSync)\([ \t]*([A-Za-z_$][A-Za-z0-9_]*[ \t]*\)|[^)]*(#\{|\$\{|["'`][ \t]*(\+|\.|&)))/ ||
@@ -293,6 +295,8 @@ inhdr { next }                                  # index, mode, rename and binary
       lc ~ /on[ \t]+error[ \t]+resume[ \t]+next/ || (ext == "rs" && l ~ /\.ok\(\)[ \t]*;[ \t]*$/) ||
       l ~ /^[ \t]*except([ \t(][^:]*)?:[ \t]*(pass|\.\.\.)[ \t]*(#.*)?$|catch[ \t]*(\([^)]*\))?[ \t]*\{[ \t]*\}|\.catch\([ \t]*(\([^)]*\)|[A-Za-z_]*)[ \t]*=>[ \t]*(\{[ \t]*\}|null|undefined)[ \t]*\)|(^|[^A-Za-z0-9_])rescue[^;]*;[ \t]*end|(^|[^A-Za-z_])_[ \t]*=[ \t]*err([^A-Za-z]|$)/)
     flag("swallowed-error", "error swallowed -> handle it, or log it and re-raise (MUST 12)")
+  else if (!testfile && ext == "go" && l ~ /,[ \t]*_[ \t]*:?=[ \t]*[A-Za-z_][A-Za-z0-9_.]*[A-Za-z0-9_]\(/)
+    flag("swallowed-error", "error thrown away with _ -> check it, or return it (MUST 12)")
   else if (lnum == prevnum + 1 && prevtxt ~ /^[ \t]*except([ \t(][^:]*)?:[ \t]*$|catch[ \t]*(\([^)]*\))?[ \t]*\{[ \t]*$|^[ \t]*rescue([ \t].*)?$/ && l ~ /^[ \t]*(pass|\.\.\.|\}|end)[ \t]*$/) {
     lnum--; flag("swallowed-error", "error swallowed -> handle it, or log it and re-raise (MUST 12)"); lnum++
   }
@@ -336,7 +340,7 @@ inhdr { next }                                  # index, mode, rename and binary
   else if (loop && lnum == prevnum + 1 && l !~ /^[ \t]*$/ && ind <= loopind)
     loop = 0
   else if (loop && !loopflagged && !testfile && ind > loopind &&
-           l ~ /await[ \t]|\.await([^A-Za-z_]|$)|\.(Query|QueryRow|QueryContext|QueryRowContext|Exec|ExecContext)\(|(^|[^A-Za-z0-9_])[A-Z][A-Za-z0-9]*(\.|::)(find|find_by|where|first|query)\(|\.query\(|\.execute\(|\.objects\.|\.find(One|By[A-Za-z]*|_by|All)\(|\.(save|first|get_or_create)\(|fetch\(|axios\.|requests\.(get|post|put|patch|delete)\(|http\.(Get|Post|Do)\(|DB::/) {
+           ((l ~ /await[ \t]|\.await([^A-Za-z_]|$)/ && lc ~ /(^|[^a-z0-9_])(db|repo|repository|client|api|http|prisma|knex|sequelize|mongoose|model|session|conn|pool|store|redis|cache|supabase|firestore|s3|queue|fetch|axios)[a-z0-9_]*(\.|::|\()/) || l ~ /\.(Query|QueryRow|QueryContext|QueryRowContext|Exec|ExecContext)\(|(^|[^A-Za-z0-9_])[A-Z][A-Za-z0-9]*(\.|::)(find|find_by|where|first|query)\(|\.query\(|\.execute\(|\.objects\.|\.find(One|By[A-Za-z]*|_by|All)\(|\.(save|first|get_or_create)\(|fetch\(|axios\.|requests\.(get|post|put|patch|delete)\(|http\.(Get|Post|Do)\(|DB::/)) {
     flag("io-in-loop", "query or network call inside a loop (N+1) -> fetch everything in one query or call before the loop (performance.md)")
     loopflagged = 1
   }
@@ -371,7 +375,7 @@ END {
     f = rfile[i]; k = rkind[i]
     if (ackfile[f] || remf[f SUBSEP k] <= addf[f SUBSEP k] || ((k SUBSEP rtok[i]) in addtok)) continue
     if (k == "access check") must = "(MUST 2, 5)"; else if (k == "validation") must = "(MUST 5)"; else must = "(MUST 12)"
-    print f ":" rline[i] "  [removed-guard] " k " removed and not added back -> keep it; if it is truly not needed, say why in a comment containing \"check-diff: ok removed-guard <reason>\" " must
+    print f ":" rline[i] "  [removed-guard] " k " removed and not added back -> keep it; if it is truly not needed, say why in your report " must
   }
 }
 AWK
@@ -383,8 +387,8 @@ findings=$(collect | awk -v filesmode="$FILESMODE" "$RULES")
 [ -z "$findings" ] && exit 0
 count=$(printf '%s\n' "$findings" | wc -l | tr -d ' ')
 report=$(
-  echo "check-diff: $count possible problem(s) in this change. Signals, not verdicts: fix each one,"
-  echo "or, if it is a false alarm, add a comment containing \"check-diff: ok <reason>\" on that line."
+  echo "check-diff: $count possible problem(s) in this change. Signals, not verdicts: fix each real one."
+  echo "A false alarm: leave the code as it is and list it in your report, one line with why."
   printf '%s\n' "$findings"
 )
 

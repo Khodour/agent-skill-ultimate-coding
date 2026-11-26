@@ -66,9 +66,18 @@ test('rules apply from the working directory up to, not including, the home fold
 
 test('the person asking for another kind of reply is recognised; an ordinary request is not', async () => {
   const own = ['Add product(xs) and run the test. When done, reply with ONE line only, no report.', 'fix it, no report please',
-    'just tell me if it works', 'keep it short', 'answer briefly', 'reply in one sentence', 'only the diff please', 'tl;dr when done']
+    'just tell me if it works', 'keep it short', 'answer briefly', 'be brief', 'reply in one sentence', 'only the diff please', 'tl;dr when done']
   const plain = ['Add product(xs) to calc.py with a pytest test and run it.', 'Fix the bug where items at the reorder level are not flagged.',
-    'Write a short function that returns the mean.', 'Make the report page load faster.', 'Add a one-to-many relation for orders.']
+    'Write a short function that returns the mean.', 'Make the report page load faster.', 'Add a one-to-many relation for orders.',
+    'Add a brief description field to products.']
   for (const t of own) expect([t, asksOwnReply(t)]).toEqual([t, true])
   for (const t of plain) expect([t, asksOwnReply(t)]).toEqual([t, false])
+})
+
+test('a trivial task is not asked for the report: its size says so, or a small edit with no checklist', async () => {
+  expect(reportNudge({ ...base, size: 'Trivial' })).toBe(null)
+  expect(reportNudge({ ...base, editedLines: 8, hasChecklist: false })).toBe(null)
+  expect(reportNudge({ ...base, editedLines: 8, hasChecklist: true })).toBe(REPORT_NUDGE)       // a small task with a checklist still reports
+  expect(reportNudge({ ...base, editedLines: 40, hasChecklist: false })).toBe(REPORT_NUDGE)     // a big edit with no checklist still reports
+  expect(reportNudge({ ...base, size: 'Small' })).toBe(REPORT_NUDGE)
 })

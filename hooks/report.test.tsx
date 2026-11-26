@@ -58,6 +58,12 @@ test('the project\'s own report format wins: its CLAUDE.md, or one in a parent f
   expect((await stop('Done.')).block).toMatch(/report/)                               // the home folder's file is not the project's
 })
 
+test('the person\'s own global rules (~/.claude/CLAUDE.md) that set a report format silence the check', async ($, on) => {
+  const { skill, write, stop } = await engine($, on, { '/home/me/.claude/CLAUDE.md': 'End every task with a final message of three bullets.' })
+  await skill(); await write(20)
+  expect((await stop('Done.')).block).toBe(undefined)
+})
+
 test('a parent project folder that sets its own format silences the check', async ($, on) => {
   const { skill, write, stop } = await engine($, on, { '/home/me/shop/AGENTS.md': '## Reporting\nUse this report format: Done / Next / Risks.' })
   await skill(); await write(20)

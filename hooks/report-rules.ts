@@ -12,6 +12,12 @@ import { asksPerson, confidenceOf, hasReport } from './progress'
 /** Edits this small (a typo, one value) are trivial tasks, which the skill ends with one short sentence. */
 export const TRIVIAL_LINES = 3
 
+/**
+ * Without a checklist, edits up to this size are still trivial (a rename across a few
+ * lines). Small, normal and complex tasks always write a checklist (MUST 15).
+ */
+export const TRIVIAL_LINES_WITHOUT_CHECKLIST = 10
+
 /** What the check knows when Claude is about to stop. */
 export type StopFacts = {
   /** Claude is already continuing because of a stop hook: never nudge twice. */
@@ -28,6 +34,10 @@ export type StopFacts = {
   projectHasFormat: boolean
   /** The person's own message asked for a different kind of reply (one line, no report, briefly). */
   personSetReply: boolean
+  /** The size Claude chose for the task, from its checklist or reply; absent when it named none. */
+  size?: string
+  /** Claude wrote a checklist for this task. */
+  hasChecklist?: boolean
 }
 
 /** The nudge Claude reads when it stops without the report. */
@@ -44,6 +54,8 @@ export const reportNudge = (f: StopFacts): string | null => {
   if (f.isContinuing || !f.skillUsed || f.projectHasFormat || f.personSetReply) return null   // the person's and the project's own words win
   if (f.backgroundTasks > 0) return null                          // pausing for background work, not finishing
   if (f.editedLines <= TRIVIAL_LINES) return null                 // no code changed, or a trivial edit
+  if (f.size === 'Trivial') return null                           // trivial tasks end with one short sentence
+  if (f.hasChecklist === false && f.editedLines <= TRIVIAL_LINES_WITHOUT_CHECKLIST) return null
   if (confidenceOf(f.lastMessage) !== null) return null           // the report's confidence is there
   if (asksPerson(f.lastMessage) && !hasReport(f.lastMessage)) return null   // a question before the work is done
   return REPORT_NUDGE
@@ -75,6 +87,12 @@ export const setsOwnFormat = (rules: string): boolean => OWN_FORMAT.some(r => r.
 /** The project rules files to read from a folder: each one that can set the format. */
 export const RULE_FILES = ['CLAUDE.md', 'AGENTS.md', '.claude/CLAUDE.md', 'CLAUDE.local.md']
 
+/**
+ * The person's own rules for every project, in Claude Code's global rules file. They
+ * win over this skill too, so a report format set there silences the check.
+ */
+export const globalRuleFile = (home: string): string | null => (home.startsWith('/') ? `${home.replace(/\/+$/, '')}/.claude/CLAUDE.md` : null)
+
 /** The folders whose rules apply to a working directory: it and each parent, up to the home folder. */
 export const ruleFolders = (cwd: string, home: string): string[] => {
   const out: string[] = []
@@ -89,7 +107,7 @@ export const ruleFolders = (cwd: string, home: string): string[] => {
 }
 
 // The person asking for a reply of another kind: short, one line, no report, a set format.
-const PERSON_REPLY = /\b(?:no\s+(?:report|summary|explanation)|one[\s-](?:line|sentence|word)|in\s+(?:one|a\s+single)\s+(?:line|sentence|word)|(?:reply|answer|respond)\s+(?:with|in)\s+(?:only|just)|just\s+(?:say|tell\s+me|reply|answer)|keep\s+it\s+(?:short|brief)|brief(?:ly)?|short\s+(?:reply|answer)|tl;?dr|only\s+(?:the\s+)?(?:code|diff|answer))\b/i
+const PERSON_REPLY = /\b(?:no\s+(?:report|summary|explanation)|one[\s-](?:line|sentence|word)|in\s+(?:one|a\s+single)\s+(?:line|sentence|word)|(?:reply|answer|respond)\s+(?:with|in)\s+(?:only|just)|just\s+(?:say|tell\s+me|reply|answer)|keep\s+it\s+(?:short|brief)|be\s+brief|briefly|brief\s+(?:reply|answer)|short\s+(?:reply|answer)|tl;?dr|only\s+(?:the\s+)?(?:code|diff|answer))\b/i
 
 /** Whether the person's message asks for a different kind of reply than the skill's report. */
 export const asksOwnReply = (message: string): boolean => PERSON_REPLY.test(message)

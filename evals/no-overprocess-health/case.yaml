@@ -1,0 +1,31 @@
+# A small, safe task: a health endpoint beside an existing one. Checks the skill does
+# not over-build (no rate limit, no auth) or over-report.
+schema_version: "1.0"
+name: no-overprocess-health
+description: A small safe endpoint gets no rate limiter, no auth and a short report.
+tags: [misfire, repo]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Add a /health endpoint that returns {"status": "ok"} for the load balancer.
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, "Bash(python3 -m unittest:*)"]
+runs: 3
+graders:
+  - type: regex
+    name: endpoint-added
+    target: { source: file, path: app/routes.py }
+    pattern: '["'']/health["'']'
+
+  - type: regex
+    name: no-rate-limit-or-auth
+    target: { source: file, path: app/routes.py }
+    match: not_contains
+    pattern: '[Rr]ate.?[Ll]imit|[Tt]hrottl|[Aa]uthori[sz]|[Tt]oken|[Ll]imiter'
+
+  - type: regex
+    name: short-report
+    target: last_message
+    pattern: '^[\s\S]{0,1400}$'
