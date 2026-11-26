@@ -83,7 +83,7 @@ Before saying done, follow `review.md`: read the whole diff as a reviewer would,
    2. Only without one: a script of your own that drives a real browser or the real app.
    3. Never instead of these: a test suite (pytest, jest). It checks the code, not what the user sees.
 
-   A page opened from a file may not be reachable by a browser tool: serve it from a local address (`python3 -m http.server`) and stop the server when you are done.
+   A page opened from a file may not be reachable by a browser tool: serve it from a local address with whatever the project or the machine has (for example `python3 -m http.server`), and stop the server when you are done.
 
 2. **Never on production.** No real payments, emails or SMS: use test modes or fakes. Clean up test data afterwards.
 3. **Happy path first, then act like a careless or confused human** (checklist below).

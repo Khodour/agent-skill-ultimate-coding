@@ -1,0 +1,41 @@
+# A request that leaves two values blank on purpose. Agents tend to pick the
+# values themselves and build; the user finds out afterwards. The skill asks
+# first: before any file is written, the reply puts the open choices to the user.
+schema_version: "1.0"
+name: ask-open-choice
+description: A request that leaves real choices open ("X status", "X days") gets questions before any code is written.
+tags: [understand, questions, repo]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Add a nightly job that deletes old orders: the ones stuck in X status for more than X days.
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, ToolSearch, TaskCreate, TaskUpdate, "Bash(python3 -m unittest:*)"]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
+
+  # Nothing is written before the user has answered.
+  - type: tool_used
+    name: no-file-written
+    tool: Write
+    min: 0
+    max: 0
+
+  - type: tool_used
+    name: no-file-edited
+    tool: Edit
+    min: 0
+    max: 0
+
+  - type: llm
+    name: asks-status-and-days
+    criteria: |
+      The user's request left two values blank: which order status, and how many days.
+      PASS only if the reply asks the user for both (which status, and how many days), offers options to choose from with one marked as recommended, and does not say the job was built.
+      FAIL if the reply describes a finished or written job, picks the status or the days by itself without asking, or asks about only one of the two.

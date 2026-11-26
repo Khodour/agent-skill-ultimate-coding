@@ -75,7 +75,8 @@ The most important moment, at every size (MUST 14): what you learn here decides 
 - Read the project's own rules first (see "Who wins").
 - Read the code you will touch: its callers, its tests, the patterns around it.
 - Search for something that already does the job: a helper, a component, a query, a constant. Search by what it does, not only by the name you would give it. Extend it before inventing anything new.
-- State your assumptions. If the request is unclear, or a simpler or safer way exists, say so before building (see "Asking questions").
+- **Ask before you build when the request leaves a real choice open.** A real choice is a value the user left blank ("X days", "some status"), what is in and what is out, how it looks or behaves, or two sound designs that cost very different amounts of work. Read the code first: it often answers the question. Then ask what is still open, all at once and before the checklist: one to three questions, with your agent's question tool when it has one (AskUserQuestion in Claude Code), otherwise as numbered questions in your reply. Then stop and wait, and build only what the answers include. Do not ask what the request, the code or the project's rules already answer. If you were told nobody is there to answer (an automated or scheduled run), take the safest choice, say which at the top of your report, and do not claim high confidence.
+- State the small assumptions you made without asking, and say so before building when a simpler or safer way exists (see "Asking questions").
 
 **Check:** I know what already exists and what the user actually needs.
 
@@ -218,8 +219,8 @@ End every normal or complex task with this, in Markdown, outside any code block.
 Every question to the user, on any topic, must work for a junior as well as a senior:
 
 1. Plain words; explain any term the user may not know.
-2. What each option leads to.
-3. One option marked **recommended**.
+2. Two to four options, and what each leads to.
+3. Your recommendation first, marked **recommended**: what a senior would choose here, from what you read in the code.
 4. "If you're unsure, choose the recommended one."
 
-Ask only when the answer changes what you do. Otherwise pick the safe default, say which one you picked, and continue.
+Ask when the answer changes what you build: a choice the user left open always does (see Understand). For a small detail with one safe answer, pick it, say which one you picked, and continue.
