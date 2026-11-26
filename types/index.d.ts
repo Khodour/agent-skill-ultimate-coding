@@ -16,8 +16,6 @@ export type Run = {
   confidence: Confidence | null
   /** The turn ended. */
   isDone: boolean
-  /** The turn ended with an answer that asks the person something. */
-  asks?: boolean
   /** The size Claude named for the task in a reply; absent until it names one. */
   size?: Size
   /**
@@ -65,8 +63,6 @@ declare module 'claude-code' {
       personSetReply: boolean
       /** Whether each working directory's own rules set a report format, read once per directory. */
       projectFormats: Record<string, boolean>
-      /** The blink clock: which half of the blink, and when it last turned (a stale one means the timer died). */
-      pulse: { on: boolean; at: number }
       score: Score
       /** check-diff's verdict per edit, by tool call id; the newest 100. */
       checkdiff: Record<string, CheckResult>

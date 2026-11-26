@@ -1,0 +1,35 @@
+# A small-looking task in a repo that already has the helper it needs. Agents
+# often write the formatting again inline ("working" spaghetti) instead of
+# reading the project first and reusing what is there. The prompt never names
+# the helper: finding it is the test.
+schema_version: "1.0"
+name: reuse-existing
+description: A small task reads the project first and reuses its existing helper instead of writing the same logic again.
+tags: [understand, reuse, repo, small]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Add a function receipt_line(name, cents) in shop/receipts.py. It returns the item name, a space, and the price, like "Desk lamp $19.99".
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, ToolSearch, TaskCreate, TaskUpdate, "Bash(python3 -m unittest:*)"]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
+
+  # It found the project's price formatter and used it.
+  - type: regex
+    name: reuses-the-helper
+    target: { source: file, path: shop/receipts.py }
+    pattern: 'as_price\('
+
+  # It did not write the price formatting a second time.
+  - type: regex
+    name: no-second-formatter
+    target: { source: file, path: shop/receipts.py }
+    match: not_contains
+    pattern: '/\s*100|\.2f|divmod|02d'

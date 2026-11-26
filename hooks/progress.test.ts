@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 import type { Run } from '../types'
 import {
-  barState, classifyPrompt, isCheckCommand, isFinishedAnswer, isTaskWork, onAgent, onAnswer, onPrompt, onSize, onTool,
+  asksPerson, classifyPrompt, hasAgents, isCheckCommand, isFinishedAnswer, isTaskWork, onAgent, onAnswer, onPrompt, onSize, onTool,
   onTurnStart, sizeInText, startRun, turnEnd,
 } from './progress'
 
@@ -14,7 +14,7 @@ test('a run counts its checks and keeps the size Claude named; it never holds a 
   r = onTool(r, 'Edit', undefined, false)
   r = onTool(r, 'Bash', 'npm test', false)
   r = onTool(r, 'Bash', 'npx tsc -p .', true)
-  expect([r.size, r.checks, r.failed, barState(r)]).toEqual(['Normal', 2, 1, 'working'])
+  expect([r.size, r.checks, r.failed, r.isDone]).toEqual(['Normal', 2, 1, false])
   expect(Object.keys(r).sort()).toEqual(['checks', 'confidence', 'failed', 'isDone', 'size'])
   expect(onSize(startRun(), 'Huge').size).toBe(undefined)
 })
@@ -43,37 +43,39 @@ test('task work is a checklist item, an edit, a check or a hand-off to a subagen
     .toEqual([true, false, false, false])
 })
 
-// ---- Every way a turn can end, each its own state ----
+// ---- Every way a turn can end ----
 
-test('an answered turn is done, or waiting for you when it asks the person something', async () => {
+test('an answered turn is done and keeps the report\'s confidence', async () => {
   const work = onTool(startRun(), 'Edit', undefined, false)
-  expect(barState(answered(work, REPORT))).toBe('done')
-  expect(answered(work, REPORT).confidence).toBe('Medium')
-  expect(barState(answered(work, '### 1. What was done\nx\n### 3. Waiting for you\n1. commit?'))).toBe('waiting for you')
-  expect(barState(answered(work, 'Done. Should I also add tests?'))).toBe('waiting for you')
-  expect(barState(answered(work, 'I added the function.'))).toBe('done')
+  const done = answered(work, REPORT)
+  expect([done.isDone, done.stop, done.confidence]).toEqual([true, undefined, 'Medium'])
+  expect(answered(work, 'I added the function.').confidence).toBe(null)       // no confidence line
+})
+
+test('an answer asks the person when it has a "Waiting for you" part or a question in its last paragraph', async () => {
+  expect(asksPerson('### 1. What was done\nx\n### 3. Waiting for you\n1. commit?')).toBe(true)
+  expect(asksPerson('Done. Should I also add tests?')).toBe(true)
+  expect(asksPerson('I added the function.')).toBe(false)
   // seen live: the question is not on the last line
-  expect(barState(answered(work, '**Confidence: High 🟢** x\n\nShould I commit these two files to `main`? If yes, I will propose a message.'))).toBe('waiting for you')
-  expect(barState(answered(work, 'Is it fast? Yes: 3 ms.\n\nAll done.'))).toBe('done')                // a question earlier, not at the end
-  expect(answered(work, 'I added the function.').confidence).toBe(null)       // no confidence line: no dot
+  expect(asksPerson('**Confidence: High 🟢** x\n\nShould I commit these two files to `main`? If yes, I will propose a message.')).toBe(true)
+  expect(asksPerson('Is it fast? Yes: 3 ms.\n\nAll done.')).toBe(false)       // a question earlier, not at the end
 })
 
 test('the report shape the user\'s session wrote (bold headings, no numbers) is still a report', async () => {
   const bold = 'You can now make banners.\n\n**Checks**\n- ✅ syntax\n\n**Needs attention**\n- x\n\n**Waiting for you**\n1. Commit?'
   expect(isFinishedAnswer(bold)).toBe(true)
-  expect(barState(answered(onTool(startRun(), 'Edit', undefined, false), bold))).toBe('waiting for you')
+  expect(asksPerson(bold)).toBe(true)
   expect(isFinishedAnswer('**Confidence: High 🟢** all ran')).toBe(true)
   expect(isFinishedAnswer('I changed the name.')).toBe(false)
 })
 
 test('Esc, an API error or a refusal: stopped, and a new turn works again', async () => {
   const work = onTool(startRun(), 'Edit', undefined, false)
-  expect(barState(answered(work, '', 'aborted'))).toBe('stopped')
-  expect(barState(answered(work, '', 'error'))).toBe('stopped by an error')
-  expect(barState(answered(work, '', 'refusal'))).toBe('stopped by an error')
+  expect((['aborted', 'error', 'refusal'] as const).map(end => answered(work, '', end).stop)).toEqual(['aborted', 'error', 'refusal'])
+  expect(answered(work, '', 'error').isDone).toBe(true)
   expect(answered(work, '**Confidence: High 🟢** x', 'aborted').confidence).toBe(null)   // a stopped turn gave no report
   const again = onTurnStart(answered(work, '', 'aborted')) as Run
-  expect([barState(again), again.stop, again.asks]).toEqual(['working', undefined, undefined])
+  expect([again.isDone, again.stop]).toEqual([false, undefined])
   expect(onTurnStart(null)).toBe(null)
   expect([turnEnd('aborted'), turnEnd('completed'), turnEnd(undefined)]).toEqual(['aborted', 'answer', 'answer'])
 })
@@ -87,8 +89,8 @@ test('a tentative run is dropped when its turn was only a question; kept when it
   expect(onTool(t, 'Agent', undefined, false).isTentative).toBe(undefined)
   expect(onSize(t, 'Small').isTentative).toBe(undefined)
   expect(onTool(t, 'TaskCreate', undefined, false).isTentative).toBe(undefined)   // a checklist item makes it a task
-  expect(barState(onAnswer(t, '', 'aborted') as Run)).toBe('stopped')                    // Esc on a new task: shown, not dropped
-  expect(barState(onAnswer(t, REPORT) as Run)).toBe('done')
+  expect((onAnswer(t, '', 'aborted') as Run).stop).toBe('aborted')                       // Esc on a new task: kept, not dropped
+  expect((onAnswer(t, REPORT) as Run).isDone).toBe(true)
 })
 
 // ---- Every prompt source ----
@@ -133,9 +135,9 @@ test('the size is read only from a line where Claude names it, never from the ta
 test('a run stays busy while subagents work, even after the main turn ended', async () => {
   const handed = onTool(startRun(true), 'Agent', undefined, false)
   const ended = answered(onAgent(handed, 'a1', true), 'The subagent is working in the background.')
-  expect(barState(ended)).toBe('subagent working')
+  expect([ended.isDone, hasAgents(ended)]).toEqual([true, true])                 // the turn ended, the run is still busy
   const two = onAgent(onAgent(ended, 'a2', true), 'a1', false)
   expect(two.agents).toEqual(['a2'])
   const done = onAgent(two, 'a2', false)
-  expect([done.agents, barState(done)]).toEqual([undefined, 'done'])
+  expect([done.agents, hasAgents(done), done.isDone]).toEqual([undefined, false, true])
 })

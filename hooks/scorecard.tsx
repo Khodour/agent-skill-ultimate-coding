@@ -8,7 +8,10 @@ import type { EngineInterface, On } from 'claude-code'
 import type { Run, Score } from '../types'
 import { checkdiffCounts } from './checkdiff'
 import { bar, countFinish, countTool, emptyScore } from './score'
-import { CONF_COLOR, SIZE_COLOR } from './tracker'
+
+/** One quiet colour per size and per confidence, so the rows read at a glance. */
+const SIZE_COLOR = { Trivial: '#9ca3af', Small: '#67e8f9', Normal: '#93c5fd', Complex: '#f0abfc' } as const
+const CONF_COLOR = { High: '#4ade80', Medium: '#fbbf24', Low: '#f87171' } as const
 
 const score = atom({ plugin: 'agent-skill-ultimate-coding', key: 'score' } as const, emptyScore())
 const PANE = 'uc-score'

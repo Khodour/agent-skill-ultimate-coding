@@ -12,7 +12,7 @@ import { classifyPrompt, turnEnd } from './progress'
 import { reportPrompt, reportReset, reportStop, reportTool } from './report'
 import { registerScorecardViews, scorecardStart, scorecardTool, scorecardTurnEnd } from './scorecard'
 import {
-  registerTrackerViews, trackerAgent, trackerPrompt, trackerRow, trackerSessionEnd, trackerSkill, trackerStart, trackerTool,
+  trackerAgent, trackerPrompt, trackerRow, trackerSessionEnd, trackerSkill, trackerTool,
   trackerTurnEnd, trackerTurnStart,
 } from './tracker'
 
@@ -20,7 +20,6 @@ const SKILL = 'agent-skill-ultimate-coding'
 
 /** Which features are on: the userConfig switches in plugin.json, each on unless set to false. */
 const featuresFrom = (options: PluginOptions) => ({
-  tracker: options.progressTracker !== false,
   scorecard: options.scorecard !== false,
   checkDiff: options.checkDiffLine !== false,
   report: options.reportCheck !== false,
@@ -29,7 +28,6 @@ const featuresFrom = (options: PluginOptions) => ({
 export const register: Register = (on, options) => {
   const features = featuresFrom(options)
   on('session.start', async ($, e, next) => {
-    if (features.tracker) trackerStart($)
     if (features.scorecard) await scorecardStart($)
     return next(e)
   })
@@ -57,7 +55,7 @@ export const register: Register = (on, options) => {
     if (e.agentId === undefined && e.door === 'response' && e.message.type === 'assistant') {
       const text = e.message.content.map(b => (b.type === 'text' ? b.text : '')).join('\n')
       // The row is already stored; a tracker failure must not touch it, so it goes to the debug log.
-      if (text !== '') await trackerRow($, text).catch(err => $.ui.log(`progress bar: checklist-in-text failed: ${String(err)}`, { to: 'debug' }))
+      if (text !== '') await trackerRow($, text).catch(err => $.ui.log(`run tracker: size-in-text failed: ${String(err)}`, { to: 'debug' }))
     }
     return stored
   })
@@ -129,6 +127,5 @@ export const register: Register = (on, options) => {
     )
   })
 
-  if (features.tracker) registerTrackerViews(on)
   if (features.scorecard) registerScorecardViews(on)
 }

@@ -23,14 +23,16 @@ The rules are directions, not dogma. Apply each one in the language's own idiom 
 
 | Size | Examples | What runs |
 |---|---|---|
-| **Trivial** | Typo, text or colour change, rename, one config value. No new logic. | Make the change → run the project's checks → reply with the change and at most one short sentence. No checklist, no new tests, no report sections. |
+| **Trivial** | Typo, text or colour change, rename, one config value. No new logic. | Read the code around the change → make the change → run the project's checks → reply with the change and at most one short sentence. No checklist, no new tests, no report sections. |
 | **Small** | One self-contained function, written or fixed: a formatter, a parser, a pure calculation. Only if it reads and writes no stored data, makes no network or file calls, shares no state, and touches no money, auth, UI or public API. | Short checklist (the asks, their edge cases, the check) → code → project checks → tests by risk (a bug fix still starts with a failing test) → one Confidence line as the report. |
 | **Normal** | New feature, bug fix, new screen or endpoint, any function or calculation that is not Small | Full checklist + all five moments. Tests by risk. Real-user test when users can see the change. |
 | **Complex** | Money, auth, permissions, personal data, data migrations, concurrency, public API changes | Full checklist with risk items + all five moments + read the matching reference files in full + independent review + concurrency or stress checks. |
 
 When unsure, go one size up. A task that adds or changes logic (a condition, a loop, a calculation, a query) is never trivial, however small. A task is Small only when every condition in its row holds; one miss makes it Normal.
 
-**Small, normal and complex tasks start with the checklist** (MUST 14; how to write it is under Design), even when the task looks small or there are no files.
+**Every task, at every size, starts with Understand** (MUST 14): a one-line change still means reading the code around it and how the project already does the same thing.
+
+**Small, normal and complex tasks then write the checklist** (MUST 15; how to write it is under Design), even when the task looks small or there are no files.
 
 ## The MUSTs (never skipped, at any size)
 
@@ -61,15 +63,18 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
 
 **Work**
 
-14. **No code before a checklist the user can see** (small, normal and complex tasks; a trivial task needs none). It goes in your agent's task list, and you tick each item as you finish it. How to write it: Design, below.
+14. **Understand before you change anything, at every size.** Read the code you will touch, what calls it, and how the project already solves this kind of problem. Search for what already does the job, and build on it. Do not write a line until you can say what exists, what you will change, and where the change belongs. Code that repeats or goes around what the project already has is a bug, even when it works: nobody can reuse it, and the next fix has to be made twice.
+15. **No code before a checklist the user can see** (small, normal and complex tasks; a trivial task needs none). It goes in your agent's task list, and you tick each item as you finish it. How to write it: Design, below.
 
 ## The five moments
 
 ### 1. Understand
 
+The most important moment, at every size (MUST 14): what you learn here decides the quality of everything after it. Scale it to the task, never skip it.
+
 - Read the project's own rules first (see "Who wins").
 - Read the code you will touch: its callers, its tests, the patterns around it.
-- Search for something that already does the job. Extend it before inventing anything new.
+- Search for something that already does the job: a helper, a component, a query, a constant. Search by what it does, not only by the name you would give it. Extend it before inventing anything new.
 - State your assumptions. If the request is unclear, or a simpler or safer way exists, say so before building (see "Asking questions").
 
 **Check:** I know what already exists and what the user actually needs.
@@ -81,26 +86,27 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
   - **Only when your agent has no task list**, write it as a numbered list in your reply, before your first edit. A checklist kept in your thinking does not count: nobody can see it.
 
   A few words per item:
-  1. **Every ask in the request is an item**, including asks hidden in a sentence after a list.
-  2. **Then go through these questions and add an item for each one that needs work.** Skip a question with nothing to do; never write "n/a".
-     - **Mirror**: the closest existing piece to copy (file path).
+  1. **The first item is what you build on**: the existing piece you reuse, extend or mirror, with its file path, or `New: nothing like it exists` once you have searched.
+  2. **Every ask in the request is an item**, including asks hidden in a sentence after a list.
+  3. **Then go through these questions and add an item for each one that needs work.** Skip a question with nothing to do; never write "n/a".
      - **Edges**: inputs that break naive code: empty, zero, negative, huge, duplicate, uneven split.
      - **Twice**: what happens if it runs twice: double click, retry, two users at once.
      - **Data**: what is read and written; does it need one transaction?
      - **Load**: how often it runs, how much data; any query or call inside a loop?
      - **MUSTs**: each MUST above that applies, as the thing to do (`MUST 2: only the invoice's owner may read it`).
      - **Risks** (complex tasks): races, permissions, data loss, the way back.
-  3. **The last items are the proof**: the checks that show it works; for a bug, first the test that fails today. When users can see or use the change, one proof item is the real-user test, naming the tool (`Proof: try it in Claude in Chrome`).
+  4. **The last items are the proof**: the checks that show it works; for a bug, first the test that fails today. When users can see or use the change, one proof item is the real-user test, naming the tool (`Proof: try it in Claude in Chrome`).
 
   ```
-  1. Hide deleted products from search, starting from active_products() in catalog/queries.py
-  2. Edge: every match deleted → an empty list, not an error
-  3. MUST 1: the query stays parameterized
-  4. Proof: a test that search("lamp") skips a deleted lamp fails today, passes after
-  5. Proof: the full suite passes
+  1. Build on active_products() in catalog/queries.py: it already filters deleted ones
+  2. Hide deleted products from search
+  3. Edge: every match deleted → an empty list, not an error
+  4. MUST 1: the query stays parameterized
+  5. Proof: a test that search("lamp") skips a deleted lamp fails today, passes after
+  6. Proof: the full suite passes
   ```
 
-  **Small tasks** list only the asks, their edge cases and the check.
+  **Small tasks** list only what you build on, the asks, their edge cases and the check.
 
   An item that names a risk ends as code, a test, or a `Warning:` line in the report. Code that contradicts an item is a bug. Before the report, read the request again against the list: every item is completed, or it is reported as not done. Two full worked examples: `references/examples.md`.
 - Choose the simplest thing that works. Build only what was asked: no options, flags or hooks "for later" (the off-switch MUST 8 asks for is not "for later").

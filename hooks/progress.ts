@@ -1,9 +1,9 @@
 /**
- * The progress tracker's rules. The bar shows only what Claude Code's own events
- * make certain: a turn is working, a subagent is working, the turn was stopped
- * (Esc, an error), or it ended (waiting for you, or done), with the checks run and
- * the report's confidence. It never guesses which step of the skill Claude is on.
- * Pure, so the rules are tested without the engine.
+ * The run tracker's rules. A run holds only what Claude Code's own events make
+ * certain: a turn is working, a subagent is working, the turn was stopped (Esc,
+ * an error) or it ended, with the checks run and the report's confidence. It
+ * never guesses which step of the skill Claude is on. Pure, so the rules are
+ * tested without the engine.
  */
 import type { Confidence, PromptKind, Run, Size } from '../types'
 
@@ -111,8 +111,8 @@ export const isFinishedAnswer = (answer: string): boolean => hasReport(answer)
 
 /**
  * Whether the answer hands a question to the person: a "Waiting for you" part, or a
- * question in its last paragraph ("Should I commit? If yes, I'll ..."). It only picks
- * between the two labels of an ended turn, so a rare wrong guess is harmless.
+ * question in its last paragraph ("Should I commit? If yes, I'll ..."). The report
+ * check uses it: a question before the work is done is not a missing report.
  */
 export const asksPerson = (answer: string): boolean => {
   if (WAITING.test(answer)) return true
@@ -122,26 +122,25 @@ export const asksPerson = (answer: string): boolean => {
 
 /**
  * A turn ended. Stopped by Esc, an API error or a refusal: marked so. Answered:
- * done, or waiting for you when the answer asks the person something; the report's
- * confidence is kept when it gives one. A tentative run whose turn did no task work
+ * done, and the report's confidence is kept when it gives one. A tentative run whose turn did no task work
  * and gave no report is dropped: that turn was only a question. Returns null then.
  */
 export const onAnswer = (run: Run, answer: string, end: TurnEnd = 'answer'): Run | null => {
   if (run.isTentative === true && end === 'answer' && !hasReport(answer)) return null
-  const { stop: _, asks: __, ...rest } = run
+  const { stop: _, ...rest } = run
   if (end !== 'answer') return { ...rest, isDone: true, stop: end }
   const c = CONFIDENCE.exec(answer)
-  return { ...rest, isDone: true, ...(c ? { confidence: c[1] as Confidence } : {}), ...(asksPerson(answer) ? { asks: true } : {}) }
+  return { ...rest, isDone: true, ...(c ? { confidence: c[1] as Confidence } : {}) }
 }
 
-/** A turn of the main loop started while a run is shown (a background task's notice): it is working again. */
+/** A turn of the main loop started while a run is open (a background task's notice): it is working again. */
 export const onTurnStart = (run: Run | null): Run | null => {
   if (run === null) return null
-  const { stop: _, asks: __, ...rest } = run
+  const { stop: _, ...rest } = run
   return { ...rest, isDone: false }
 }
 
-// Origins that are the person speaking: a new message starts a fresh bar.
+// Origins that are the person speaking: a new message starts a fresh run.
 const PERSON = new Set(['composer', 'bridge', 'sdk', 'scheduled-trigger', 'channel', 'coordinator', 'projects-relay', 'slack-ping'])
 
 /**
@@ -161,21 +160,9 @@ export const classifyPrompt = (e: { command?: unknown; isMeta?: boolean; turnId?
 }
 
 /**
- * On a submitted prompt. The person's new message, once nothing is working, clears
- * the bar: the next turn starts fresh, so nothing from an earlier turn can be shown
- * wrongly. Anything else, or a run still busy (a turn or a subagent working), stays.
+ * On a submitted prompt. The person's new message, once nothing is working, closes
+ * the run: the next turn starts fresh, so nothing from an earlier turn is counted
+ * twice. Anything else, or a run still busy (a turn or a subagent working), stays.
  */
 export const onPrompt = (run: Run | null, kind: PromptKind = 'new'): Run | null =>
   run === null || kind !== 'new' || !run.isDone || hasAgents(run) ? run : null
-
-/** The bar's state, each one known from an event: working, subagent working, stopped, waiting for you, done. */
-export type BarState = 'working' | 'subagent working' | 'stopped' | 'stopped by an error' | 'waiting for you' | 'done'
-
-/** Which state the bar shows. */
-export const barState = (run: Run): BarState => {
-  if (hasAgents(run)) return 'subagent working'
-  if (!run.isDone) return 'working'
-  if (run.stop === 'aborted') return 'stopped'
-  if (run.stop === 'error' || run.stop === 'refusal') return 'stopped by an error'
-  return run.asks === true ? 'waiting for you' : 'done'
-}

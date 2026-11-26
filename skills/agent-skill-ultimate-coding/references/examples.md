@@ -15,8 +15,8 @@ Two tasks done end to end: the checklist, the steps, the proof and the report. R
 **Checklist** (one task per item in the task list, before any code; the read-only query needs no Twice or Data item):
 
 ```text
-1. Hide deleted products from search results
-2. Mirror: start from active_products() in catalog/queries.py, which already filters deleted_at
+1. Build on active_products() in catalog/queries.py, which already filters deleted_at
+2. Hide deleted products from search results
 3. Edges: no products; every match deleted; a product deleted after it was indexed
 4. MUST 1: the query stays parameterized
 5. MUST 12: fix search() itself, no filter added after the results come back
@@ -77,8 +77,8 @@ Complex: it moves value between people, two requests can race, and a retry must 
 **Checklist** (with risk items):
 
 ```text
-1. Move n points from one member's account to another's, all or nothing
-2. Mirror: loyalty/redeem.go, the same transaction helper and error types
+1. Build on loyalty/redeem.go: the same transaction helper and error types
+2. Move n points from one member's account to another's, all or nothing
 3. Edges: n <= 0; sender == receiver; not enough points; unknown receiver; huge n
 4. Twice: a retry or double click sends the same requestID → stored once (unique key)
 5. Twice: two transfers from one account at once → rows locked, balance re-checked
