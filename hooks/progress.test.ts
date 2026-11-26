@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 import type { Run } from '../types'
 import {
-  asksPerson, classifyPrompt, hasAgents, isCheckCommand, isFinishedAnswer, isTaskWork, onAgent, onAnswer, onPrompt, onSize, onTool,
+  asksPerson, classifyPrompt, confidenceOf, hasAgents, isCheckCommand, isFinishedAnswer, isTaskWork, onAgent, onAnswer, onPrompt, onSize, onTool,
   onTurnStart, sizeInText, startRun, turnEnd,
 } from './progress'
 
@@ -140,4 +140,15 @@ test('a run stays busy while subagents work, even after the main turn ended', as
   expect(two.agents).toEqual(['a2'])
   const done = onAgent(two, 'a2', false)
   expect([done.agents, hasAgents(done), done.isDone]).toEqual([undefined, false, true])
+})
+
+test('confidence is read from the agent\'s own words, and from the older label', async () => {
+  expect(confidenceOf('**I have high confidence in this change** 🟢 because 42 tests passed')).toBe('High')
+  expect(confidenceOf('I have medium confidence in these changes 🟡 because x')).toBe('Medium')
+  expect(confidenceOf('**I have low confidence in this change** 🔴 because the tests did not run.\n1. run pytest')).toBe('Low')
+  expect(confidenceOf('**Confidence: Medium 🟡** older reports still read')).toBe('Medium')
+  expect(confidenceOf('I have no confidence the old code was right.')).toBe(null)
+  expect(confidenceOf('Low confidence intervals are a statistics term.')).toBe(null)
+  expect(answered(startRun(), 'Search now works.\n\n**I have low confidence in this change** 🔴 because x').confidence).toBe('Low')
+  expect(isFinishedAnswer('All done! ✅ tests 4/4\n\n**I have high confidence in this change** 🟢 because all passed')).toBe(true)
 })

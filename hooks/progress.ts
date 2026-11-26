@@ -90,9 +90,19 @@ export const sizeInText = (text: string): Size | null => {
   return SIZES.find(z => z.toLowerCase() === word?.toLowerCase()) ?? null
 }
 
-export const CONFIDENCE = /Confidence:?\**\s*(High|Medium|Low)/
-// A report in any of the shapes Claude writes it: the three-part headings (numbered or bold),
-// or the confidence line every report form ends with.
+// The report's confidence, in the skill's own words ("I have medium confidence in this change"),
+// or the older label ("Confidence: Medium"), so reports written before the change still read.
+const CONFIDENCE_SAID = /\bI have (high|medium|low) confidence\b/i
+const CONFIDENCE_LABEL = /Confidence:?\**\s*(High|Medium|Low)\b/
+
+/** The confidence an answer gives, or null when it gives none. */
+export const confidenceOf = (answer: string): Confidence | null => {
+  const word = (CONFIDENCE_SAID.exec(answer) ?? CONFIDENCE_LABEL.exec(answer))?.[1]
+  if (word === undefined) return null
+  return (word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) as Confidence
+}
+// A report in any of the shapes Claude writes it: the confidence line every report ends with,
+// or the older three-part headings (numbered or bold).
 const REPORT = /(?:^|\n)\s*(?:#{1,4}\s*(?:\d\.\s*)?|\*\*)(?:What was done|Needs attention|Waiting for you)\b/i
 const WAITING = /(?:^|\n)\s*(?:#{1,4}\s*(?:\d\.\s*)?|\*\*)Waiting for you\b/i
 
@@ -104,7 +114,7 @@ export const turnEnd = (reason: unknown): TurnEnd =>
   reason === 'aborted' || reason === 'error' || reason === 'refusal' ? reason : 'answer'
 
 /** Whether an answer holds a report: its headings in any shape, or its confidence line. */
-export const hasReport = (answer: string): boolean => REPORT.test(answer) || CONFIDENCE.test(answer)
+export const hasReport = (answer: string): boolean => REPORT.test(answer) || confidenceOf(answer) !== null
 
 /** Whether a turn's final answer finishes its task: it holds a report. */
 export const isFinishedAnswer = (answer: string): boolean => hasReport(answer)
@@ -129,8 +139,8 @@ export const onAnswer = (run: Run, answer: string, end: TurnEnd = 'answer'): Run
   if (run.isTentative === true && end === 'answer' && !hasReport(answer)) return null
   const { stop: _, ...rest } = run
   if (end !== 'answer') return { ...rest, isDone: true, stop: end }
-  const c = CONFIDENCE.exec(answer)
-  return { ...rest, isDone: true, ...(c ? { confidence: c[1] as Confidence } : {}) }
+  const c = confidenceOf(answer)
+  return { ...rest, isDone: true, ...(c !== null ? { confidence: c } : {}) }
 }
 
 /** A turn of the main loop started while a run is open (a background task's notice): it is working again. */

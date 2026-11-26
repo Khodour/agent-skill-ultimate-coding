@@ -48,23 +48,13 @@ def search(db, text):
 **Report:**
 
 ````markdown
----
-### 1. What was done
-```diff
-+ Deleted products no longer appear in search
-```
-- `catalog/search.py`: `search()` starts from `active_products()`
-- Checks: ✅ new test (failed before the fix, passes after) · ✅ full suite 212 passed · ✅ searched on the local site
+All done! ✅ new test (failed before the fix, passes after) · ✅ full suite 212 passed · ✅ searched on the local site
+Deleted products no longer appear in search.
 
-**Confidence: High 🟢** every check ran, and the real search was tried
-
----
-### 2. Needs attention
-Nothing needs attention.
----
+**I have high confidence in this change** 🟢 because the new test failed before the fix and passes after it, the full suite passed after my last edit, and I searched for a deleted product on the local site.
 ````
 
-Short, because the task was small. No restating the request, no generic advice.
+Two lines and the confidence, because everything is done and checked. No options: there is no choice to make.
 
 ---
 
@@ -142,27 +132,24 @@ The handler checks that `from` is the signed-in member before calling `Transfer`
 **Report:**
 
 ````markdown
----
-### 1. What was done
-```diff
-+ Members can transfer points to each other, safely under retries and parallel requests
-```
-- `loyalty/transfer.go`: `Transfer` in one transaction: idempotent insert, rows locked in id order, conditional debit, credit
-- `loyalty/handler.go`: `POST /loyalty/transfers`, checks the sender is the signed-in member
-- Checks: ✅ 7 unit tests (limits, same account, not enough points, unknown receiver) · ✅ same requestID 3 times → 1 transfer · ✅ 20 parallel transfers of 10 from 100 points → 10 succeed, final balance 0
-- Independent review found a missing sender check in the handler: fixed, retested
-- 3 statements per transfer, all by primary key
+Members can now send points to each other, safe against retries and double clicks.
 
-**Confidence: Medium 🟡** not tried at production data size
+| Check | Result |
+|---|---|
+| 7 unit tests (limits, same account, not enough points, unknown receiver) | ✅ pass |
+| the same request sent 3 times | ✅ 1 transfer |
+| 20 parallel transfers of 10 from 100 points | ✅ 10 succeed, balance 0 |
+| independent review | found a missing sender check: fixed, retested |
 
----
-### 2. Needs attention
-**This task**
 ```diff
-- Load at production database size not verified: run the parallel test on staging
+- Not tried at production database size
 ```
 - Not committed: 4 files on branch `feature/point-transfers`
----
+
+**I have medium confidence in this change** 🟡 because every check above passed after my last edit, but I have not tried it at production database size.
+1. I run the 20 parallel transfers on staging, on a copy of production data **(recommended)**: then high
+2. You give me a staging database first, if I don't have one
+3. Ship it now and watch the error logs
 ````
 
-Longer than A, because a complex task has more to prove. Every risk item on the checklist has an answer in the code, a test, or the report.
+Longer than A, because a complex task has more to prove, and a table says it in fewer words. Every risk item on the checklist has an answer in the code, a test, or the report.

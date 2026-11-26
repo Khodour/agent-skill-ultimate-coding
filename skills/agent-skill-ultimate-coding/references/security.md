@@ -76,7 +76,7 @@ If a check blocks you, fix the cause. Follow this order:
 
 1. **Fix the cause yourself.** Most blocked checks have a known safe fix (table below).
 2. **If a human decision is truly needed**, ask so a junior can answer: plain words, what each option leads to, the safe option marked recommended, and "if you're unsure, choose the recommended one".
-3. **If the user still chooses the unsafe option:** local development only, behind a setting that **defaults to safe**, with a warning comment in the code, and repeated as a `Warning:` line under "Needs attention" in the report.
+3. **If the user still chooses the unsafe option:** local development only, behind a setting that **defaults to safe**, with a warning comment in the code, and repeated as a red `Warning:` line in the report.
 
 **Known fixes**
 

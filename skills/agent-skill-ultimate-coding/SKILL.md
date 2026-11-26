@@ -17,14 +17,14 @@ The rules are directions, not dogma. Apply each one in the language's own idiom 
 3. A skill made for the project's framework, library or domain, on its own topic (how to animate, how a framework wants its files laid out).
 4. This skill. Use both when both are loaded: the specialist skill says how, this one keeps the MUSTs, sizing, proof and report.
 
-**Exception:** a MUST below can be overridden only by the user saying so explicitly in this conversation. Then warn them in plain words, comply, and list it as a red `Warning:` line under Needs attention in the report.
+**Exception:** a MUST below can be overridden only by the user saying so explicitly in this conversation. Then warn them in plain words, comply, and list it as a red `Warning:` line in the report.
 
 ## Step 0: size the task
 
 | Size | Examples | What runs |
 |---|---|---|
 | **Trivial** | Typo, text or colour change, rename, one config value. No new logic. | Read the code around the change → make the change → run the project's checks → reply with the change and at most one short sentence. No checklist, no new tests, no report sections. |
-| **Small** | One self-contained function, written or fixed: a formatter, a parser, a pure calculation. Only if it reads and writes no stored data, makes no network or file calls, shares no state, and touches no money, auth, UI or public API. | Short checklist (the asks, their edge cases, the check) → code → project checks → tests by risk (a bug fix still starts with a failing test) → one Confidence line as the report. |
+| **Small** | One self-contained function, written or fixed: a formatter, a parser, a pure calculation. Only if it reads and writes no stored data, makes no network or file calls, shares no state, and touches no money, auth, UI or public API. | Short checklist (the asks, their edge cases, the check) → code → project checks → tests by risk (a bug fix still starts with a failing test) → the short report (see Report). |
 | **Normal** | New feature, bug fix, new screen or endpoint, any function or calculation that is not Small | Full checklist + all five moments. Tests by risk. Real-user test when users can see the change. |
 | **Complex** | Money, auth, permissions, personal data, data migrations, concurrency, public API changes | Full checklist with risk items + all five moments + read the matching reference files in full + independent review + concurrency or stress checks. |
 
@@ -75,7 +75,7 @@ The most important moment, at every size (MUST 14): what you learn here decides 
 - Read the project's own rules first (see "Who wins").
 - Read the code you will touch: its callers, its tests, the patterns around it.
 - Search for something that already does the job: a helper, a component, a query, a constant. Search by what it does, not only by the name you would give it. Extend it before inventing anything new.
-- **Ask before you build when the request leaves a real choice open.** A real choice is a value the user left blank ("X days", "some status"), what is in and what is out, how it looks or behaves, or two sound designs that cost very different amounts of work. Read the code first: it often answers the question. Then ask what is still open, all at once and before the checklist: one to three questions, with your agent's question tool when it has one (AskUserQuestion in Claude Code), otherwise as numbered questions in your reply. Then stop and wait, and build only what the answers include. Do not ask what the request, the code or the project's rules already answer. If you were told nobody is there to answer (an automated or scheduled run), take the safest choice, say which at the top of your report, and do not claim high confidence.
+- **Ask before you build when the request leaves a real choice open.** A real choice is a value the user left blank ("X days", "some status"), what is in and what is out, how it looks or behaves, or two sound designs that cost very different amounts of work. Read the code first: it often answers the question. Then ask what is still open, all at once and before the checklist: one to three questions, with your agent's question tool when it has one (AskUserQuestion in Claude Code), otherwise as numbered questions in your reply. Then stop and wait, and build only what the answers include. Do not ask what the request, the code or the project's rules already answer, or about a value with a usual safe default that is one line to change later (a timeout, a cache time, a page size): take that default and name it. If you were told nobody is there to answer (an automated or scheduled run), take the safest choice, say which at the top of your report, and do not claim high confidence.
 - State the small assumptions you made without asking, and say so before building when a simpler or safer way exists (see "Asking questions").
 
 **Check:** I know what already exists and what the user actually needs.
@@ -154,46 +154,44 @@ The most important moment, at every size (MUST 14): what you learn here decides 
 
 ### 5. Report
 
-End every normal or complex task with this, in Markdown, outside any code block. Trivial tasks skip it: the change plus at most one short sentence. Small tasks end with only the Confidence line below, and nothing after it; when something was not run, the same line says so and gives the command to run it (``**Confidence: Low 🔴** tests written, not run: `pytest test_duration.py` ``).
+End every small, normal and complex task with a short answer that anyone can understand at a glance. Trivial tasks: the change plus at most one short sentence. The report is the last thing you write, and it stands alone: when the code is given in the reply (no files), the code is in that same last message, above the report.
+
+Everything done and checked:
 
 ````markdown
----
-### 1. What was done
-```diff
-+ the result in one line of plain words
-```
-- `path/file`: what it does now
-- Checks: ✅ build · ✅ tests 42/42 · ❌ lint (under a ❌, a short code block with the real output)
-- Undo: the switch or revert (risky changes only)
+All done! ✅ tests 42/42 · ✅ build · ✅ tried in the browser
+Search now hides deleted products.
 
-**Confidence: Medium 🟡** the one reason, in plain words
-
----
-### 2. Needs attention
-**This task**
-```diff
-- what failed or was not verified + the steps for the user to check it
-- Warning: an overridden MUST, a weakened check, a risk left open
-```
-- Not committed: 2 files on branch `fix/x`
-
-**Found elsewhere, not touched**
-```diff
-- `path/file`: a serious problem
-```
-- `path/file`: a minor problem
-
----
-### 3. Waiting for you
-1. a question the work depends on
----
+**I have high confidence in this change** 🟢 because all 42 tests passed after my last edit, and I searched for a deleted product in the browser.
 ````
 
-- **Part 1, always.** When the task is about speed or request counts, add the numbers as a `diff`: `- before`, `+ after`. If you stopped to ask before changing anything, say so in one line.
-- **Confidence comes from the evidence, never a percentage.** **High 🟢**: every check ran and passed, and the real user path was tried. **Medium 🟡**: the checks pass, but something in part 2 was not verified. **Low 🔴**: tests could not run, a check failed, or you had to guess about the code or the request. A ❌, a `Warning:` line, or any check listed as not run rules out High. In the three-part report, each check not run also goes under Needs attention as a red line.
-- **Part 2, always.** Leave out an empty group, and an empty `diff` block; if nothing is left, write `Nothing needs attention.` Red lines (`-` in a `diff` block) only for what can hurt users or data now: a failing or unverified check, a security hole, data loss, wrong money. Everything else is a plain bullet. A serious problem found elsewhere is still red; report it, don't fix it. The git line appears only when something is not committed, not pushed or on the wrong branch.
-- **Part 3, only when you need an answer.** Numbered, so the user can reply "1: yes". Follow "Asking questions".
-- About 10 lines for a normal task, one line per item. Emoji only for status: ✅ ❌ on checks, one dot on confidence, none in headings. No summary before the report (the report is the summary), no restating the task, no generic advice, no risks unrelated to this change. Complex tasks may run longer, never padded. No "should work now".
+Something missing or not checked:
+
+````markdown
+Search now hides deleted products. ✅ tests 42/42 · ✅ build
+
+```diff
+- Not tried on a phone yet
+```
+
+**I have medium confidence in this change** 🟡 because the tests pass after my last edit, but I have not tried it on a phone.
+1. I try it on the phone emulator **(recommended)**: then high
+2. Leave it as is
+````
+
+- **As short as it can be.** Plain words a non-expert understands; explain any needed term in a few words. A small table when it says more than sentences (before → after, file → change, check → result). No headings, no restating the task, no story of how you worked, no generic advice, no "should work now".
+- **When every item is done, every checklist item is ticked, and every check ran and passed, the first line is `All done!` with the checks.** In every other case never write "all done" or "done, except": the first line says what now works, and a `diff` block says what is missing.
+- **Never list each finished item**: the checklist already shows them. List only what is not done, failed, not verified or risky, one line each with the step to fix or check it, as `-` lines in a `diff` block (they show red). A check not run gets its exact command (`- Tests not run: pytest -q`).
+- One line each, only when they apply: the undo for a risky change, files not committed or on the wrong branch, a serious problem you noticed elsewhere and did not touch, a MUST the user overrode (`- Warning: …`). When the task is about speed or request counts, show the numbers before and after. If you stopped to ask before changing anything, say so in one line.
+- **The very end carries two things, in this order:** the confidence line, then numbered options when there is a choice to make. Nothing comes after them.
+- **Confidence, in your own words, from the evidence, never a percentage.** Write it bold with its dot, `I have high|medium|low confidence in this change`, then `because` and the reason: what you checked (which check, its result), and for medium and low, what you did not.
+  - **High 🟢**: every check ran after your last edit and passed, and the real user path was tried when users can see the change.
+  - **Medium 🟡**: the checks pass, but something was not verified.
+  - **Low 🔴**: tests could not run, a check failed, or you had to guess about the code or the request.
+  - Only a check that ran after your last edit counts: a result from before a later edit is stale, so run it again. A ❌, a `Warning:` line, a check not run, or a test skipped, deleted or loosened in this change rules out high.
+  - A report that says anything was not run, not checked or not done has a red line for it, medium or low confidence, and no `All done!`. Never call such a gap small to keep high: the reader decides how much it matters.
+  - Confidence moves only with evidence. Never raise it because the user wants it done or pushes back: check again first, then say what the check showed.
+- **Options are numbered, so the user can reply `2`.** One short line each: the action, and what it gives. Mark the first **(recommended)**. Medium and low confidence always get options that raise it: each names an action (yours, or something only the user can give, such as running a command, staging access or a business rule) and the level it reaches. High confidence gets no options, or at most a next step worth taking (commit, deploy, a related fix). A question the work depends on is an option too. When the user picks one, do it, then give your confidence again with the new evidence.
 
 **Check:** someone could trust this without re-checking it.
 

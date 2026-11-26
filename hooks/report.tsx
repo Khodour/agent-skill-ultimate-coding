@@ -1,6 +1,6 @@
 /**
  * Feature: the report check. When Claude is about to stop after changing code
- * without the skill's report and Confidence line, it is asked once to end with
+ * without the skill's report and its confidence, it is asked once to end with
  * them (report-rules.ts holds why and the rules). It keeps the lines edited since
  * the person's last message, and whether the project's own rules set a report
  * format, read once per working directory and then kept.

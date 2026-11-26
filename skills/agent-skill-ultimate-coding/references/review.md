@@ -74,37 +74,25 @@ scenario that triggers it. Say "no problems found" if there are none.
 
 ## Report example
 
-The format and its rules are in SKILL.md (Report). A normal task, written out in full:
+The format and its rules are in SKILL.md (Report). A normal task with something left to check:
 
 ````markdown
----
-### 1. What was done
-```diff
-+ Invoices can take a discount code
-```
-- `discounts/`: new model, API and tests
-- `invoices/total.py`: `calculate()` applies the discount
-- Checks: ✅ build · ✅ 14 unit tests · ✅ browser test on staging (apply, remove, expired code, code above total)
-- A code above the total gave −50: added a test, fixed, retested
-- Invoice page: 4 queries, unchanged
+Invoices can now take a discount code.
 
-**Confidence: Medium 🟡** PDF export with a discount was not tried
+| Check | Result |
+|---|---|
+| build · 14 unit tests | ✅ pass |
+| browser test on staging: apply, remove, expired code, code above the total | ✅ pass |
+| a code above the total gave −50 | test added, fixed, retested ✅ |
 
----
-### 2. Needs attention
-**This task**
 ```diff
-- PDF export with a discount not verified (no PDF tool locally): open a discounted invoice → Export PDF → the discount line should appear
+- PDF export with a discount not checked (no PDF tool here): open a discounted invoice → Export PDF → the discount line should appear
+- `invoices/list.py`: search is built by string concatenation (SQL injection); found, not touched
 ```
 - Not committed: 6 files on branch `feature/discount-codes`
 
-**Found elsewhere, not touched**
-```diff
-- `invoices/list.py`: search is built by string concatenation (SQL injection)
-```
-
----
-### 3. Waiting for you
-1. Fix the injection in `invoices/list.py` as a separate task now? Recommended: yes, it is reachable by any signed-in user.
----
+**I have medium confidence in this change** 🟡 because the tests and the browser test passed after my last edit, but the PDF export with a discount was not tried.
+1. You open a discounted invoice and export the PDF **(recommended)**: then high
+2. I fix the injection in `invoices/list.py` as a separate task: any signed-in user can reach it
+3. Leave both for now
 ````

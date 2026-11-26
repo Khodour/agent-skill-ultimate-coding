@@ -21,7 +21,7 @@
 
 ---
 
-AI coding agents already know the principles of good engineering. What they lack is consistency: they agree with the rules, then skip them under pressure. This skill builds that discipline into every task. The agent sizes the work, plans before it codes, checks each edit automatically, and proves the result before calling it done.
+AI coding agents already know the principles of good engineering. What they lack is consistency: they agree with the rules, then skip them under pressure. This skill builds that discipline into every task. The agent reads the project before it changes anything, asks you when a real choice is open, works through a checklist you can watch, tests the result the way a user would, and tells you in plain words how sure it is.
 
 | ❌ Without the skill | ✅ With the skill |
 |---|---|
@@ -30,29 +30,31 @@ AI coding agents already know the principles of good engineering. What they lack
 | Invents functions, API fields or packages | Verifies they exist in the installed version |
 | Overlooks double submits, race conditions and retries | Writes safe, repeatable, backward-compatible changes |
 | Over-engineers a one-line fix | Matches the effort to the size of the task |
+| Starts coding before reading the project, then writes what already exists | Reads first, and builds on what is there |
+| Fills in what you left open ("X days") by itself | Asks you, with options and a recommendation |
+| Trusts a green test suite | Tries the change as a real user, in a real browser or app |
+| Ends with a long summary and "should work now" | Ends short: what works, what is missing, how sure it is and why |
 
 ## Proven with evals
 
 Every task in the suite runs **with and without** the skill and is scored by an independent judge. The skill raises the average score on every Claude model:
 
-| Model | Tests | Without the skill | With the skill |
-|---|---|:---:|:---:|
-| Claude Haiku 5.5 | Full suite | 0.82 | ✅ **0.96** |
-| Claude Sonnet 5.5 | Full suite | 0.83 | ✅ **0.97** |
-| Claude Opus 5.5 | 10 hardest tests | 0.68 | ✅ **0.97** |
+| Model | Tests | Without the skill | With the skill | Measured on |
+|---|---|:---:|:---:|:---:|
+| Claude Sonnet 5.5 | Full suite, 61 tasks | 0.81 | ✅ **0.98** | 2.0.0 |
+| Claude Haiku 5.5 | Full suite | 0.82 | ✅ **0.96** | 1.6.0 |
+| Claude Opus 5.5 | 10 hardest tests | 0.68 | ✅ **0.97** | 1.6.0 |
 
-<p align="center">
-  <img src="docs/assets/failure-guards.svg" alt="Nine ways coding agents fail, each with the guard Ultimate Coding puts on it. Presentation and UI: look at the result like a user. State management: one source of truth, derived values. Data management: parse at the edge, no bad states. APIs and outside services: never invent names, fields or keys. Business logic: design card with edges and done when. Security and access: 5 security MUSTs plus check-diff. Repeated code: reuse before inventing. Codebase awareness: read and mirror the project first. Errors and exceptions: no swallowed errors, fail loud." width="100%">
-</p>
+On Sonnet 5.5 with version 2.0.0, the skill scores a perfect result on 55 of the 61 tasks. It clearly raises the score on 17 of them; on the others the model already does the right thing, and the skill keeps it that way.
 
 <p align="center">
   <img src="docs/assets/eval-results.svg" alt="Behaviours the skill takes to a 100% pass rate, per model. Claude Haiku 5.5: query inside a loop 0% to 100%; gift card 0% to 100%; double submits 0% to 100%; AI refunds need a human 33% to 100%; rule out of the route 33% to 100%; parameterized queries 67% to 100%. Claude Sonnet 5.5: database rules out of the web layer, gift card, coupon, bill split and reproducing test each 0% to 100%; double submits, failed cart read and AI summary 33% to 100%; AI refunds 67% to 100%. Claude Opus 5.5, 10 hardest tests: database rules 0% to 100%; gift card 0% to 100%; double submits 33% to 100%." width="100%">
 </p>
 
-The chart shows the behaviours the skill takes to 100%. Partial gains and the two small regressions are in the table below. On the remaining tasks, both versions perform well, and small fixes stay small. [Run the evals yourself](#evals).
+The chart shows the behaviours the skill takes to 100%, measured on version 1.6.0. Partial gains and the two small regressions of that version are in the table below. On the remaining tasks, both versions perform well, and small fixes stay small. [Run the evals yourself](#evals).
 
 <details>
-<summary>The numbers behind the chart</summary>
+<summary>The numbers behind the chart (version 1.6.0)</summary>
 
 Passing runs, without → with the skill. ✅ marks a behaviour that passed every run.
 
@@ -76,7 +78,7 @@ Passing runs, without → with the skill. ✅ marks a behaviour that passed ever
 | A typo fix gets a short reply | passed before | 3/3 → 2/3 | passed before |
 | A small change gets a short report | 3/3 → 0/3 | passed before | not run |
 
-The last two rows are the only places where the skill scored lower: on small tasks its reply can run a little long.
+The last two rows are the only places where version 1.6.0 scored lower: on small tasks its reply could run a little long. Version 2.0.0 has a short report, and the small-task case now passes with the skill and fails without it.
 
 </details>
 
@@ -89,10 +91,17 @@ The last two rows are the only places where the skill scored lower: on small tas
 | Size | Examples | What runs |
 |---|---|---|
 | 🟢 **Trivial** | Typo, text change, rename, one config value | The change and the project's checks |
-| 🔵 **Small** | One self-contained function: a formatter, a parser, a pure calculation | A three-line design, tests by risk, a one-line confidence report |
-| 🟡 **Normal** | Feature, bug fix, anything touching data, files or the network | A short design before code, tests by risk, a concise report |
+| 🔵 **Small** | One self-contained function: a formatter, a parser, a pure calculation | A short checklist, tests by risk, a short report |
+| 🟡 **Normal** | Feature, bug fix, anything touching data, files or the network | A full checklist before code, tests by risk, a real-user test, a short report |
 | 🔴 **Complex** | Payments, auth, personal data, migrations, concurrency, public APIs | Everything above, plus an independent review and concurrency checks |
 
+Every size starts the same way: the agent reads the code it will touch and looks for what already does the job.
+
+- **Understand first.** The first item on its checklist names what it builds on, so new code extends the project instead of repeating it.
+- **Asks when it matters.** A choice you left open gets one to three questions, each with options and a recommendation, before any code. Small details with a safe default are not asked about.
+- **A checklist you can watch.** The plan goes into the agent's task list and is ticked one item at a time. It covers your asks, the edge cases, the risks and the proof.
+- **Tests like a user.** When people can see or use the change, the agent tries it through a connected tool: a browser extension, a built-in browser, a simulator. A passing test suite alone does not count.
+- **A short, honest report.** `All done!` only when everything passed. Otherwise what works, what is missing in red, then "I have high / medium / low confidence in this change, because…" and numbered options to raise it.
 - **Lightweight.** The core stays short; detailed guidance loads only when a task needs it.
 - **Automated checks.** A built-in checker scans every edit for common dangers, such as unsafe SQL, disabled security checks, hard-coded secrets and swallowed errors.
 - **Respects your project.** Your instructions and your project's own rules always come first.
@@ -106,6 +115,7 @@ Applied to every task, whatever its size. Only you can override one, and the age
 - 💾 **Data:** all-or-nothing writes, safe to repeat · never delete or overwrite data without an explicit OK · never break what is shipped
 - 🧾 **Honesty:** prove it, don't claim it · never weaken a test · never invent names, APIs or packages · fix the cause, not the symptom
 - ⚠️ **Actions:** confirm before anything irreversible or touching production
+- 🧭 **Work:** understand before you change anything, at every size · no code before a checklist you can see
 
 ## Install
 
@@ -116,6 +126,14 @@ Applied to every task, whatever its size. Only you can override one, and the age
 /plugin install agent-skill-ultimate-coding@agent-skill-ultimate-coding
 ```
 
+**Turn on the task list (Claude Code, newer models).** The skill keeps its checklist in Claude Code's own task list, where you can watch it. On newer models Claude Code leaves that list off unless you turn it on. Add this to `~/.claude/settings.json`:
+
+```json
+{ "env": { "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1" } }
+```
+
+Without it the skill still works: the checklist is written as a numbered list in the reply.
+
 **Other agents:** copy the `skills/agent-skill-ultimate-coding/` folder into your agent's skills folder (for example `~/.agents/skills/` for Codex, Cursor, Gemini CLI and Copilot). Tested on Claude Code; feedback from other agents is welcome.
 
 ### Make it always on (recommended)
@@ -123,16 +141,16 @@ Applied to every task, whatever its size. Only you can override one, and the age
 The plugin loads the skill automatically. If you installed it manually, add this line to your project's `CLAUDE.md` or `AGENTS.md`:
 
 ```markdown
-For every coding task, load the agent-skill-ultimate-coding skill first and follow it. Any task that adds or changes logic starts with its design card, written in your reply before any code.
+For every coding task, load the agent-skill-ultimate-coding skill first and follow it. Any task that adds or changes logic starts with its checklist, before any code.
 ```
 
 ## Evals
 
 ```bash
-claude plugin eval . --no-publish --judge-model sonnet --max-cost-usd 10
+CLAUDE_CODE_ENABLE_TODO_TOOLS=1 claude plugin eval . --scaffold --no-publish --judge-model sonnet --max-cost-usd 10
 ```
 
-Each case runs with and without the skill and reports the difference. Some cases build a sample project and need `--scaffold`; review their `scaffold.sh` before running them.
+Each case runs with and without the skill and reports the difference. The switch at the start gives the runs the task list. Some cases build a sample project, which is what `--scaffold` allows; review their `scaffold.sh` before running them. Some cases also need tools granted with `--allow-tools` (for example `Edit Write TaskCreate TaskUpdate ToolSearch`).
 
 ## Contributing
 
@@ -144,7 +162,7 @@ Built by **[Khodour](https://www.linkedin.com/in/kodr-fouani-b75523179/)**, an A
 
 ## In Claude Code
 
-Extra on-screen help, each one switchable in `/config`: a status bar above the prompt (working, waiting for you, done or stopped, with checks and confidence), check-diff results under each edit, a `/uc-score` session scorecard, a design-card check before edits to money, auth, personal data, migrations, concurrency or public APIs, and a report check that asks Claude once to end a coding task with its report and confidence (skipped when your project's `CLAUDE.md` or `AGENTS.md` sets its own format, or when you ask for a different reply). Only the design-card and report checks cost tokens, and only when they step in.
+Extra help on screen, each one switchable in `/config`: check-diff results under each edit, a `/uc-score` session scorecard, and a report check that asks Claude once to end a coding task with its report and confidence (skipped when your project's `CLAUDE.md` or `AGENTS.md` sets its own format, or when you ask for a different reply). The plugin never blocks an edit and never decides how big a task is: the agent does. The report check costs tokens only when it steps in.
 
 ## License
 

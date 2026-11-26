@@ -133,4 +133,4 @@ If code needs a comment to explain *what* it does, simplify the code first.
 ### 8. Comments stay true
 - When code changes, its comment changes **in the same edit**. A stale comment is a bug.
 - **No commented-out code.** Version control remembers it; delete it.
-- **No silent TODOs.** Fix it now, or list it in the report under "Needs attention".
+- **No silent TODOs.** Fix it now, or list it in the report as not done.

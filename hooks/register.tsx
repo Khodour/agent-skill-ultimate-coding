@@ -103,7 +103,7 @@ export const register: Register = (on, options) => {
   })
 
   // Claude about to stop: after a turn that changed code, one nudge to end with the skill's report
-  // and Confidence line, unless the project's own rules set a format of their own.
+  // and its confidence, unless the project's own rules set a format of their own.
   on('classic.Stop', async ($, e, next) => {
     const result = await next(e)
     if (!features.report) return result

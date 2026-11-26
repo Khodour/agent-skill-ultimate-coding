@@ -1,13 +1,13 @@
 /**
  * The report check's rules. When Claude is about to stop after a turn that
- * changed code, and its last message has no Confidence line, it is asked once to
+ * changed code, and its last message gives no confidence, it is asked once to
  * end with the skill's report. Written rules alone were followed in about half of
  * real sessions (142 reports, 2026-11-25); a check at the moment of stopping is
  * followed reliably. The project's own rules win: a project whose CLAUDE.md or
  * AGENTS.md sets its own report format is never nudged. Pure, so every rule is
  * tested alone.
  */
-import { CONFIDENCE, asksPerson, hasReport } from './progress'
+import { asksPerson, confidenceOf, hasReport } from './progress'
 
 /** Edits this small (a typo, one value) are trivial tasks, which the skill ends with one short sentence. */
 export const TRIVIAL_LINES = 3
@@ -33,8 +33,9 @@ export type StopFacts = {
 /** The nudge Claude reads when it stops without the report. */
 export const REPORT_NUDGE =
   'Before you finish: this turn changed code, so end with the Ultimate Coding report from the skill: ' +
-  '### 1. What was done, ### 2. Needs attention, ### 3. Waiting for you (only when you need an answer), ' +
-  'and the Confidence line (High 🟢 / Medium 🟡 / Low 🔴, from the evidence). ' +
+  'short and plain ("All done!" with the checks only when every item and check passed, otherwise what now works and, in red lines, what is missing), ' +
+  'then at the very end your confidence in your own words ("**I have high / medium / low confidence in this change**" with its dot, then because and the evidence), ' +
+  'then numbered options when there is a choice (for medium or low: options that raise it, the first one recommended). ' +
   'Rewrite your last message as that report; do not redo or repeat the work. ' +
   'If the person asked in this conversation for a different kind of reply, give them that reply again instead.'
 
@@ -43,7 +44,7 @@ export const reportNudge = (f: StopFacts): string | null => {
   if (f.isContinuing || !f.skillUsed || f.projectHasFormat || f.personSetReply) return null   // the person's and the project's own words win
   if (f.backgroundTasks > 0) return null                          // pausing for background work, not finishing
   if (f.editedLines <= TRIVIAL_LINES) return null                 // no code changed, or a trivial edit
-  if (CONFIDENCE.test(f.lastMessage)) return null                 // the report's confidence is there
+  if (confidenceOf(f.lastMessage) !== null) return null           // the report's confidence is there
   if (asksPerson(f.lastMessage) && !hasReport(f.lastMessage)) return null   // a question before the work is done
   return REPORT_NUDGE
 }

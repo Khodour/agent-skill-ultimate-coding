@@ -2,15 +2,15 @@ import { expect, test } from 'claude-code/testing'
 import { REPORT_NUDGE, asksOwnReply, editedLines, reportNudge, ruleFolders, setsOwnFormat } from './report-rules'
 import type { StopFacts } from './report-rules'
 
-/** A stop after real code work, with no Confidence line: the one case that is nudged. */
+/** A stop after real code work, with no confidence given: the one case that is nudged. */
 const base: StopFacts = {
   isContinuing: false, lastMessage: 'I added the export and the tests pass.', backgroundTasks: 0,
   editedLines: 40, skillUsed: true, projectHasFormat: false, personSetReply: false,
 }
 
-test('a turn that changed code and stops without the Confidence line is asked once for the report', async () => {
+test('a turn that changed code and stops without its confidence is asked once for the report', async () => {
   expect(reportNudge(base)).toBe(REPORT_NUDGE)
-  expect(REPORT_NUDGE).toMatch(/What was done.*Needs attention.*Confidence/)
+  expect(REPORT_NUDGE).toMatch(/All done!.*very end.*I have high \/ medium \/ low confidence in this change.*numbered options/)
   expect(REPORT_NUDGE).toMatch(/do not redo/)
   expect(REPORT_NUDGE).toMatch(/person asked .* different kind of reply, give them that reply again/)   // the person's own words win
 })
@@ -29,11 +29,13 @@ test('it lets Claude stop when background work is running, no code changed, or t
   expect(reportNudge({ ...base, editedLines: 4 })).toBe(REPORT_NUDGE)
 })
 
-test('a report with its Confidence line, in any shape, passes; a clarifying question passes; a bold report without confidence does not', async () => {
+test('a report with its confidence, in the new words or the old label, passes; a clarifying question passes; a bold report without confidence does not', async () => {
+  expect(reportNudge({ ...base, lastMessage: 'All done! ✅ tests 42/42\n\n**I have high confidence in this change** 🟢 because all 42 tests passed after my last edit.' })).toBe(null)
+  expect(reportNudge({ ...base, lastMessage: 'Search now hides deleted products.\n\n**I have low confidence in this change** 🔴 because the tests did not run.\n1. You run pytest **(recommended)**\n2. Leave it' })).toBe(null)
   expect(reportNudge({ ...base, lastMessage: '### 1. What was done\n...\n**Confidence: High 🟢** all ran' })).toBe(null)
   expect(reportNudge({ ...base, lastMessage: 'Done.\n\nConfidence: Medium 🟡 not run on the emulator' })).toBe(null)
   expect(reportNudge({ ...base, lastMessage: 'Before I go on: should the logo be on by default?' })).toBe(null)
-  // the user's real session: bold parts, a question at the end, no Confidence line
+  // the user's real session: bold parts, a question at the end, no confidence given
   const bold = 'You can now make banners.\n\n**What changed:**\n- x\n\n**Waiting for you**\n1. Should I deploy this?'
   expect(reportNudge({ ...base, lastMessage: bold })).toBe(REPORT_NUDGE)
 })
