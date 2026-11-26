@@ -1,0 +1,33 @@
+# A small bug fix the user asks to commit, in a repo whose history follows one
+# commit convention ("type(scope): summary"). Checks the message follows that
+# convention and says what changed and why, never "Fix bug".
+schema_version: "1.0"
+name: commit-message
+description: A committed fix follows the repository's own commit convention and explains what changed and why.
+tags: [delivery, git, repo]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Buying exactly 10 of an item should get the bulk discount, but it doesn't. Fix it and commit.
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, "Bash(python3 -m unittest:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(git add:*)", "Bash(git commit:*)"]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
+
+  # The eval sandbox may refuse the commit itself, so the message is read from the commit
+  # command the agent wrote (the trace holds it JSON-escaped, on one line).
+  - type: regex
+    name: follows-the-convention
+    target: trace
+    pattern: 'git commit[^\n]{0,80}-m \\"fix(\([a-z-]+\))?!?: \S'
+
+  - type: regex
+    name: says-what-and-why
+    target: trace
+    pattern: 'git commit[^\n]{0,80}-m \\"fix[^\n]{0,400}(exactly|boundary|minimum)[^\n]{0,600}(>=|> instead|off-by-one|at least|excluded)'

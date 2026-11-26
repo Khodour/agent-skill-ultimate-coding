@@ -209,6 +209,7 @@ Search now hides deleted products. ✅ tests 42/42 · ✅ build
 | Touches auth, permissions, secrets, files, uploads or dependencies | `references/security.md` |
 | Writes or changes tests, or finishes any normal or complex task | `references/testing.md` |
 | Changes existing code, an API or a database schema | `references/existing-code.md` |
+| Commits, opens a pull request, edits a changelog, or touches a CI/CD pipeline or a deployment | `references/delivery.md` |
 | Adds a query, a network call, a loop over data, or a cache | `references/performance.md` |
 | Calls anything outside the process, or has a UI | `references/resilience.md` |
 | Calls an AI model (chat, completion, agents, tools) | `references/ai-features.md` |
