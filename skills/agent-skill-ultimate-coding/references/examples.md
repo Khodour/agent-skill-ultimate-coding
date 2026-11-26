@@ -1,6 +1,6 @@
 # Worked examples
 
-Two tasks done end to end: the design card, the steps, the proof and the report. Read this before your first design card, and whenever you are unsure how much to write. Copy the shape, not the code: the task, the language and the project will differ.
+Two tasks done end to end: the checklist, the steps, the proof and the report. Read this before your first checklist, and whenever you are unsure how much to write. Copy the shape, not the code: the task, the language and the project will differ.
 
 **Contents**
 - A. Normal task: a bug fix (Python)
@@ -12,17 +12,16 @@ Two tasks done end to end: the design card, the steps, the proof and the report.
 
 > "Customers can still find products we deleted. Fix the search."
 
-**Design card** (written in the reply, before any code):
+**Checklist** (one task per item in the task list, before any code; the read-only query needs no Twice or Data item):
 
 ```text
-Job        Hide deleted products from search results.
-Mirror     catalog/queries.py: active_products() already filters deleted_at
-Edges      no products; every match deleted; a product deleted after it was indexed
-Twice?     n/a: a read-only query
-Data       reads products; writes nothing
-Load       one query per search, unchanged; deleted_at is already indexed
-MUSTs      1 (query stays parameterized), 9, 12
-Done when  a new test shows a deleted product missing from search("lamp"); full suite passes
+1. Hide deleted products from search results
+2. Mirror: start from active_products() in catalog/queries.py, which already filters deleted_at
+3. Edges: no products; every match deleted; a product deleted after it was indexed
+4. MUST 1: the query stays parameterized
+5. MUST 12: fix search() itself, no filter added after the results come back
+6. Proof: a test that search("lamp") skips a deleted lamp fails today
+7. Proof: that test passes after the fix, and the full suite passes
 ```
 
 **Step 1: reproduce.** A test that fails today:
@@ -75,21 +74,21 @@ Short, because the task was small. No restating the request, no generic advice.
 
 Complex: it moves value between people, two requests can race, and a retry must not send twice.
 
-**Design card** (with Risks):
+**Checklist** (with risk items):
 
 ```text
-Job        Move n points from one member's account to another's, all or nothing.
-Mirror     loyalty/redeem.go: same transaction helper and error types
-Edges      n <= 0; sender == receiver; not enough points; unknown receiver; huge n
-Twice?     a retry or double click sends the same requestID → stored once (unique key);
-           two transfers from one account at once → rows locked, balance re-checked
-Data       one transaction: debit sender, credit receiver, insert transfer row
-Load       3 statements per transfer; no loops
-MUSTs      1, 2 (the sender must be the signed-in member), 6, 9
-Done when  tests: success; not enough points; same requestID twice → one transfer;
-           20 parallel transfers from one account never go below zero
-Risks      deadlock if two members send to each other at once → lock rows in id order;
-           way back: a transfer row can be reversed by a new opposite transfer
+1. Move n points from one member's account to another's, all or nothing
+2. Mirror: loyalty/redeem.go, the same transaction helper and error types
+3. Edges: n <= 0; sender == receiver; not enough points; unknown receiver; huge n
+4. Twice: a retry or double click sends the same requestID → stored once (unique key)
+5. Twice: two transfers from one account at once → rows locked, balance re-checked
+6. Data: one transaction: debit sender, credit receiver, insert transfer row; 3 statements, no loops
+7. MUST 2: the sender must be the signed-in member
+8. Risk: two members sending to each other at once can deadlock → lock rows in id order
+9. Risk: the way back is a new opposite transfer, never an edit of the old row
+10. Proof: tests for success, not enough points, same requestID twice → one transfer
+11. Proof: 20 parallel transfers from one account never go below zero
+12. Proof: independent review of the diff
 ```
 
 **Code:**
@@ -166,4 +165,4 @@ The handler checks that `from` is the signed-in member before calling `Transfer`
 ---
 ````
 
-Longer than A, because a complex task has more to prove. Every Risk in the card has an answer in the code, a test, or the report.
+Longer than A, because a complex task has more to prove. Every risk item on the checklist has an answer in the code, a test, or the report.

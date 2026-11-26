@@ -1,7 +1,7 @@
 /**
  * Feature: the progress tracker. A bar above the prompt shows only what Claude
  * Code's events make certain: working, subagent working, stopped, waiting for you
- * or done, with the task size (from the design card), the checks run and the
+ * or done, with the task size (when Claude names it), the checks run and the
  * report's confidence. It never guesses which step of the skill Claude is on.
  *
  * Its state lives in host-held atoms, so a hot reload of this code keeps it; only
@@ -12,7 +12,7 @@ import type { EngineInterface, On } from 'claude-code'
 
 import type { PromptKind, Run } from '../types'
 import {
-  CARD_TOOL, barState, cardInText, hasAgents, isTaskWork, onAgent, onAnswer, onCard, onPrompt, onTool, onTurnStart, startRun,
+  barState, hasAgents, isTaskWork, onAgent, onAnswer, onPrompt, onSize, onTool, onTurnStart, sizeInText, startRun,
 } from './progress'
 import type { TurnEnd } from './progress'
 
@@ -92,7 +92,7 @@ export async function trackerTurnStart($: EngineInterface) {
 /**
  * A finished tool call, of the main loop or a subagent. Claude loads the skill
  * once per session, so a later task never calls it again: once the skill was
- * used, that task's first real step (a card, an edit, a check, work handed to a
+ * used, that task's first real step (a checklist item, an edit, a check, work handed to a
  * subagent) opens its run. A subagent's edits and checks move the run it works
  * for, and open one when the main loop handed off without one (an async agent).
  */
@@ -100,14 +100,10 @@ export async function trackerTool($: EngineInterface, tool: string, input: unkno
   if (ran.deny !== undefined) return
   const raw = tool === 'Bash' ? (input as { command?: unknown }).command : undefined
   const command = typeof raw === 'string' ? raw : undefined
-  // A failing check still counts (a bug fix starts with a failing test); a failed edit or refused card does not.
+  // A failing check still counts (a bug fix starts with a failing test); a failed edit does not.
   if ((tool === 'Bash' || ran.isError !== true) && isTaskWork(tool, command) && (await wasSkillUsed($))) {
-    // A check alone opens a tentative run; a card, an edit or a hand-off, a real one; a subagent's work is always real.
+    // A check alone opens a tentative run; a checklist item, an edit or a hand-off, a real one; a subagent's work is always real.
     await update($, run, r => r ?? startRun(tool === 'Bash' && !isSubagent))
-  }
-  if (tool === CARD_TOOL) {
-    if (ran.isError !== true) await change($, r => onCard(r, (input as { size?: unknown }).size))
-    return
   }
   await change($, r => onTool(r, tool, command, ran.isError === true))
 }
@@ -118,14 +114,13 @@ export async function trackerAgent($: EngineInterface, agentId: string, isRunnin
 }
 
 /**
- * A row the main conversation stores. A design card Claude wrote as text in its
- * reply, instead of recording it with the design_card tool, still moves the run to
- * Design and gives the size badge.
+ * A row the main conversation stores. A line in Claude's reply that names the
+ * task's size ("Size: Normal") makes the run a task and gives the size badge.
  */
 export async function trackerRow($: EngineInterface, text: string) {
-  const card = cardInText(text)
-  if (card === null || !(await wasSkillUsed($))) return
-  await update($, run, r => onCard(r ?? startRun(), card.size))
+  const size = sizeInText(text)
+  if (size === null || !(await wasSkillUsed($))) return
+  await update($, run, r => onSize(r ?? startRun(), size))
 }
 
 /** The turn ended: report, confidence, paused, stopped or finished. Returns the run before and after, for the scorecard. */

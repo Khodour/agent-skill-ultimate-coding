@@ -5,7 +5,7 @@
 /** How sure the report says it is. */
 export type Confidence = 'High' | 'Medium' | 'Low'
 
-/** A task's size, as the design card gives it. */
+/** A task's size, when Claude names it in a reply ("Size: Normal"). */
 export type Size = 'Trivial' | 'Small' | 'Normal' | 'Complex'
 
 /** One run of skill work, from the person's message until their next one: its checks and how its turn ended. */
@@ -18,7 +18,7 @@ export type Run = {
   isDone: boolean
   /** The turn ended with an answer that asks the person something. */
   asks?: boolean
-  /** The size the design card gave the task; absent until a card is recorded. */
+  /** The size Claude named for the task in a reply; absent until it names one. */
   size?: Size
   /**
    * Opened only because a turn started after the skill was used: shown at once, and
@@ -41,7 +41,6 @@ export type Score = {
   edits: number
   checks: number
   checksFailed: number
-  cards: number
 }
 
 /** One danger check-diff found in an edit's added lines. */
@@ -53,18 +52,6 @@ export type CheckResult =
   | { status: 'clean' }
   | { status: 'found'; findings: Finding[] }
   | { status: 'error'; message: string }
-
-/** A Complex area an edit can touch; each needs its own line on the design card. */
-export type Area = 'money' | 'access' | 'privacy' | 'migration' | 'race' | 'compat'
-
-/** The language the card box is drawn in, from the user's own messages. */
-export type Lang = 'en' | 'ar'
-
-/** The design card as the design_card tool records it: field name to text. */
-export type Card = { size: Size } & Record<string, string>
-
-/** The gate's memory for the current task: whether a card exists, the areas it covers, and those last asked for. */
-export type GateState = { hasCard: boolean; covered: Area[]; pending: Area[] }
 
 declare module 'claude-code' {
   interface PluginState {
@@ -83,10 +70,6 @@ declare module 'claude-code' {
       score: Score
       /** check-diff's verdict per edit, by tool call id; the newest 100. */
       checkdiff: Record<string, CheckResult>
-      gate: GateState
-      /** Recorded cards by tool call id, for the box under each design_card row; the newest 50. */
-      cards: Record<string, { card: Card; lang: Lang }>
-      lang: Lang
     }
   }
 }

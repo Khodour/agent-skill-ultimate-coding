@@ -11,14 +11,12 @@ export const emptyScore = (): Score => ({
   edits: 0,
   checks: 0,
   checksFailed: 0,
-  cards: 0,
 })
 
 const EDIT_TOOLS = new Set(['Edit', 'Write', 'MultiEdit', 'NotebookEdit'])
 
 /** Counts one finished tool call of the main loop. */
-export const countTool = (s: Score, tool: string, command: string | undefined, isError: boolean, isCard: boolean): Score => {
-  if (isCard) return isError ? s : { ...s, cards: s.cards + 1 }
+export const countTool = (s: Score, tool: string, command: string | undefined, isError: boolean): Score => {
   if (EDIT_TOOLS.has(tool) && !isError) return { ...s, edits: s.edits + 1 }
   if (tool === 'Bash' && command !== undefined && isCheckCommand(command)) {
     return { ...s, checks: s.checks + 1, checksFailed: s.checksFailed + (isError ? 1 : 0) }

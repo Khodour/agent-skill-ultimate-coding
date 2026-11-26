@@ -11,7 +11,7 @@ import type { Confidence, PromptKind, Run, Size } from '../types'
 export const startRun = (isTentative = false): Run =>
   ({ checks: 0, failed: 0, confidence: null, isDone: false, ...(isTentative ? { isTentative: true } : {}) })
 
-/** Real work (a card, an edit, a hand-off) makes a tentative run a task. */
+/** Real work (a checklist item, an edit, a hand-off) makes a tentative run a task. */
 const real = (run: Run): Run => {
   const { isTentative: _, ...rest } = run
   return rest
@@ -40,9 +40,12 @@ export const isCheckCommand = (command: string): boolean =>
 /** The tools that hand work to a subagent. */
 const AGENT_TOOLS = new Set(['Agent', 'Task'])
 
-/** Whether a finished tool call is real work on a task: a design card, an edit, a check, or work handed to a subagent. */
+/** The agent's own task-list tools: an item written there is a step of the task. */
+const CHECKLIST_TOOLS = new Set(['TaskCreate', 'TodoWrite'])
+
+/** Whether a finished tool call is real work on a task: a checklist item, an edit, a check, or work handed to a subagent. */
 export const isTaskWork = (tool: string, command: string | undefined): boolean =>
-  tool === CARD_TOOL || EDIT_TOOLS.has(tool) || AGENT_TOOLS.has(tool) ||
+  CHECKLIST_TOOLS.has(tool) || EDIT_TOOLS.has(tool) || AGENT_TOOLS.has(tool) ||
   (tool === 'Bash' && command !== undefined && isCheckCommand(command))
 
 /** A subagent's loop started or ended: the run counts it as busy while it works. */
@@ -57,37 +60,34 @@ export const onAgent = (run: Run, agentId: string, isRunning: boolean): Run => {
 export const hasAgents = (run: Run): boolean => (run.agents?.length ?? 0) > 0
 
 /**
- * A finished tool call. An edit or work handed to a subagent makes the run a task;
+ * A finished tool call. A checklist item, an edit or work handed to a subagent makes the run a task;
  * a check is counted (passed or failed) but only looks, so on its own it never
  * turns a question's turn into a task.
  */
 export const onTool = (run: Run, tool: string, command: string | undefined, isError: boolean): Run => {
-  if (EDIT_TOOLS.has(tool) || AGENT_TOOLS.has(tool)) return real(run)
+  if (CHECKLIST_TOOLS.has(tool) || EDIT_TOOLS.has(tool) || AGENT_TOOLS.has(tool)) return real(run)
   if (tool === 'Bash' && command !== undefined && isCheckCommand(command)) {
     return { ...run, checks: run.checks + 1, failed: run.failed + (isError ? 1 : 0) }
   }
   return run
 }
 
-export const CARD_TOOL = 'mcp__agent-skill-ultimate-coding__design_card'
 const SIZES: readonly Size[] = ['Trivial', 'Small', 'Normal', 'Complex']
 
-/** A design card, recorded with the tool or written as text: the run is a task, with the card's size. */
-export const onCard = (run: Run, size: unknown): Run =>
+/** Claude named the task's size: the run is a task, with that size. */
+export const onSize = (run: Run, size: unknown): Run =>
   SIZES.includes(size as Size) ? { ...real(run), size: size as Size } : real(run)
 
+// A line that names the size: "Size: Normal", "**Size** Complex", "Checklist (Small)", "Checklist · Normal".
+const SIZE_LINE = /(?:^|\n)[ \t>*#_|\x60-]*(?:Size|Checklist)\b[^\n]*?\b(Trivial|Small|Normal|Complex)\b/i
+
 /**
- * A design card written as text in Claude's reply, rather than recorded with the
- * design_card tool: its Job and Done when lines, in plain, bold or table form.
- * Returns the size it names, if any, or null when the text holds no card.
+ * The size Claude names for the task in a reply, or null when the text names none.
+ * It is the size Claude chose: no rule here guesses it from the task's words.
  */
-export const cardInText = (text: string): { size?: Size } | null => {
-  const line = String.raw`(?:^|\n)[ \t>*|\x60_-]*`
-  if (!new RegExp(`${line}Job\\b[^\\n]*\\S[\\s\\S]*?${line}Done when\\b`, 'i').test(text)) return null
-  const s = /Design card[^\n]*?\b(Trivial|Small|Normal|Complex)\b|(?:^|\n)[ \t>*|_-]*Size\b[^\n]*?\b(Trivial|Small|Normal|Complex)\b/i.exec(text)
-  const word = s?.[1] ?? s?.[2]
-  const size = SIZES.find(z => z.toLowerCase() === word?.toLowerCase())
-  return size === undefined ? {} : { size }
+export const sizeInText = (text: string): Size | null => {
+  const word = SIZE_LINE.exec(text)?.[1]
+  return SIZES.find(z => z.toLowerCase() === word?.toLowerCase()) ?? null
 }
 
 export const CONFIDENCE = /Confidence:?\**\s*(High|Medium|Low)/

@@ -71,11 +71,19 @@ Before saying done, follow `review.md`: read the whole diff as a reviewer would,
 
    | Software | Interface |
    |---|---|
-   | Website | A browser, through browser automation if available |
+   | Website | A real browser, driven by a connected browser tool |
    | Mobile app | Simulator or emulator |
+   | Desktop app | The app itself, through a computer-use tool |
    | Command-line tool | The terminal |
    | API | Real HTTP calls |
    | Library | Its public functions |
+
+   **Which tool:** look for one you are connected to before writing your own (in Claude Code: ToolSearch for `chrome`, `browser`, `simulator`, and the skills list).
+   1. A connected browser or app tool: Claude in Chrome, the built-in browser, a Playwright or other browser tool, a simulator or emulator tool, computer use. It clicks and types like a person and shows you the real screen.
+   2. Only without one: a script of your own that drives a real browser or the real app.
+   3. Never instead of these: a test suite (pytest, jest). It checks the code, not what the user sees.
+
+   A page opened from a file may not be reachable by a browser tool: serve it from a local address (`python3 -m http.server`) and stop the server when you are done.
 
 2. **Never on production.** No real payments, emails or SMS: use test modes or fakes. Clean up test data afterwards.
 3. **Happy path first, then act like a careless or confused human** (checklist below).

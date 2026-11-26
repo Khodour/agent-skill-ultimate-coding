@@ -8,8 +8,7 @@
 import type { PluginOptions, Register } from 'claude-code'
 
 import { checkdiffTool, checkdiffUnderRow } from './checkdiff'
-import { CARD_TOOL, classifyPrompt, turnEnd } from './progress'
-import { gateCardRun, gateCheck, gatePrompt, gateReset, gateStart, gateTurnEnd, gateUnderRow } from './gate'
+import { classifyPrompt, turnEnd } from './progress'
 import { reportPrompt, reportReset, reportStop, reportTool } from './report'
 import { registerScorecardViews, scorecardStart, scorecardTool, scorecardTurnEnd } from './scorecard'
 import {
@@ -24,7 +23,6 @@ const featuresFrom = (options: PluginOptions) => ({
   tracker: options.progressTracker !== false,
   scorecard: options.scorecard !== false,
   checkDiff: options.checkDiffLine !== false,
-  gate: options.designCardGate !== false,
   report: options.reportCheck !== false,
 })
 
@@ -33,7 +31,6 @@ export const register: Register = (on, options) => {
   on('session.start', async ($, e, next) => {
     if (features.tracker) trackerStart($)
     if (features.scorecard) await scorecardStart($)
-    if (features.gate) await gateStart($)
     return next(e)
   })
 
@@ -43,7 +40,6 @@ export const register: Register = (on, options) => {
     const kind = classifyPrompt(e)
     await trackerPrompt($, kind)
     if (features.report) await reportPrompt($, kind, e.text)
-    if (features.gate) await gatePrompt($, e.text)
     return next(e)
   }).catch(($, e, next) => next(e))
 
@@ -55,23 +51,22 @@ export const register: Register = (on, options) => {
     return next(e)
   }).catch(($, e, next) => next(e))
 
-  // Each row the main conversation stores: a design card Claude wrote as text still counts.
+  // Each row the main conversation stores: a checklist written as text in Claude's reply still counts.
   on('session.append', async ($, e, next) => {
     const stored = await next(e)
     if (e.agentId === undefined && e.door === 'response' && e.message.type === 'assistant') {
       const text = e.message.content.map(b => (b.type === 'text' ? b.text : '')).join('\n')
       // The row is already stored; a tracker failure must not touch it, so it goes to the debug log.
-      if (text !== '') await trackerRow($, text).catch(err => $.ui.log(`progress bar: card-in-text failed: ${String(err)}`, { to: 'debug' }))
+      if (text !== '') await trackerRow($, text).catch(err => $.ui.log(`progress bar: checklist-in-text failed: ${String(err)}`, { to: 'debug' }))
     }
     return stored
   })
 
-  // /clear and a resume end the conversation without a new session.start: forget its run and card.
+  // /clear and a resume end the conversation without a new session.start: forget its run.
   on('session.end', async ($, e, next) => {
     if (e.reason === 'clear' || e.reason === 'resume') {
       await trackerSessionEnd($)
       await reportReset($)
-      if (features.gate) await gateReset($)
     }
     return next(e)
   }).catch(($, e, next) => next(e))
@@ -86,14 +81,8 @@ export const register: Register = (on, options) => {
     const isMain = e.agentId === undefined
     // Claude calls the Skill tool even when the skill is already loaded and no skill.prompt follows.
     if (isMain && e.tool === 'Skill' && String(e.skill).includes(SKILL)) await trackerSkill($)
-    // The design-card gate: an edit into a Complex area waits for a card that covers it.
-    const wait = isMain && features.gate ? await gateCheck($, e.tool, e) : null
-    if (wait !== null) return { deny: wait }
-    // design_card is answered here, before Claude Code's permission check: it only records the card,
-    // and a check nobody can answer (claude -p, evals) would otherwise hold every Complex edit forever.
-    const ran = e.tool === CARD_TOOL
-      ? (features.gate ? await gateCardRun($, e.tool_use_id, e) : { deny: 'design_card is switched off in /config.' })
-      : await next(e)
+    // No call is held here: Claude decides the task's size, no rule in this code does.
+    const ran = await next(e)
     if (isMain) {
       await trackerTool($, e.tool, e, ran)
       await scorecardTool($, e.tool, e, ran)
@@ -103,13 +92,12 @@ export const register: Register = (on, options) => {
       await trackerTool($, e.tool, e, ran, true)       // a subagent's edits and checks move the run it works for
     }
     return ran
-  }).catch(($, e, next) => next(e))   // the gate enforces a habit: if this hook fails, the call goes ahead
+  }).catch(($, e, next) => next(e))   // if this hook fails, the call goes ahead
 
   on('turn.complete', async ($, e, next) => {
     if (e.agentId === undefined) {
       const { before, after } = await trackerTurnEnd($, e.answer, turnEnd(e.reason))
       await scorecardTurnEnd($, before, after)
-      if (features.gate) await gateTurnEnd($, e.answer)
     } else {
       await trackerAgent($, e.agentId, false)            // a subagent's run ended (an aborted one too)
     }
@@ -131,7 +119,6 @@ export const register: Register = (on, options) => {
     const { Box, Text } = $.ui.resolve(e)
     const under = [
       features.checkDiff ? await checkdiffUnderRow($, e.props.tool, e.props.tool_use_id, { Box, Text }) : null,
-      features.gate ? await gateUnderRow($, e.props.tool, e.props.tool_use_id, { Box, Text }) : null,
     ].filter(x => x !== null)
     if (under.length === 0) return next(e)
     return (

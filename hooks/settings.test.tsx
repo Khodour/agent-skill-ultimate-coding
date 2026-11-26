@@ -2,7 +2,7 @@ import { expect, mock, test } from 'claude-code/testing'
 import type { On } from 'claude-code'
 import type { Engine } from 'claude-code/testing'
 
-const ALL_OFF = { progressTracker: false, scorecard: false, checkDiffLine: false, designCardGate: false }
+const ALL_OFF = { progressTracker: false, scorecard: false, checkDiffLine: false }
 const SKILL = { tool: 'Skill', skill: 'agent-skill-ultimate-coding:agent-skill-ultimate-coding' }
 const BAR = {
   plugin: 'agent-skill-ultimate-coding', component: 'AbovePrompt', surface: 'terminal',
@@ -33,8 +33,9 @@ test('with every switch on (the default), every feature acts', async ($, on) => 
   const seen = engine(on)
   const edit = await work($)
   expect(seen.commands).toEqual(['uc-score'])
-  expect(seen.tools).toEqual(['design_card'])
-  expect(edit.deny).toContain('touches money')
+  // No tool is added and no edit is held, even one about money: Claude decides the task's size.
+  expect(seen.tools).toEqual([])
+  expect(edit.deny).toBe(undefined)
   const ui = await $.ui.mount(BAR as never)
   expect((await ui.find({ type: 'Text', text: /Ultimate Coding/ }))).not.toBe(undefined)
   await ui.unmount()
@@ -50,11 +51,12 @@ test('with every switch off, nothing shows and nothing extra runs', { options: A
   await ui.unmount()
 })
 
-test('one switch off leaves the others on', { options: { designCardGate: false } }, async ($, on) => {
+test('one switch off leaves the others on', { options: { scorecard: false } }, async ($, on) => {
   const seen = engine(on)
-  const edit = await work($)
-  expect(edit.deny).toBe(undefined)
-  expect(seen.tools).toEqual([])
-  expect(seen.commands).toEqual(['uc-score'])
-  expect(seen.processes).toBe(1)
+  await work($)
+  expect(seen.commands).toEqual([])                                            // the scorecard's command is gone
+  expect(seen.processes).toBe(1)                                               // check-diff still ran
+  const ui = await $.ui.mount(BAR as never)
+  expect((await ui.find({ type: 'Text', text: /Ultimate Coding/ }))).not.toBe(undefined)   // the bar still shows
+  await ui.unmount()
 })

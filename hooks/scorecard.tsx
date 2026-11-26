@@ -1,13 +1,12 @@
 /**
  * Feature: the session scorecard. /uc-score opens a panel that sums up the
- * session's skill work: tasks by size, confidence, cards, edits and checks.
+ * session's skill work: tasks by size, confidence, edits and checks.
  */
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, On } from 'claude-code'
 
 import type { Run, Score } from '../types'
 import { checkdiffCounts } from './checkdiff'
-import { CARD_TOOL } from './progress'
 import { bar, countFinish, countTool, emptyScore } from './score'
 import { CONF_COLOR, SIZE_COLOR } from './tracker'
 
@@ -23,7 +22,7 @@ export async function scorecardStart($: EngineInterface): Promise<void> {
 export async function scorecardTool($: EngineInterface, tool: string, input: unknown, ran: { deny?: string; isError?: boolean }) {
   if (ran.deny !== undefined) return
   const command = tool === 'Bash' ? (input as { command?: unknown }).command : undefined
-  await update($, score, s => countTool(s, tool, typeof command === 'string' ? command : undefined, ran.isError === true, tool === CARD_TOOL))
+  await update($, score, s => countTool(s, tool, typeof command === 'string' ? command : undefined, ran.isError === true))
 }
 
 /** A turn ended: count the task if this turn finished it. */
@@ -52,7 +51,7 @@ export const registerScorecardViews = (on: On): void => {
           const color = k === 'Unsized' ? '#9ca3af' : SIZE_COLOR[k]
           return (
             <Text>
-              <Text color={color}>{`  ${(k === 'Unsized' ? 'No card' : k).padEnd(9)}`}{bar(s.tasks[k])}</Text>
+              <Text color={color}>{`  ${(k === 'Unsized' ? 'No size' : k).padEnd(9)}`}{bar(s.tasks[k])}</Text>
               <Text dimColor>{` ${s.tasks[k]}`}</Text>
             </Text>
           )
@@ -67,7 +66,6 @@ export const registerScorecardViews = (on: On): void => {
         ))}
         <Text> </Text>
         <Text bold>Work</Text>
-        <Text>{`  Cards      ${s.cards}`}</Text>
         <Text>{`  Edits      ${s.edits}`}</Text>
         <Text>
           {`  Checks     ${s.checks - s.checksFailed} passed`}

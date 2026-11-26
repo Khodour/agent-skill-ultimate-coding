@@ -113,12 +113,12 @@ test('a question after a task: working while Claude answers, gone once it was on
   await ui.unmount()
 })
 
-test('a design card written as text gives the size badge', async ($, on) => {
+test('the size Claude names in a reply gives the size badge', async ($, on) => {
   const { ui, bar, skill, row } = await engine($, on)
   await skill()
-  await row('I will start with the card.')
+  await row('I will write the checklist first; it is a normal amount of work.')
   expect(await bar()).not.toMatch(/Normal/)
-  await row('Design card (Normal)\n\nJob        schedule a push\nEdges      past time\nDone when  a local run passes')
+  await row('Size: Normal\n\nThe checklist is in the task list.')
   expect(await bar()).toMatch(/^Ultimate Coding Normal {2}[◉○] working$/)
   await ui.unmount()
 })

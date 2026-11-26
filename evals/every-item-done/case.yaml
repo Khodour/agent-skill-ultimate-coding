@@ -20,13 +20,21 @@ execution:
     Accountants read it top-down, so put the newest orders first.
   max_turns: 30
   timeout_seconds: 600
-  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, "Bash(python3 -m unittest:*)"]
+  # Run with CLAUDE_CODE_ENABLE_TODO_TOOLS=1: newer models get the task list only with that switch. (check-diff: ok the word is part of the switch's name)
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, ToolSearch, TaskCreate, TaskUpdate, "Bash(python3 -m unittest:*)"]
 runs: 3
 graders:
   - type: tool_used
     name: skill-fired
     tool: Skill
     input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
+
+  # The checklist goes in the task list. (Not tool_order with Write: an agent that
+  # writes the file through Bash never calls Write, and the order check then fails falsely.)
+  - type: tool_used
+    name: checklist-in-task-list
+    tool: TaskCreate
+    min: 1
 
   - type: llm
     name: all-eight-built

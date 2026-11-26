@@ -23,14 +23,14 @@ The rules are directions, not dogma. Apply each one in the language's own idiom 
 
 | Size | Examples | What runs |
 |---|---|---|
-| **Trivial** | Typo, text or colour change, rename, one config value. No new logic. | Make the change → run the project's checks → reply with the change and at most one short sentence. No design card, no new tests, no report sections. |
-| **Small** | One self-contained function, written or fixed: a formatter, a parser, a pure calculation. Only if it reads and writes no stored data, makes no network or file calls, shares no state, and touches no money, auth, UI or public API. | Short card (Job, Edges, Done when) → code → project checks → tests by risk (a bug fix still starts with a failing test) → one Confidence line as the report. |
-| **Normal** | New feature, bug fix, new screen or endpoint, any function or calculation that is not Small | Design card + all five moments. Tests by risk. Real-user test when users can see the change. |
-| **Complex** | Money, auth, permissions, personal data, data migrations, concurrency, public API changes | Design card with Risks + all five moments + read the matching reference files in full + independent review + concurrency or stress checks. |
+| **Trivial** | Typo, text or colour change, rename, one config value. No new logic. | Make the change → run the project's checks → reply with the change and at most one short sentence. No checklist, no new tests, no report sections. |
+| **Small** | One self-contained function, written or fixed: a formatter, a parser, a pure calculation. Only if it reads and writes no stored data, makes no network or file calls, shares no state, and touches no money, auth, UI or public API. | Short checklist (the asks, their edge cases, the check) → code → project checks → tests by risk (a bug fix still starts with a failing test) → one Confidence line as the report. |
+| **Normal** | New feature, bug fix, new screen or endpoint, any function or calculation that is not Small | Full checklist + all five moments. Tests by risk. Real-user test when users can see the change. |
+| **Complex** | Money, auth, permissions, personal data, data migrations, concurrency, public API changes | Full checklist with risk items + all five moments + read the matching reference files in full + independent review + concurrency or stress checks. |
 
 When unsure, go one size up. A task that adds or changes logic (a condition, a loop, a calculation, a query) is never trivial, however small. A task is Small only when every condition in its row holds; one miss makes it Normal.
 
-**Small, normal and complex tasks start with the design card** (see Design; small tasks use its short form): write it in your reply before any code, even when the task looks small or there are no files. No card, no code.
+**Small, normal and complex tasks start with the checklist** (MUST 14; how to write it is under Design), even when the task looks small or there are no files.
 
 ## The MUSTs (never skipped, at any size)
 
@@ -59,6 +59,10 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
 
 13. **Confirm before anything irreversible or touching production:** deleting files, force-pushing, deploying, sending emails or messages, payments, publishing, stress tests outside local or staging. Skip the question only if the user already clearly said to go ahead.
 
+**Work**
+
+14. **No code before a checklist the user can see** (small, normal and complex tasks; a trivial task needs none). It goes in your agent's task list, and you tick each item as you finish it. How to write it: Design, below.
+
 ## The five moments
 
 ### 1. Understand
@@ -72,23 +76,33 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
 
 ### 2. Design
 
-- **Write the design card in your reply before any code** (normal and complex tasks). A few words per line; "n/a" only with a reason:
+- **Write the checklist before any code** (small, normal and complex tasks). It splits the task into items, in the order you will do them, and you work through it one item at a time while the user watches.
+  - **It goes in your agent's task list.** In Claude Code: `TaskCreate`, one task per item, all created before your first edit (if the tool is not loaded yet, load it first with ToolSearch `select:TaskCreate,TaskUpdate`). Set an item `in_progress` when you start it, and `completed` as soon as it is built and its check ran: one at a time, never all at the end.
+  - **Only when your agent has no task list**, write it as a numbered list in your reply, before your first edit. A checklist kept in your thinking does not count: nobody can see it.
+
+  A few words per item:
+  1. **Every ask in the request is an item**, including asks hidden in a sentence after a list.
+  2. **Then go through these questions and add an item for each one that needs work.** Skip a question with nothing to do; never write "n/a".
+     - **Mirror**: the closest existing piece to copy (file path).
+     - **Edges**: inputs that break naive code: empty, zero, negative, huge, duplicate, uneven split.
+     - **Twice**: what happens if it runs twice: double click, retry, two users at once.
+     - **Data**: what is read and written; does it need one transaction?
+     - **Load**: how often it runs, how much data; any query or call inside a loop?
+     - **MUSTs**: each MUST above that applies, as the thing to do (`MUST 2: only the invoice's owner may read it`).
+     - **Risks** (complex tasks): races, permissions, data loss, the way back.
+  3. **The last items are the proof**: the checks that show it works; for a bug, first the test that fails today. When users can see or use the change, one proof item is the real-user test, naming the tool (`Proof: try it in Claude in Chrome`).
 
   ```
-  Job        what it does, in one sentence without "and"
-  Mirror     the closest existing piece to copy (file path), or "none"
-  Edges      inputs that break naive code: empty, zero, negative, huge, duplicate, uneven split
-  Twice?     what happens if it runs twice: double click, retry, two users at once
-  Data       what is read and written; does it need one transaction?
-  Load       how often it runs, how much data; any query or call inside a loop?
-  MUSTs      the numbers above that apply
-  Done when  the checks that prove it; for a bug, the test that fails today
-  Risks      complex tasks only: races, permissions, data loss, the way back
+  1. Hide deleted products from search, starting from active_products() in catalog/queries.py
+  2. Edge: every match deleted → an empty list, not an error
+  3. MUST 1: the query stays parameterized
+  4. Proof: a test that search("lamp") skips a deleted lamp fails today, passes after
+  5. Proof: the full suite passes
   ```
 
-  **Small tasks** write only the `Job`, `Edges` and `Done when` lines, then any assumptions (one short line each) right under the card, before the code.
+  **Small tasks** list only the asks, their edge cases and the check.
 
-  Every line that names a risk ends as code, a test, or a `Warning:` line in the report. Code that contradicts the card is a bug. Two full worked examples: `references/examples.md`.
+  An item that names a risk ends as code, a test, or a `Warning:` line in the report. Code that contradicts an item is a bug. Before the report, read the request again against the list: every item is completed, or it is reported as not done. Two full worked examples: `references/examples.md`.
 - Choose the simplest thing that works. Build only what was asked: no options, flags or hooks "for later" (the off-switch MUST 8 asks for is not "for later").
 - An endpoint anyone can call that logs in, sends email or SMS, or costs money ships with a rate limit in the code (per IP, and per account or address), using the project's limiter if it has one, or else a small counter with an expiry in its cache or database. A `Warning:` line instead of the limit is not enough.
 - One job per piece. Simple interfaces that hide the details. Each decision (how we search, price, authenticate) lives in one place.
@@ -102,10 +116,10 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
 - A status is a state machine: one table of allowed moves, one function that moves it. Errors follow one model: expected ones typed and mapped to responses in one place, unexpected ones fail loudly (`references/design.md`, `references/correctness.md`).
 - Place code where its kind already lives: find the closest existing example (a model, an endpoint, a screen) and mirror its folder nesting, file split, naming and wiring. Only when the project has no pattern: feature first, then kind inside.
 - Shape the data: parse input once at the edge, make bad states impossible, snapshot historical facts (the price paid, not today's price). Money is integer cents or decimals, and when an amount is split, the parts add up exactly to the whole: give the leftover cents to some shares by a clear rule, never round every share the same way.
-- For multi-step work, write a short plan with a check after each step, and start with a thin slice that works end to end.
+- For multi-step work, start with a thin slice that works end to end, then add to it one checklist item at a time.
 - Open the reference files the routing table points to.
 
-**Check:** the card is written, and this is the smallest design that works.
+**Check:** the checklist is written, and this is the smallest design that works.
 
 ### 3. Build
 
@@ -125,7 +139,7 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
 - Run every check the project already has: build, type checker, linter, formatter, tests.
 - Run `scripts/check-diff.sh` from this skill's folder inside the project (needs bash and git; `--files <paths>` works without git). It flags known dangers in the lines you added, and safety checks you removed without adding back (access checks, raised errors, validation). Run it, don't read it, and re-run it until it reports nothing. Fix each finding, or mark a false alarm on that line with a comment containing `check-diff: ok <reason>`; for a check you removed on purpose, say why in a comment containing `check-diff: ok removed-guard <reason>` in that file. As a Claude Code plugin it also runs after every file edit.
 - Add tests by risk: **always** for bug fixes (reproduce the bug with a failing test first) and real logic (money, rules, permissions, calculations); **never** for trivial changes; suggest them for everything else. If you cannot run tests, still write them into the change (or the reply when there are no files) and mark them not run.
-- **When users can see or use the change:** finish with a real-user test. Use the real interface (browser, emulator, terminal, HTTP calls, public API) on a safe environment, never production. Look at the result and compare it with what was asked (layout, order, alignment), not only that it runs. Try the happy path, then act like a careless human (see the checklist in `references/testing.md`). Compare results with expected values worked out separately. When the app has more than one language, repeat it in the other language, and right to left if supported. Every bug found becomes a test, then gets fixed and retested.
+- **When users can see or use the change:** finish with a real-user test: use it the way a person would, through the real interface, on a safe environment, never production. A passing test suite (pytest, jest) is not a real-user test. Use a tool you are connected to before writing your own, and look for one first (in Claude Code: ToolSearch for `chrome`, `browser`, `simulator`, and the skills list): (1) a connected browser or app tool (Claude in Chrome, the built-in browser, a Playwright or other browser tool, a simulator or emulator tool, computer use); (2) only without one, a script of your own that drives a real browser or the real app; (3) for an API or a command-line tool, real HTTP calls or the terminal. If nothing can reach the interface, say so, give the user the steps to try by hand, and do not claim high confidence. Look at the result and compare it with what was asked (layout, order, alignment), not only that it runs. Try the happy path, then act like a careless human (see the checklist in `references/testing.md`). Compare results with expected values worked out separately. When the app has more than one language, repeat it in the other language, and right to left if supported. Every bug found becomes a test, then gets fixed and retested.
 - **When the software has users or clients and the change touches data paths:** test with a large dataset and send 10–20 requests at the same item at once, locally or on staging (no confirmation needed there). Hot paths and releases get a real stress test on staging (`references/performance.md`).
 - Review your own diff with `references/review.md`. **Complex tasks** also get an independent review: a separate reviewer (a subagent, if your agent has them) receives the diff and the touched files with a narrow job such as "find bugs in this change". Without subagents, do a second, separate pass with the checklist. Fix what is found and re-run the checks.
 
@@ -180,7 +194,7 @@ End every normal or complex task with this, in Markdown, outside any code block.
 
 | When the task… | Read |
 |---|---|
-| Is normal or complex, before your first design card | `references/examples.md` |
+| Is normal or complex, before your first checklist | `references/examples.md` |
 | Creates a feature, module or abstraction | `references/design.md` |
 | Creates files or folders, names things, or writes comments | `references/structure.md` |
 | Handles input, stored data, money or time | `references/correctness.md` |

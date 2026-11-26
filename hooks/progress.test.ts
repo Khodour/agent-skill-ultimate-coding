@@ -1,22 +1,22 @@
 import { expect, test } from 'claude-code/testing'
 import type { Run } from '../types'
 import {
-  barState, cardInText, classifyPrompt, isCheckCommand, isFinishedAnswer, isTaskWork, onAgent, onAnswer, onCard, onPrompt, onTool,
-  onTurnStart, startRun, turnEnd,
+  barState, classifyPrompt, isCheckCommand, isFinishedAnswer, isTaskWork, onAgent, onAnswer, onPrompt, onSize, onTool,
+  onTurnStart, sizeInText, startRun, turnEnd,
 } from './progress'
 
 /** onAnswer for a run that is not tentative, which is never dropped. */
 const answered = (r: Run, answer: string, end: Parameters<typeof onAnswer>[2] = 'answer'): Run => onAnswer(r, answer, end) as Run
 const REPORT = '### 1. What was done\n...\n**Confidence: Medium 🟡** no users yet'
 
-test('a run counts its checks and keeps the card\'s size; it never holds a step', async () => {
-  let r = onCard(startRun(), 'Normal')
+test('a run counts its checks and keeps the size Claude named; it never holds a step', async () => {
+  let r = onSize(startRun(), 'Normal')
   r = onTool(r, 'Edit', undefined, false)
   r = onTool(r, 'Bash', 'npm test', false)
   r = onTool(r, 'Bash', 'npx tsc -p .', true)
   expect([r.size, r.checks, r.failed, barState(r)]).toEqual(['Normal', 2, 1, 'working'])
   expect(Object.keys(r).sort()).toEqual(['checks', 'confidence', 'failed', 'isDone', 'size'])
-  expect(onCard(startRun(), 'Huge').size).toBe(undefined)
+  expect(onSize(startRun(), 'Huge').size).toBe(undefined)
 })
 
 test('only commands that run a check count as checks, not ones that mention a test', async () => {
@@ -35,9 +35,10 @@ test('only commands that run a check count as checks, not ones that mention a te
   for (const c of looks) expect([c, isCheckCommand(c)]).toEqual([c, false])
 })
 
-test('task work is a card, an edit, a check or a hand-off to a subagent; reading is not', async () => {
-  expect(['mcp__agent-skill-ultimate-coding__design_card', 'Edit', 'Write', 'Agent', 'Task'].map(t => isTaskWork(t, undefined)))
-    .toEqual([true, true, true, true, true])
+test('task work is a checklist item, an edit, a check or a hand-off to a subagent; reading is not', async () => {
+  expect(['TaskCreate', 'TodoWrite', 'Edit', 'Write', 'Agent', 'Task'].map(t => isTaskWork(t, undefined)))
+    .toEqual([true, true, true, true, true, true])
+  expect(isTaskWork('TaskList', undefined)).toBe(false)                         // only looks
   expect([isTaskWork('Bash', 'npm test'), isTaskWork('Bash', 'ls'), isTaskWork('Read', undefined), isTaskWork('Grep', undefined)])
     .toEqual([true, false, false, false])
 })
@@ -84,7 +85,8 @@ test('a tentative run is dropped when its turn was only a question; kept when it
   expect(onTool(t, 'Read', undefined, false).isTentative).toBe(true)
   expect(onTool(t, 'Edit', undefined, false).isTentative).toBe(undefined)
   expect(onTool(t, 'Agent', undefined, false).isTentative).toBe(undefined)
-  expect(onCard(t, 'Small').isTentative).toBe(undefined)
+  expect(onSize(t, 'Small').isTentative).toBe(undefined)
+  expect(onTool(t, 'TaskCreate', undefined, false).isTentative).toBe(undefined)   // a checklist item makes it a task
   expect(barState(onAnswer(t, '', 'aborted') as Run)).toBe('stopped')                    // Esc on a new task: shown, not dropped
   expect(barState(onAnswer(t, REPORT) as Run)).toBe('done')
 })
@@ -116,16 +118,16 @@ test('the person\'s new message clears an ended run; nothing else does, and noth
   expect(onPrompt(null, 'new')).toBe(null)
 })
 
-// ---- Design card as text, subagents ----
+// ---- The size Claude names, subagents ----
 
-test('a design card written as text is found, with its size, in plain, bold or table form', async () => {
-  const plain = 'Design card (Normal)\n\nJob        schedule a push\nMirror     queue\nDone when  local run passes'
-  expect(cardInText(plain)).toEqual({ size: 'Normal' })
-  expect(cardInText('**Job**: x\n**Edges**: y\n**Done when**: z')).toEqual({})
-  expect(cardInText('| Job | x |\n| Done when | y |\n| Size | complex |')).toEqual({ size: 'Complex' })
-  expect(cardInText('```\nJob        x\nDone when  y\n```')).toEqual({})
-  expect(cardInText('The job is done when the tests pass.')).toBe(null)
-  expect(cardInText('Job: fix it')).toBe(null)
+test('the size is read only from a line where Claude names it, never from the task\'s words', async () => {
+  expect(sizeInText('Size: Normal\n\nI will start with the columns.')).toBe('Normal')
+  expect(sizeInText('Plan.\n\n**Size:** complex, it moves money')).toBe('Complex')
+  expect(sizeInText('Checklist (Small)\n1. format the duration')).toBe('Small')
+  expect(sizeInText('## Checklist · Trivial')).toBe('Trivial')
+  expect(sizeInText('This is a complex refund with a normal flow and a small fee.')).toBe(null)
+  expect(sizeInText('The font size is small.')).toBe(null)                      // not at a line start
+  expect(sizeInText('Checklist done.')).toBe(null)
 })
 
 test('a run stays busy while subagents work, even after the main turn ended', async () => {
