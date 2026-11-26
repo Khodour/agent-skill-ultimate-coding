@@ -16,7 +16,7 @@ How to prove the work, not just claim it. Read this when writing or changing tes
 |---|---|
 | Bug fix | **Always.** Reproduce the bug with a failing test first. |
 | Real logic: money, rules, permissions, calculations, parsing | **Always.** |
-| Trivial: text, styling, renames, one config value | **Never.** Run the existing checks only. |
+| Trivial: text, styling, renames, one config value | **Not required.** Run the existing checks. |
 | Everything else | **Suggest** tests in the report; add them if the project already tests similar code. |
 
 ---
@@ -133,3 +133,12 @@ Before saying done, follow `review.md`: read the whole diff as a reviewer would,
 | Double-click "Pay" | One payment | Two payments | ❌ → idempotency key added, retested ✅ |
 | Lowest role opens another branch's invoice | 403 denied | Denied | ✅ |
 | Arabic client name in the PDF | Correct right-to-left text | Correct | ✅ |
+
+---
+
+### Sources
+
+Checked on 2026-11-26. Re-read the original when a detail matters.
+- Martin Fowler: [Self-testing code](https://martinfowler.com/bliki/SelfTestingCode.html), [The practical test pyramid](https://martinfowler.com/articles/practical-test-pyramid.html), [Eradicating non-determinism in tests](https://martinfowler.com/articles/nonDeterminism.html)
+- Software Engineering at Google: [testing overview](https://abseil.io/resources/swe-book/html/ch11.html), [unit testing](https://abseil.io/resources/swe-book/html/ch12.html), [test doubles](https://abseil.io/resources/swe-book/html/ch13.html)
+- Google: [what to look for in a code review](https://google.github.io/eng-practices/review/reviewer/looking-for.html); W3C: [WCAG 2.2](https://www.w3.org/TR/WCAG22/); AWS Well-Architected: [load testing](https://docs.aws.amazon.com/wellarchitected/latest/framework/rel07-bp04.html)

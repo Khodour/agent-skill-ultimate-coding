@@ -210,3 +210,38 @@ none	fa6.go	v, _ := m[key]
 none	fa7.go	for _, x := range xs {
 swallowed-error	fa8.go	rows, _ := db.Query("SELECT id FROM t WHERE a = ?", a)
 swallowed-error	fa9.go	out, _ := exec.Command("git", "status").Output()
+# --- deserialize: native objects from outside data (OWASP Deserialization Cheat Sheet, CWE-502)
+deserialize	ds1.py	data = pickle.loads(request.body)
+deserialize	ds2.py	cfg = yaml.load(text, Loader=yaml.Loader)
+deserialize	Ds3.java	Object o = new ObjectInputStream(in).readObject();
+deserialize	ds4.php	$cart = unserialize($_COOKIE['cart']);
+deserialize	ds5.cs	var f = new BinaryFormatter();
+none	ds6.py	cfg = yaml.load(text, Loader=yaml.SafeLoader)
+none	ds7.py	cfg = yaml.safe_load(text)
+# --- open-redirect: a redirect target taken from the request (OWASP Unvalidated Redirects, CWE-601)
+open-redirect	Or1.java	response.sendRedirect(request.getParameter("url"));
+open-redirect	or2.rb	redirect_to params[:url]
+open-redirect	or3.js	res.redirect(req.query.next);
+open-redirect	or4.php	header("Location: " . $_GET['url']);
+open-redirect	or5.py	return redirect(request.args.get("next"))
+none	or6.js	res.redirect("/login");
+# --- xxe: XML parsers that resolve external entities (OWASP XXE Prevention, CWE-611)
+xxe	Xx1.java	XMLDecoder d = new XMLDecoder(in);
+xxe	xx2.php	$doc->loadXML($xml, LIBXML_NOENT);
+xxe	xx3.cs	settings.DtdProcessing = DtdProcessing.Parse;
+xxe	xx4.c	doc = xmlReadMemory(buf, len, "in.xml", NULL, XML_PARSE_NOENT);
+none	xx5.cs	settings.DtdProcessing = DtdProcessing.Prohibit;
+# --- ssrf: the server fetches a URL taken from the request (OWASP SSRF Prevention, CWE-918)
+ssrf	sf1.py	r = requests.get(request.args["url"])
+ssrf	sf2.js	const r = await fetch(req.query.url);
+ssrf	sf3.php	$html = file_get_contents($_GET['url']);
+ssrf	sf4.go	resp, err := http.Get(r.URL.Query().Get("url"))
+none	sf5.py	r = requests.get(API_BASE + "/status", timeout=5)
+# --- swallowed-error: a catch-all that turns every failure into "nothing" (CWE-390)
+swallowed-error	se1.py	try:<NL>    x = f()<NL>except Exception:<NL>    return None
+swallowed-error	se2.js	try {<NL>  x = f();<NL>} catch (e) {<NL>  return null;
+swallowed-error	se3.py	except Exception: return None
+none	se4.py	try:<NL>    n = int(s)<NL>except ValueError:<NL>    return None
+# --- io-in-loop: the query on the same line as its loop
+io-in-loop	Ol1.java	for (Long id : ids) { User u = repo.findById(id); }
+io-in-loop	ol2.js	for (const id of ids) { const u = await db.users.find(id); }

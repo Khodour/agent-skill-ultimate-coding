@@ -57,7 +57,7 @@ Report the error in the language's normal way (exception, error value, `Result`)
 ✅ invoice line stores productId + unitPricePaid + taxRateUsed
 ```
 
-**When something has a status** (an order, a ticket, a payment, a subscription), it is a state machine. Write it as one:
+**When a status has rules about which changes are allowed** (an order, a ticket, a payment, a subscription), write those rules once:
 
 - **One table of allowed moves**, and **one function** that changes the status. Any other move is an error, never a silent change.
 - **Race-safe:** the move checks the old status in the same statement, so two requests cannot both move it.
@@ -148,3 +148,15 @@ If the project already has an error model, use it. Otherwise:
    "database down" is unexpected and reaches the top-level handler
    one edge mapping: NotFound → 404, Forbidden → 403, anything else → 500 + request ID
 ```
+
+---
+
+### Sources
+
+Checked on 2026-11-26. Re-read the original when a detail matters.
+- OWASP: [Input validation cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html), [Error handling cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Error_Handling_Cheat_Sheet.html)
+- Martin Fowler: [Money](https://martinfowler.com/eaaCatalog/money.html), [Snapshot](https://martinfowler.com/eaaDev/Snapshot.html), [Tolerant reader](https://martinfowler.com/bliki/TolerantReader.html)
+- [CWE-367: time-of-check time-of-use race](https://cwe.mitre.org/data/definitions/367.html); PostgreSQL: [transactions](https://www.postgresql.org/docs/current/tutorial-transactions.html), [constraints](https://www.postgresql.org/docs/current/ddl-constraints.html)
+- [Transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html); IETF draft: [Idempotency-Key header](https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/)
+- Google API design: [errors, AIP-193](https://google.aip.dev/193), [pagination, AIP-158](https://google.aip.dev/158)
+- Python: [decimal](https://docs.python.org/3/library/decimal.html); Java: [assertions](https://docs.oracle.com/javase/8/docs/technotes/guides/language/assert.html); Jon Skeet: [storing UTC is not a silver bullet](https://codeblog.jonskeet.uk/2019/03/27/storing-utc-is-not-a-silver-bullet/); Gary Bernhardt: [functional core, imperative shell](https://www.destroyallsoftware.com/screencasts/catalog/functional-core-imperative-shell)

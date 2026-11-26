@@ -12,6 +12,8 @@ Rules 1–5 are MUSTs (also listed in `SKILL.md`). Read this file in full when a
 - 7 Safe errors, careful logs
 - 8 Limit everything public or expensive
 - 9 Few, maintained, pinned dependencies
+- 10 Outside input that picks a server, an object type, a redirect or an XML entity
+- Sources
 
 ---
 
@@ -101,7 +103,7 @@ If a check blocks you, fix the cause. Follow this order:
 - Log security events: logins, failed logins, permission denials, changes to roles and admin settings.
 
 ### 8. Limit everything public or expensive
-- Rate limits on login, one-time codes, password reset, sign-up, search and anything that costs money (SMS, email, AI calls).
+- Rate limits on login, one-time codes, password reset, sign-up, search and anything that costs money (SMS, email, AI calls), counted per account as well as per client. Never lock an account because of reset requests (OWASP Forgot Password Cheat Sheet).
 - Uploads: check size and real type (not just the extension), store them under random names, outside any folder that can execute code.
 - Timeouts on every outgoing call (see `resilience.md`).
 
@@ -109,3 +111,20 @@ If a check blocks you, fix the cause. Follow this order:
 - Add a library only when it earns its place; a few lines of your own code can beat a new dependency.
 - Prefer well-known, maintained packages. **Check that the package name really exists** and is the official one: attackers register names that AI agents tend to invent.
 - Commit the lock file. Check for known vulnerabilities with the ecosystem's audit tool.
+
+### 10. Outside input that picks a server, an object type, a redirect or an XML entity
+Four attacks where input chooses *where* or *what*, not only a value. Each follows its OWASP cheat sheet; check it for the details of your language and library.
+
+- **Server-side request forgery (CWE-918):** when your server fetches a URL or host that came from outside, an attacker points it at internal services or the cloud metadata address. Do not accept full URLs from users; match the host against an allowlist and build the request yourself, connect to the address you checked (a second DNS lookup can change it), and turn off following redirects in the HTTP client.
+- **Unsafe deserialization (CWE-502):** turning untrusted bytes back into native objects can run code. Never use `pickle.loads`, `yaml.load` with an unsafe loader (use `yaml.safe_load`), Java `ObjectInputStream.readObject`, PHP `unserialize`, or .NET `BinaryFormatter` on outside data; use JSON with a fixed schema, and never let the data choose the type.
+- **Open redirect (CWE-601):** `redirect(request.query.next)` sends users to any site an attacker writes into a link. Map short ids to destinations on the server, use the framework's helper that rejects non-local targets, or compare the parsed scheme, host and port with an allowlist (never a prefix or suffix match).
+- **XML external entities (CWE-611):** a parser that resolves external entities reads local files or calls internal URLs. Turn DTDs off (or, when they are required, external entities and external DTD loading), keep XInclude off, and fail closed if a setting cannot be applied. Never use Java `XMLDecoder` on outside data.
+
+---
+
+### Sources
+
+Checked on 2026-11-26. Re-read the original when a detail matters.
+- OWASP Cheat Sheets: [SSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html), [Deserialization](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html), [Unvalidated redirects and forwards](https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html), [XXE prevention](https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html), [Authentication](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html), [Forgot password](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html), [Logging](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)
+- [OWASP API Security Top 10 (2023), API4: Unrestricted resource consumption](https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/)
+- MITRE CWE: [918](https://cwe.mitre.org/data/definitions/918.html), [502](https://cwe.mitre.org/data/definitions/502.html), [601](https://cwe.mitre.org/data/definitions/601.html), [611](https://cwe.mitre.org/data/definitions/611.html)

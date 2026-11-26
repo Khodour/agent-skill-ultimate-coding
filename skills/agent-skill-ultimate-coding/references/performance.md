@@ -47,7 +47,7 @@ Never run a query, network call or file read once per item. Fetch everything in 
 - Filter, sort and count **in the database**, not in app memory.
 
 ### 4. When there is a database: index what you search
-Every new filter, sort or join gets a check that an index supports it. On large tables, read the query plan. A query that is instant on 100 rows can take 30 seconds on a million.
+Every new filter, sort or join gets a check that an index supports it. On large tables, read the query plan. A query that is fast on a small table can be slow on a large one.
 
 ### 5. When code calls over a network: one call per moment
 - Data a screen needs at startup rides on a call that already happens then (a bootstrap or check-in call). **No new request per widget.**
@@ -98,10 +98,10 @@ Find the real slow point with a profiler, a query log or a request count, not by
 |---|---|
 | Any task touching data | Count the queries or requests per action; more than expected → fix it |
 | Data paths (lists, search, writes) | **Twice test:** run the write twice and check nothing doubles. |
-| Data paths in a complex task (money, stock, shared counters) or on a hot path | **Big-data test:** fill with a large dataset and check speed. **Concurrency test:** send 10–20 requests at the same item at once and look for races, double charges and overselling. |
-| Hot paths (login, checkout, search, the main list) or before a launch or big release | **Real stress test** on staging: ramp up to **3× the expected peak**; measure response time (p95), error rate, database connections, memory; find the breaking point. |
+| Data paths that touch money, stock or shared counters, or a hot path | **Big-data test:** fill with a large dataset and check speed. **Concurrency test:** send a burst of requests at the same item at once and look for races, double charges and overselling. |
+| Hot paths (login, checkout, search, the main list) or before a launch or big release | **Real stress test** on staging: ramp up past the expected peak until a component fails (AWS Well-Architected); measure response time (p95), error rate, database connections, memory; find the breaking point. |
 
-**The target:** use the number in the project's rules. If there is none, ask the user: "How many users at the busiest time? If you're unsure, I'll use 100 at once as a starting point." Test to 3× that number.
+**The target:** use the number in the project's rules. If there is none, ask the user how many users the busiest time brings, and test past it until something breaks.
 
 **Safety (MUST 13):** stress tests run only on local or staging, never on production without explicit approval. Replace outside services (payments, SMS, email) with fakes during the test.
 
@@ -113,3 +113,12 @@ Find the real slow point with a profiler, a query log or a request count, not by
 - **Mobile:** watch startup requests, battery (polling, location), memory, and work on the main thread.
 - **Frontend web:** watch bundle size, the number of requests on load, and re-renders.
 - **Embedded and games:** watch memory allocation inside loops or frames, and fixed time budgets.
+
+---
+
+### Sources
+
+Checked on 2026-11-26. Re-read the original when a detail matters.
+- Django: [database access optimization](https://docs.djangoproject.com/en/5.1/topics/db/optimization/); PostgreSQL: [using EXPLAIN](https://www.postgresql.org/docs/current/using-explain.html); Google API design: [pagination, AIP-158](https://google.aip.dev/158)
+- Node.js: [don't block the event loop](https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop); Android: [ANRs](https://developer.android.com/topic/performance/vitals/anr); Rails: [Active Job](https://guides.rubyonrails.org/active_job_basics.html); React: [useEffect cleanup](https://react.dev/reference/react/useEffect)
+- [CWE-524: sensitive information in a cache](https://cwe.mitre.org/data/definitions/524.html); AWS Well-Architected: [load testing](https://docs.aws.amazon.com/wellarchitected/latest/framework/rel07-bp04.html)

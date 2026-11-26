@@ -41,14 +41,15 @@ Every task in the suite runs **with and without** the skill and is scored by ind
 
 | Model | Tests | Without the skill | With the skill | Measured on |
 |---|---|:---:|:---:|:---:|
-| Claude Sonnet 5.5 | **Held-out, 13 tasks** (Python, Java, Ruby, TypeScript) | 0.71 | ✅ **0.97** | current main |
-| Claude Sonnet 5.5 | Full suite, 70 tasks | 0.82 | ✅ **0.98** | current main |
+| Claude Sonnet 5.5 | **Independent held-out, 6 tasks**, written by an agent that never saw the skill | 0.92 | ✅ **1.00** | 2.2.0 |
+| Claude Sonnet 5.5 | **Held-out, 13 tasks** (Python, Java, Ruby, TypeScript) | 0.71 | ✅ **0.97** | 2.2.0 |
+| Claude Sonnet 5.5 | Full suite, 78 tasks | 0.85 | ✅ **0.98** | 2.2.0 |
 | Claude Haiku 5.5 | Full suite | 0.82 | ✅ **0.96** | 1.6.0 |
 | Claude Opus 5.5 | 10 hardest tests | 0.68 | ✅ **0.97** | 1.6.0 |
 
-On Sonnet 5.5 the skill scores a perfect result on 64 of the 70 tasks, and clearly raises the score on 18. On one task it scored a little lower (0.95 against 1.00: one report ran longer than the change needed). On the others the model already does the right thing, and the skill keeps it that way, including the misfire tasks that check it does *not* over-build a small change.
+The Sonnet rows run every task 5 times, judged by Claude Opus 5.5. The skill scores a perfect result on 73 of the 78 tasks and clearly raises the score on 15. Three tasks scored a little lower with it; each is explained in [evals/RESULTS.md](evals/RESULTS.md), with the score of every task.
 
-**What it costs:** with the skill, an agent took 7.4 turns per task on average against 3.3 without, and about 1.6× the tokens: the price of reading the code first, writing the checklist and running the checks.
+**What it costs:** with the skill, an agent took 8.8 turns per task on average against 4.1 without, and about 1.5× the spend. The extra turns are the work itself: reading the project first, writing tests, the checklist and the checks.
 
 <p align="center">
   <img src="docs/assets/eval-results.svg" alt="Behaviours the skill takes to a 100% pass rate, per model. Claude Haiku 5.5: query inside a loop 0% to 100%; gift card 0% to 100%; double submits 0% to 100%; AI refunds need a human 33% to 100%; rule out of the route 33% to 100%; parameterized queries 67% to 100%. Claude Sonnet 5.5: database rules out of the web layer, gift card, coupon, bill split and reproducing test each 0% to 100%; double submits, failed cart read and AI summary 33% to 100%; AI refunds 67% to 100%. Claude Opus 5.5, 10 hardest tests: database rules 0% to 100%; gift card 0% to 100%; double submits 33% to 100%." width="100%">
@@ -95,8 +96,10 @@ The last two rows are the only places where version 1.6.0 scored lower: on small
 |---|---|---|
 | 🟢 **Trivial** | Typo, text change, rename, one config value | The change and the project's checks |
 | 🔵 **Small** | One self-contained function: a formatter, a parser, a pure calculation | A short checklist, tests by risk, a short report |
-| 🟡 **Normal** | Feature, bug fix, anything touching data, files or the network | A full checklist before code, tests by risk, a real-user test, a short report |
-| 🔴 **Complex** | Payments, auth, personal data, migrations, concurrency, public APIs | Everything above, plus an independent review and concurrency checks |
+| 🟡 **Normal** | One self-contained change: a feature, a bug fix, a new screen or endpoint | A full checklist before code, tests by risk, a real-user test, a short report |
+| 🔴 **Complex** | Work that splits into several changes: a feature across modules, a migration with its code | One checklist per part, each part working before the next |
+
+**Risk areas, at any size:** a change that touches auth, personal data, money, concurrency, a migration or a public API gets that area's checks and a separate reviewer, as Google's code review guide asks. Size is how much work there is; risk is what it touches.
 
 Every size starts the same way: the agent reads the code it will touch and looks for what already does the job.
 
@@ -112,7 +115,7 @@ Every size starts the same way: the agent reads the code it will touch and looks
 
 ## The MUST rules
 
-Applied to every task, whatever its size. Only you can override one, and the agent will flag it in its report.
+Applied to every task, whatever its size. Only you can override one, and the agent will flag it in its report. The two work rules, understand first and checklist first, are on by default; a team can also turn them off in its own project rules (`CLAUDE.md` or `AGENTS.md`).
 
 - 🔒 **Security:** data never becomes code · check access for every action **and every record** · never hand-roll auth or crypto · secrets stay out of code, git, logs and apps, and logs never hold personal data or raw errors · never weaken a safety check
 - 💾 **Data:** all-or-nothing writes, safe to repeat · never delete or overwrite data without an explicit OK · never break what is shipped

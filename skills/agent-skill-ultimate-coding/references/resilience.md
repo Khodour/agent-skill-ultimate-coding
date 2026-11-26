@@ -10,8 +10,7 @@ Software meets slow networks, failing servers, impatient users and blocked regio
 - 5 Decide the offline behaviour
 - 6 Handle real-life timing
 - 7 Bend, don't break
-- 8 No single-region dependencies
-- 9 See failures before users do
+- 8 See failures before users do
 - Backups
 
 ---
@@ -20,15 +19,15 @@ Software meets slow networks, failing servers, impatient users and blocked regio
 Network requests, database queries, outside services, other processes, locks: nothing waits forever. Pick a limit that fits the call (a search: a few seconds; a report export: longer, in the background).
 
 ### 2. Retry safely
-- Retry only **temporary** failures: timeouts, connection resets, server errors (5xx), "too many requests" (429).
-- **Never** retry "invalid input" or "not allowed" errors (4xx); they will fail again.
+- Retry only **temporary** failures: timeouts, connection resets, server errors (5xx), 408 (request timeout) and 429 (too many requests, waiting as long as its `Retry-After` header asks).
+- **Never** retry the other client errors (400, 401, 403, 404, 422 and the like): they will fail again. Google Cloud's retry strategy lists 408, 429 and 5xx as the codes worth retrying.
 - Wait longer between tries (exponential backoff), add a little randomness (jitter), and **cap the number of tries**.
 - **Only retry actions that are safe to repeat** (see MUST 6: idempotency keys for create, charge and send).
 
 ```text
 ❌ while (!ok) ok = send()                     retry storm; double charges
 ✅ retry(send, attempts = 3, backoff = 0.5s → 1s → 2s, plus jitter,
-         only on timeout/5xx/429, with idempotencyKey)
+         only on timeout/408/429/5xx, with idempotencyKey)
 ```
 
 ### 3. Shared concerns live in one place
@@ -59,10 +58,7 @@ Never a spinner that spins forever. When the connection returns, **pages refill 
 ### 7. Bend, don't break, when a helper service is down
 Optional features (analytics, maps, recommendations, push, chat widgets) fail quietly without blocking the main flow. Login and checkout never fail because analytics is down. If a service keeps failing, stop calling it for a while (a circuit breaker), then try again.
 
-### 8. When users are in many countries: no single-region dependencies
-Core features must not depend on services blocked in some regions (for example Google services in mainland China) or commonly blocked by company firewalls. Have a fallback: an alternative provider, or a degraded but working mode. Check sign-in, push notifications, maps, captchas and fonts.
-
-### 9. See failures before users report them
+### 8. See failures before users report them
 - Errors are logged with context: what was attempted, a request ID, the version. Never secrets or personal data (`security.md` rule 7).
 - Errors and crashes go to an error tracker or alerting.
 - Key services expose a health check.
@@ -72,3 +68,12 @@ Core features must not depend on services blocked in some regions (for example G
 ## Backups
 
 **When stored data matters:** backups exist, and a restore has actually been tested. A backup that has never been restored is a hope, not a backup.
+
+---
+
+### Sources
+
+Checked on 2026-11-26. Re-read the original when a detail matters.
+- Google SRE book: [addressing cascading failures](https://sre.google/sre-book/addressing-cascading-failures/), [data integrity](https://sre.google/sre-book/data-integrity/); Google Cloud: [retry strategy](https://docs.cloud.google.com/storage/docs/retry-strategy)
+- AWS Builders' Library: [timeouts, retries and backoff with jitter](https://builder.aws.com/content/3EumjoZascWd1oZiEgL8ORlv3qE/timeouts-retries-and-backoff-with-jitter); Martin Fowler: [Circuit breaker](https://martinfowler.com/bliki/CircuitBreaker.html)
+- web.dev: [offline UX design guidelines](https://web.dev/articles/offline-ux-design-guidelines); React: [useEffect and race conditions](https://react.dev/reference/react/useEffect); Kubernetes: [probes](https://kubernetes.io/docs/concepts/configuration/liveness-readiness-startup-probes/); OWASP: [Logging cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)

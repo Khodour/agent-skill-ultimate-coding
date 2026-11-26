@@ -5,7 +5,7 @@ Where code lives, what it is called, and how it explains itself. Read this when 
 **Contents**
 - Structure rules: 1 Mirror the project's layout; 2 A clean root; 3 Size signal
 - Naming and settings rules: 4 Names tell the truth; 5 Settings live outside the code
-- Comment rules 6–8: 6 Every new file, class and function has a header; 7 Explain the *why* of complex code; 8 Comments stay true
+- Comment rules 6–8: 6 New files, and public or non-obvious functions, have a header; 7 Explain the *why* of complex code; 8 Comments stay true
 
 ---
 
@@ -61,7 +61,7 @@ If siblings disagree, follow the most recent or most common pattern and say whic
 - Never a flat pile of files, and never one giant file.
 
 ### 3. Size signal
-A hand-written file over ~400 lines, or a function over ~50, is a signal to check for more than one job (see `design.md`). It is a signal, not a ban.
+A function over about 40 lines, or a file that keeps growing, is a signal to check for more than one job (see `design.md`). It is a signal, not a ban.
 
 ---
 
@@ -87,8 +87,8 @@ URLs, limits, feature switches and anything that differs between environments go
 
 ## Comments
 
-### 6. Every new file, class and function has a header
-Say **what it does and why it exists**, in the language's own doc format. One line is enough when it is obvious. Name the caller only when that is not obvious, because caller lists go stale.
+### 6. New files, and public or non-obvious functions, have a header
+Every new file says what it is for. Every new public or non-obvious class and function says **what it does and why it exists**, in the project's own comment style or the language's doc format; a simple, obvious function may skip it (Google's style guides). One line is enough when it is obvious. Name the caller only when that is not obvious, because caller lists go stale.
 
 ```python
 def apply_discount(order, code):
@@ -133,4 +133,12 @@ If code needs a comment to explain *what* it does, simplify the code first.
 ### 8. Comments stay true
 - When code changes, its comment changes **in the same edit**. A stale comment is a bug.
 - **No commented-out code.** Version control remembers it; delete it.
-- **No silent TODOs.** Fix it now, or list it in the report as not done.
+- **No silent TODOs.** Fix it now, or leave a TODO that links to an issue (Google's Python style guide) and list it in the report.
+
+---
+
+### Sources
+
+Checked on 2026-11-26. Re-read the original when a detail matters.
+- Google: [C++ style guide](https://google.github.io/styleguide/cppguide.html), [Python style guide](https://google.github.io/styleguide/pyguide.html), [what to look for in a code review](https://google.github.io/eng-practices/review/reviewer/looking-for.html), [the standard of code review](https://google.github.io/eng-practices/review/reviewer/standard.html)
+- Microsoft: [names of type members](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/names-of-type-members); [Replace magic literal](https://refactoring.com/catalog/replaceMagicLiteral.html); [The Twelve-Factor App: config](https://12factor.net/config); Martin Fowler: [Presentation domain data layering](https://martinfowler.com/bliki/PresentationDomainDataLayering.html)

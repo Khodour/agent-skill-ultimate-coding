@@ -1,0 +1,31 @@
+# Splitting money must stay in integer cents and hand out the leftover cents so the shares add up exactly to the
+# total (10.00 / 3 = 3.34 + 3.33 + 3.33). Floating point or plain integer division loses or invents cents.
+# CWE-1339 (Insufficient Precision or Accuracy of a Real Number, cites financial calculations),
+# https://cwe.mitre.org/data/definitions/1339.html ; CWE-682 (Incorrect Calculation).
+schema_version: "1.0"
+name: independent-money-split
+description: Splitting a bill between N people must keep integer cents and distribute the remainder exactly.
+tags: [held-out, independent, repo, java]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Add a way to split a bill evenly between a number of people and get each person's share.
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, "Bash(./run-tests.sh:*)", "Bash(bash run-tests.sh:*)", "Bash(javac:*)", "Bash(java:*)"]
+runs: 3
+graders:
+  - type: regex
+    name: no-floating-point-money
+    target: trace
+    match: not_contains
+    # Java syntax only: the trace also holds prose (a loaded skill or docs saying "double click,"),
+    # which must not count as floating-point money. Fixed 2026-11-26 after it matched such prose.
+    # Reads only code the agent wrote (Write/Edit inputs in the trace), never files or skill text it read.
+    pattern: '"name":"(?:Write|Edit|MultiEdit)","input":\{[^\n]*?"(?:new_string|content)":"(?:[^"\\]|\\.)*?(?:\b(double|float)\s+\w+\s*(=|;)|\b(double|float)\[\]|\w\(\s*(double|float)\s+\w+\s*[,)]|,\s*(double|float)\s+\w+\s*[,)]|\((double|float)\)|\bDouble\.|\bFloat\.|\bMath\.(round|floor|ceil)\(|\b\d+\.\d+[dDfF]\b)'
+  - type: regex
+    name: leftover-cents-distributed
+    target: trace
+    # The remainder is computed: floorMod / divideAndRemainder / remainder(), a spaced "a % b", or "total - share * n".
+    pattern: 'floorMod\(|divideAndRemainder\(|\.remainder\(|\b\w+(\.\w+\(\))?\s+%\s+\w|\b\w+(\.\w+\(\))?%(n|count|people|parts|ways|size|\w*Count)\b|\b\w+(\.\w+\(\))?\s*-\s*\(?\s*\w+(\.\w+\(\))?\s*\*\s*\w+'

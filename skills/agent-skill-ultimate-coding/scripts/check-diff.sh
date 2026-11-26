@@ -285,6 +285,17 @@ inhdr { next }                                  # index, mode, rename and binary
               (lnum == prevnum + 1 && tolower(prevtxt) ~ /<key>[^<]*(api[_-]?key|secret|passw|token|private[_-]?key|access[_-]?key)[^<]*<\/key>/)))))
     flag("secret", "secret written in config -> read it from the environment or a secret store; rotate it if it was ever committed (MUST 4)")
 
+  # Input that picks a server, an object type, a redirect or an XML entity (security.md rule 10;
+  # the calls are the ones the OWASP cheat sheets and CWE entries name).
+  if (!comment && !testfile && (l ~ /(^|[^A-Za-z0-9_.])c?[Pp]ickle\.loads?\(|yaml\.unsafe_load\(|ObjectInputStream|\.readObject\(\)|(^|[^A-Za-z0-9_])unserialize\(|BinaryFormatter|TypeNameHandling\.(All|Auto|Objects|Arrays)/ || (l ~ /yaml\.load\(/ && l !~ /SafeLoader/)))
+    flag("deserialize", "native objects rebuilt from data -> if the data can come from outside, use JSON with a fixed schema (security.md 10, CWE-502)")
+  if (!comment && !testfile && (l ~ /(sendRedirect|redirect_to|[Rr]edirect)[ \t]*\(?[ \t]*(request\.(getParameter|args|GET|query|params|form)|req\.(query|params|body)|params\[|\$_(GET|POST|REQUEST))/ || l ~ /header\([ \t]*["']Location:[^"']*["'][ \t]*\.[ \t]*\$/))
+    flag("open-redirect", "redirect target taken from the request -> map ids to targets on the server, or check it against an allowlist (security.md 10, CWE-601)")
+  if (!comment && !testfile && l ~ /XMLDecoder|LIBXML_NOENT|LIBXML_DTDLOAD|XML_PARSE_NOENT|XML_PARSE_DTDLOAD|DtdProcessing\.Parse/)
+    flag("xxe", "XML parser that resolves external entities -> turn DTDs and external entities off (security.md 10, CWE-611)")
+  if (!comment && !testfile && l ~ /(requests\.(get|post|put|patch|delete|head)|urlopen|(^|[^A-Za-z0-9_.])fetch|axios(\.(get|post|put|delete))?|http\.(Get|Post)|file_get_contents|curl_init|(Get|Post)Async|getForObject)[ \t]*\([ \t]*(request\.|req\.(query|params|body)|r\.URL\.Query|params\[|\$_(GET|POST|REQUEST)|args\.get|input\()/)
+    flag("ssrf", "the server fetches a URL from the request -> allowlist the hosts and build the request yourself (security.md 10, CWE-918)")
+
   # Never hand-roll auth or crypto (MUST 3).
   if (!comment && !testfile && lc ~ /passw|token|secret|otp|salt|nonce|reset|session/ &&
       (lc ~ /md5|sha1([^0-9]|$)/ || l ~ /Math\.random\(|random\.(random|randint|choice|choices)\(|(^|[^A-Za-z_])rand\(\)|mt_rand\(|new Random\(|uniqid\(|ThreadLocalRandom|Random\.next(Int|Long|Double|Bytes)\(|(^|[^A-Za-z_.])Random\(\)\.next|rand\.(Intn|Int63n?|Int31n?|Float64|Uint32|Uint64|Perm)\(|(^|[^A-Za-z_.:])rand\([0-9]/))
@@ -297,6 +308,11 @@ inhdr { next }                                  # index, mode, rename and binary
     flag("swallowed-error", "error swallowed -> handle it, or log it and re-raise (MUST 12)")
   else if (!testfile && ext == "go" && l ~ /,[ \t]*_[ \t]*:?=[ \t]*[A-Za-z_][A-Za-z0-9_.]*[A-Za-z0-9_]\(/)
     flag("swallowed-error", "error thrown away with _ -> check it, or return it (MUST 12)")
+  else if (!testfile && l ~ /^[ \t]*except([ \t]+(Exception|BaseException)([ \t]+as[ \t]+[A-Za-z_]+)?)?[ \t]*:[ \t]*return([ \t]+None)?[ \t]*(#.*)?$/)
+    flag("swallowed-error", "every failure turned into nothing -> catch the specific error, or log it and re-raise (MUST 12, CWE-390)")
+  else if (!testfile && lnum == prevnum + 1 && prevtxt ~ /^[ \t]*except([ \t]+(Exception|BaseException)([ \t]+as[ \t]+[A-Za-z_]+)?)?[ \t]*:[ \t]*$|catch[ \t]*(\([ \t]*([A-Za-z_$][A-Za-z0-9_$]*|(Exception|Throwable|\\Exception|\\Throwable)[ \t]+[$A-Za-z_][A-Za-z0-9_]*|[A-Za-z_]+[ \t]*:[ \t]*(any|unknown))[ \t]*\))?[ \t]*\{[ \t]*$/ && l ~ /^[ \t]*return([ \t]+(None|null|nil|undefined))?[ \t]*;?[ \t]*$/) {
+    lnum--; flag("swallowed-error", "every failure turned into nothing -> catch the specific error, or log it and re-raise (MUST 12, CWE-390)"); lnum++
+  }
   else if (lnum == prevnum + 1 && prevtxt ~ /^[ \t]*except([ \t(][^:]*)?:[ \t]*$|catch[ \t]*(\([^)]*\))?[ \t]*\{[ \t]*$|^[ \t]*rescue([ \t].*)?$/ && l ~ /^[ \t]*(pass|\.\.\.|\}|end)[ \t]*$/) {
     lnum--; flag("swallowed-error", "error swallowed -> handle it, or log it and re-raise (MUST 12)"); lnum++
   }
@@ -343,6 +359,13 @@ inhdr { next }                                  # index, mode, rename and binary
            ((l ~ /await[ \t]|\.await([^A-Za-z_]|$)/ && lc ~ /(^|[^a-z0-9_])(db|repo|repository|client|api|http|prisma|knex|sequelize|mongoose|model|session|conn|pool|store|redis|cache|supabase|firestore|s3|queue|fetch|axios)[a-z0-9_]*(\.|::|\()/) || l ~ /\.(Query|QueryRow|QueryContext|QueryRowContext|Exec|ExecContext)\(|(^|[^A-Za-z0-9_])[A-Z][A-Za-z0-9]*(\.|::)(find|find_by|where|first|query)\(|\.query\(|\.execute\(|\.objects\.|\.find(One|By[A-Za-z]*|_by|All)\(|\.(save|first|get_or_create)\(|fetch\(|axios\.|requests\.(get|post|put|patch|delete)\(|http\.(Get|Post|Do)\(|DB::/)) {
     flag("io-in-loop", "query or network call inside a loop (N+1) -> fetch everything in one query or call before the loop (performance.md)")
     loopflagged = 1
+  }
+  # The query on the same line as its loop: for (...) { repo.findById(id); }
+  if (!comment && !testfile && l ~ /^[ \t]*(for|while)([ \t(]|$)|\.forEach\(|foreach[ \t]*\(/ && (bp = index(l, "{")) > 0) {
+    rest = substr(l, bp + 1)
+    if ((rest ~ /await[ \t]|\.await([^A-Za-z_]|$)/ && tolower(rest) ~ /(^|[^a-z0-9_])(db|repo|repository|client|api|http|prisma|knex|sequelize|mongoose|model|session|conn|pool|store|redis|cache|supabase|firestore|s3|queue|fetch|axios)[a-z0-9_]*(\.|::|\()/) ||
+        rest ~ /\.(Query|QueryRow|QueryContext|QueryRowContext|Exec|ExecContext)\(|(^|[^A-Za-z0-9_])[A-Z][A-Za-z0-9]*(\.|::)(find|find_by|where|first|query)\(|\.query\(|\.execute\(|\.objects\.|\.find(One|By[A-Za-z]*|_by|All)\(|\.(save|first|get_or_create)\(|fetch\(|axios\.|requests\.(get|post|put|patch|delete)\(|http\.(Get|Post|Do)\(|DB::/)
+      flag("io-in-loop", "query or network call inside a loop (N+1) -> fetch everything in one query or call before the loop (performance.md)")
   }
   if (!comment && l ~ /^[ \t]*(for|while)([ \t(]|$)|\.forEach\(|\.each[ \t]+do|\.each[ \t]*\{|foreach[ \t]*\(|for[ \t]+[A-Za-z_, ]+[ \t]+in[ \t]/) {
     loop = 1; loopind = ind; loopflagged = 0

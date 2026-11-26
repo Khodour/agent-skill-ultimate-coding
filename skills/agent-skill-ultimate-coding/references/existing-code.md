@@ -68,7 +68,7 @@ With enough users, someone depends on every behaviour. Public APIs, old app vers
 ### 6. Clean the area you touch, report the rest
 Inside the files you are changing: remove dead code, unused imports and small rot. Outside them, don't touch anything; list what you noticed under "Found elsewhere, not touched" in the report.
 
-**A real problem inside the code you are changing is fixed, not extended.** If the function you are editing has an N+1 query, an injection, a race or a money bug, fix it in this change (keeping its behaviour) and say so in the report. "Found elsewhere, not touched" is for code you are *not* changing.
+**A real problem inside the code you are changing is fixed, not extended.** If the function you are editing has an N+1 query, an injection, a race or a money bug, fix it as a separate, earlier step of the same task (Google keeps refactoring apart from feature changes), keeping its behaviour, and say so in the report. "Found elsewhere, not touched" is for code you are *not* changing.
 
 ```text
 task: "show each author's avatar in list_posts()", which loads every author separately
@@ -83,3 +83,12 @@ task: "show each author's avatar in list_posts()", which loads every author sepa
 
 ### 8. Keep the docs true
 When behaviour changes, update the README, project docs (such as `CLAUDE.md` or `AGENTS.md`), API docs and comments **in the same change**. A stale doc is a bug.
+
+---
+
+### Sources
+
+Checked on 2026-11-26. Re-read the original when a detail matters.
+- Google Engineering Practices: [the standard of code review](https://google.github.io/eng-practices/review/reviewer/standard.html), [small changes](https://google.github.io/eng-practices/review/developer/small-cls.html), [what to look for](https://google.github.io/eng-practices/review/reviewer/looking-for.html), [handling pushback](https://google.github.io/eng-practices/review/reviewer/pushback.html)
+- [Hyrum's law](https://www.hyrumslaw.com/); Google API design: [compatibility, AIP-180](https://google.aip.dev/180)
+- Martin Fowler: [Parallel change](https://martinfowler.com/bliki/ParallelChange.html), [Feature toggles](https://martinfowler.com/articles/feature-toggles.html), [Opportunistic refactoring](https://martinfowler.com/bliki/OpportunisticRefactoring.html)

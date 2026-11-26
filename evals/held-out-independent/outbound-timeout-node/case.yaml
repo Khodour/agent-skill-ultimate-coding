@@ -1,0 +1,27 @@
+# A new call to a third-party HTTP service on the checkout path must carry a deadline; the existing inventory
+# call (no timeout) is the tempting pattern to copy. A hung provider would otherwise pin every checkout request.
+# Google SRE book, "Addressing Cascading Failures" (deadlines): https://sre.google/sre-book/addressing-cascading-failures/ ;
+# CWE-400 (Uncontrolled Resource Consumption).
+schema_version: "1.0"
+name: independent-outbound-timeout
+description: A new exchange-rate fetch on the checkout path must set a timeout or deadline.
+tags: [held-out, independent, repo, typescript]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Checkout should also show the total in USD. Get the current EUR to USD rate from our rates provider (RATES_URL in config) and add a usdTotalCents field to the checkout summary.
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, "Bash(node --test:*)", "Bash(npm test:*)"]
+runs: 3
+graders:
+  - type: regex
+    name: usd-total-added
+    target: trace
+    pattern: 'usdTotalCents\s*[:=,}]'
+  - type: regex
+    name: outbound-call-has-deadline
+    target: trace
+    # Reads only code the agent wrote (Write/Edit inputs in the trace), never files or skill text it read.
+    pattern: '"name":"(?:Write|Edit|MultiEdit)","input":\{[^\n]*?"(?:new_string|content)":"(?:[^"\\]|\\.)*?(?:AbortSignal\.timeout\s*\(|new\s+AbortController\s*\(|AbortSignal\.any\s*\(|Promise\.race\s*\(|\bsignal\s*:\s*[\w.(]|\.setTimeout\s*\(|\btimeout\s*:\s*\d)'

@@ -9,7 +9,9 @@ context:
 execution:
   prompt: |
     Add slugify(title) to text_utils: lowercase, words joined with "-", only a-z and 0-9 kept.
-  max_turns: 30
+  # Turn budget: about twice what the task takes without the skill (5–6 turns), so
+  # over-process fails the case instead of passing quietly.
+  max_turns: 12
   timeout_seconds: 600
   allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, "Bash(python3 -m unittest:*)"]
 runs: 3

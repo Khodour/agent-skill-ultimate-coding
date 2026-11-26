@@ -5,7 +5,7 @@ How to shape code so it stays small, clear and easy to change. Read this when a 
 Examples are pseudocode. Apply each idea in the language's own way.
 
 **Contents**
-- Design rules: 1 Reuse before inventing; 2 One job per piece; 3 Deep, not shallow; 4 Add, don't edit; 5 Rules in the middle, tools at the edge; 6 Compose, don't inherit; 7 Talk to neighbours only; 8 Tie-breaker: easier to change
+- Design rules: 1 Reuse before inventing; 2 One reason to change per piece; 3 Deep, not shallow; 4 Add, don't edit, once a kind of thing keeps growing; 5 Rules in the middle, tools at the edge; 6 Compose, don't inherit; 7 Talk to neighbours only; 8 Tie-breaker: easier to change
 - Simplicity rules: 9 Simplest thing that works; 10 Build only what is asked; 11 Merge the same knowledge; 12 When rules collide; 13 Small working slice first; 14 Cut before calling it done
 - Build or use (rule 15)
 - Size signal
@@ -22,14 +22,13 @@ Search the codebase for something that already does the job: a helper, a client,
 ✅ find the existing currency formatter; add the missing option there
 ```
 
-### 2. One job per piece
-Each file, class and function has one job, so it has one reason to change. Test: describe it in one sentence without "and". If you can't, split it.
+### 2. One reason to change per piece
+Each file, class and function has one reason to change: one group of people who would ask for that change (Robert C. Martin's single responsibility principle). Split a piece when two different reasons meet in it, but not into shallow pieces that only pass calls along (rule 3).
 
 ```text
-❌ processOrder(): validates input, charges the card, updates stock,
-   sends the email, writes the audit log
-✅ validateOrder(), charge(), reserveStock(), notifyCustomer(), audit(),
-   each called by a short processOrder()
+❌ InvoicePdf: lays out the page and also calculates the tax
+   (design and finance change it for different reasons)
+✅ taxFor(invoice) in its own function; InvoicePdf calls it
 ```
 
 ### 3. Deep, not shallow
@@ -40,8 +39,8 @@ A good module has a small, simple interface that hides a lot of work. A shallow 
 ✅ one taxFor(price, region) function; every file calls it
 ```
 
-### 4. Add, don't edit
-New features plug in as new files or entries (a registry, a route table, a config list, a strategy map) without changing code that already works.
+### 4. Add, don't edit, once a kind of thing keeps growing
+When the same kind of thing keeps growing (a third payment type, another export format), give it a place to plug in (a registry, a route table, a strategy map), so a new one is an added entry instead of an edit to working code. With one or two variants a plain `if` is simpler: don't build the plug-in point in advance (rule 10, YAGNI).
 
 ```text
 ❌ if type == "card" ... elif type == "cash" ... elif type == "wallet" ...
@@ -122,7 +121,7 @@ Two pieces of code that *look* alike may need different changes tomorrow. Merge 
 Get a thin version running end to end (input → logic → storage → output), then grow it step by step. Large systems built in one go tend to fail; working large systems grow out of small working ones.
 
 ### 14. Cut before calling it done
-Reread the change. If it could be much shorter and just as clear, make it shorter. 200 lines that could be 50 get rewritten.
+Reread the change. If it could be much shorter and just as clear, make it shorter.
 
 ---
 
@@ -138,4 +137,14 @@ Reread the change. If it could be much shorter and just as clear, make it shorte
 
 ## Size signal
 
-A hand-written file over ~400 lines, or a function over ~50, is a signal to check for more than one job. It is not a hard limit: verbose languages run longer, and config, SQL, templates and generated files are long by nature. In messy code, don't make it worse: new code goes into new small pieces, and a bigger refactor is suggested in the report, never done uninvited.
+A function over about 40 lines is a signal to check whether it can be split without harming its structure (Google's C++ style guide), and a file that keeps growing is a signal to check it is not doing more than one job. It is not a hard limit: verbose languages run longer, and config, SQL, templates and generated files are long by nature. In messy code, don't make it worse: new code goes into new small pieces, and a bigger refactor is suggested in the report, never done uninvited.
+
+---
+
+### Sources
+
+Checked on 2026-11-26. Re-read the original when a detail matters.
+- Martin Fowler: [YAGNI](https://martinfowler.com/bliki/Yagni.html), [Beck design rules](https://martinfowler.com/bliki/BeckDesignRules.html), [Presentation domain data layering](https://martinfowler.com/bliki/PresentationDomainDataLayering.html), [Microservice premium](https://martinfowler.com/bliki/MicroservicePremium.html), [Architecture decision record](https://martinfowler.com/bliki/ArchitectureDecisionRecord.html), [Dependency injection](https://martinfowler.com/articles/injection.html)
+- Robert C. Martin: [The single responsibility principle](https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html); John Ousterhout: [modular design lecture](https://web.stanford.edu/~ouster/cgi-bin/cs190-spring16/lecture.php?topic=modularDesign)
+- Sandi Metz: [The wrong abstraction](https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction); [The Pragmatic Programmer tips](https://pragprog.com/tips/); [Law of Demeter](https://www2.ccs.neu.edu/research/demeter/demeter-method/LawOfDemeter/general-formulation.html); [Design principles from Design Patterns](https://www.artima.com/articles/design-principles-from-design-patterns)
+- Google: [C++ style guide](https://google.github.io/styleguide/cppguide.html), [what to look for in a code review](https://google.github.io/eng-practices/review/reviewer/looking-for.html); OWASP: [Cryptographic storage cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)

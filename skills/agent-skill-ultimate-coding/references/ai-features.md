@@ -49,3 +49,11 @@ Render model output as text through normal escaping. If you render markdown, tur
 
 ### 8. Test the code around the model
 Answers vary, so never assert exact model text. Test your own code with a fake model that returns chosen replies, including hostile ones: a tool call for another user's record, an over-limit amount, invalid arguments, endless tool calls. Check answer quality separately with a small set of example cases.
+
+---
+
+### Sources
+
+Checked on 2026-11-26. Re-read the original when a detail matters.
+- [OWASP Top 10 for LLM Applications (2025)](https://genai.owasp.org/llm-top-10/): prompt injection (LLM01), improper output handling (LLM05), excessive agency (LLM06), system prompt leakage (LLM07), vector and embedding weaknesses (LLM08), unbounded consumption (LLM10)
+- Anthropic: [computer use tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool), [developing tests and evals](https://platform.claude.com/docs/en/test-and-evaluate/develop-tests)

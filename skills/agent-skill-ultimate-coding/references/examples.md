@@ -4,7 +4,7 @@ Two tasks done end to end: the checklist, the steps, the proof and the report. R
 
 **Contents**
 - A. Normal task: a bug fix (Python)
-- B. Complex task: moving points between accounts (Go)
+- B. A change in a risk area (money, concurrency): moving points between accounts (Go)
 
 ---
 
@@ -58,7 +58,7 @@ Two lines and the confidence, because everything is done and checked. No options
 
 ---
 
-## B. Complex task: moving points between accounts
+## B. A change in a risk area: moving points between accounts
 
 > "Let members send loyalty points to another member."
 
@@ -152,4 +152,4 @@ Members can now send points to each other, safe against retries and double click
 3. Ship it now and watch the error logs
 ````
 
-Longer than A, because a complex task has more to prove, and a table says it in fewer words. Every risk item on the checklist has an answer in the code, a test, or the report.
+Longer than A, because a change in a risk area has more to prove, and a table says it in fewer words. Every risk item on the checklist has an answer in the code, a test, or the report.

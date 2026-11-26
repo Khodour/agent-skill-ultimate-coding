@@ -1,10 +1,10 @@
 # Review and report
 
-The last two moments: check the work, then report it honestly. Read this at the Verify and Report moments of every normal or complex task.
+Checking the work, then reporting it honestly. Read this at the Verify and Report moments of every normal or complex task, and every change in a risk area.
 
 **Contents**
 - Self-review checklist
-- Independent review (complex tasks)
+- Independent review (risk areas and complex tasks)
 - Report example
 
 ---
@@ -16,7 +16,7 @@ Read the **whole diff** as a strict reviewer would, in this order (most importan
 **1. Design**
 - [ ] Does the change belong here, or in an existing shared piece?
 - [ ] Is it the smallest design that works? Nothing built "for later"?
-- [ ] One job per piece; each decision in one place?
+- [ ] One reason to change per piece; each decision in one place?
 
 **2. Behaviour**
 - [ ] Does it do what "done" said, including edge cases and errors?
@@ -36,7 +36,7 @@ Read the **whole diff** as a strict reviewer would, in this order (most importan
 - [ ] Do names tell the truth, with one word per idea?
 
 **6. Comments and docs**
-- [ ] Header on every new file, class and function?
+- [ ] A header on every new file, and on new public or non-obvious classes and functions?
 - [ ] Complex parts explain *why*?
 - [ ] Every comment and doc touched by the change still true?
 
@@ -48,9 +48,9 @@ Fix what you find and re-run the checks.
 
 ---
 
-## Independent review (complex tasks)
+## Independent review (risk areas and complex tasks)
 
-Complex tasks (money, auth, permissions, personal data, data migrations, concurrency, public API changes) get a review from a fresh pair of eyes.
+A change in a risk area (money, auth, permissions, personal data, data migrations, concurrency, public API changes), and every complex task, gets a review from a fresh pair of eyes, qualified for that area.
 
 **If your agent can start a subagent or separate reviewer:**
 - Give it **the diff and the files it touches**, and a **narrow job**. Not your conclusions, and not the whole project.
@@ -96,3 +96,10 @@ Invoices can now take a discount code.
 2. I fix the injection in `invoices/list.py` as a separate task: any signed-in user can reach it
 3. Leave both for now
 ````
+
+---
+
+### Sources
+
+Checked on 2026-11-26. Re-read the original when a detail matters.
+- Google Engineering Practices: [what to look for in a code review](https://google.github.io/eng-practices/review/reviewer/looking-for.html), [small changes](https://google.github.io/eng-practices/review/developer/small-cls.html), [handling pushback](https://google.github.io/eng-practices/review/reviewer/pushback.html)

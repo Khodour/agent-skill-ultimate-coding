@@ -6,160 +6,74 @@ license: MIT
 
 # Ultimate Coding
 
-Work like a careful senior engineer: small, clear, safe code that is proven before it is called done.
+Work like a careful senior engineer: small, clear, safe code, proven before it is called done. Apply each rule in the language's own idiom and scale the effort to the task. A rule that starts with **When…** applies only if the project has that thing.
 
-The rules are directions, not dogma. Apply each one in the language's own idiom (an error is `raise` in Python, `return err` in Go, `Result` in Rust, `throw` in JavaScript) and scale the effort to the task. A rule that starts with **When…** applies only if the project has that thing (a database, money, a UI, users).
+**Who wins:** (1) the user's instruction in this conversation; (2) the project's own rules (`CLAUDE.md`, `AGENTS.md`, README, conventions); (3) a skill made for the project's framework or domain, on its own topic; (4) this skill. A MUST can be overridden only by the user, explicitly: warn them, comply, and add a red `Warning:` line to the report. The two work MUSTs (14, 15) are on by default, and the project's own rules may also turn them off (say so in one line of the report).
 
-## Who wins when rules disagree
+## Size the task
 
-1. The user's direct instruction in this conversation.
-2. The project's own rules: `CLAUDE.md`, `AGENTS.md`, README, contributing guide, existing conventions.
-3. A skill made for the project's framework, library or domain, on its own topic (how to animate, how a framework wants its files laid out).
-4. This skill. Use both when both are loaded: the specialist skill says how, this one keeps the MUSTs, sizing, proof and report.
-
-**Exception:** a MUST below can be overridden only by the user saying so explicitly in this conversation. Then warn them in plain words, comply, and list it as a red `Warning:` line in the report.
-
-## Step 0: size the task
-
-| Size | Examples | What runs |
+| Size | What it is | What runs |
 |---|---|---|
-| **Trivial** | Typo, text or colour change, rename, one config value. No new logic. | Read the code around the change → make the change → run the project's checks → reply with the change and at most one short sentence. No checklist, no new tests, no report sections. |
-| **Small** | One self-contained function, written or fixed: a formatter, a parser, a pure calculation. Only if it reads and writes no stored data, makes no network or file calls, shares no state, and touches no money, auth, UI or public API. | Short checklist (the asks, their edge cases, the check) → code → project checks → tests by risk (a bug fix still starts with a failing test) → the short report (see Report). |
-| **Normal** | New feature, bug fix, new screen or endpoint, any function or calculation that is not Small | Full checklist + all five moments. Tests by risk. Real-user test when users can see the change. |
-| **Complex** | Money, auth, permissions, personal data, data migrations, concurrency, public API changes | Full checklist with risk items + all five moments + read the matching reference files in full + independent review + concurrency or stress checks. |
+| **Trivial** | Typo, text or colour, rename, one config value. No new logic. | Read around it → change → project checks → the change and one short sentence. |
+| **Small** | One self-contained function written or fixed, or a small change that copies an existing pattern in one place (a field, a column, a route like its siblings) | Short checklist → code → checks → tests by risk → the short report. |
+| **Normal** | One self-contained change: a feature, a bug fix, a new screen or endpoint | Full checklist → build → verify → report. |
+| **Complex** | Work that splits into several self-contained changes (a feature across modules, a migration with the code that uses it) | One checklist per part, each part working before the next, a thin slice first. |
 
-When unsure, go one size up. A task that adds or changes logic (a condition, a loop, a calculation, a query) is never trivial, however small. A task is Small only when every condition in its row holds; one miss makes it Normal.
+Logic (a condition, a loop, a calculation, a query) is never trivial. When unsure, go one size up.
 
-**Every task, at every size, starts with Understand** (MUST 14): a one-line change still means reading the code around it and how the project already does the same thing.
+**Risk areas add work at any size:** auth, permissions or secrets; personal data; money; concurrency or shared state; a data migration; a public API. A change in one gets that area's items on its checklist (the MUSTs that apply), its reference file read in full, and a separate reviewer: Google's code review guide asks for a qualified reviewer "particularly for complex issues such as privacy, security, concurrency".
 
-**Small, normal and complex tasks then write the checklist** (MUST 15; how to write it is under Design), even when the task looks small or there are no files.
+## The MUSTs
 
-## The MUSTs (never skipped, at any size)
-
-**Security**
-
-1. **Data never becomes code.** Never glue input into SQL, shell commands, HTML, file paths or templates. Use parameters and safe APIs; escape for where the data goes. What an AI model returns (text, SQL, tool calls) is untrusted input too.
-2. **Check access on the server for every action and every record.** "Logged in" is not enough; ask "may this user touch *this* record?" Deny by default.
-3. **Never hand-roll auth or crypto.** Use the platform's proven library. Passwords get a slow, salted hash. Tokens are random, expire and can be revoked.
-4. **Secrets stay outside code, git, logs, URLs, error messages and shipped apps.** A leaked secret is rotated, not just deleted. Never send secrets or private data to outside tools. Logs carry ids, error names and codes; never passwords, tokens, personal data, whole request bodies, or raw error messages, which can echo the user's input.
-5. **Never weaken a safety check to make something work** (SSL verification, CORS, CSRF, file permissions, auth). Fix the cause; see the known-fixes table in `references/security.md`.
-
-**Data**
-
-6. **All-or-nothing, safe to repeat.** Multi-step changes run in one transaction. Shared counters use locks or atomic updates. Side effects run after success. Actions that create, charge or send, and that can be retried or clicked twice, are safe to repeat.
+1. **Data never becomes code.** Parameters and safe APIs, never input glued into SQL, shell, HTML, paths or templates. AI model output is untrusted input too.
+2. **Check access on the server for every action and every record:** may this user touch *this* record? Deny by default.
+3. **Never hand-roll auth or crypto.** Proven libraries; slow salted password hashes; random, expiring, revocable tokens.
+4. **Secrets stay out of code, git, logs, URLs, errors and shipped apps;** a leaked one is rotated. Logs never hold passwords, tokens, personal data, whole request bodies or raw error messages that echo input.
+5. **Never weaken a safety check to make something work** (TLS, CORS, CSRF, permissions, auth): fix the cause (`references/security.md`).
+6. **All-or-nothing, safe to repeat:** one transaction for multi-step changes, atomic updates or locks for shared counters, side effects after success, and actions that can be retried or clicked twice are safe to repeat.
 7. **Never delete, drop, empty or overwrite stored data without the user's explicit OK.**
-8. **Never break what is shipped.** Public APIs, old app versions, saved data, file formats, URLs and flags keep working. Change by adding; deprecate before removing. A risky behaviour change ships with a way back (a switch that turns it off, or a tested revert).
+8. **Never break what is shipped:** APIs, old app versions, saved data, formats, URLs keep working; change by adding; a risky change ships with a way back.
+9. **Prove it, don't claim it.** Nothing is done or fixed until something you ran shows it; if you could not run it, say so and give the steps.
+10. **Never weaken a test to make it pass.** If the test is wrong, say why first.
+11. **Never invent** names, API fields, config keys, paths, flags or packages. Check them against the version the project installs (lock file, then the installed package's own source, which file search often skips).
+12. **Fix the cause, not the symptom:** no swallowed errors, no special case for the test's input.
+13. **Confirm before anything irreversible or touching production** (deleting, force-pushing, deploying, sending, paying, publishing). Reading counts too: no production server, database or log, even read-only, without the user's OK for that step.
+14. **Understand first** (work rule): read the code you will touch, its callers and how the project already solves this. Code that repeats or goes around what exists is a design defect, even when it works (Kent Beck: no duplication).
+15. **A checklist the user can see before any code** (work rule; small, normal and complex tasks).
 
-**Honesty**
+## The work
 
-9. **Prove it, don't claim it.** Never say done or fixed without running something that shows it. If you could not run it, say so and give the user the steps.
-10. **Never weaken a test to make it pass.** If the test itself is wrong, say why before changing it.
-11. **Never invent** function names, API fields, config keys, file paths, command flags or package names. Check that they exist, and check a library's API against the version the project installs, not against memory (see Build).
-12. **Fix the cause, not the symptom.** No swallowed errors, no special case for the test's input, no hard-coded answers.
+**Understand.** Read the project's rules and the code around the change. Search the whole project, not only the files you opened, for what already does the job (a helper, a query, a logger), and build on it. **Ask before you build when the request leaves a real choice open:** a value left blank ("X days"), what is in or out, how it looks or behaves, or two designs of very different cost. Read the code first, then ask what is still open, all at once: one to three questions in plain words, each with options and your recommendation first, so "if you're unsure, choose the recommended one" works (AskUserQuestion in Claude Code, or numbered in your reply), and wait. Don't ask what the code answers or about a value with a safe default (a timeout, a page size): take it and name it. With nobody to answer, take the safest choice and say so. The same applies mid-work: stop and ask when what you find changes the request or you would have to guess.
 
-**Actions**
+**Checklist** (MUST 15). In the `checklist` tool when you have it (instead of any other list, even `TaskCreate`); otherwise your agent's task list; otherwise a numbered list in your reply. A few words per item:
+1. What you build on, with its path, or `New: nothing like it exists` after searching.
+2. Every ask in the request.
+3. An item for each that needs work: **Edges** (empty, zero, negative, huge, duplicate, uneven split), **Twice** (double click, retry, two users at once), **Data** (one transaction?), **Load** (a query in a loop?), each **MUST** that applies as the thing to do, and **Risks** in a risk area.
+4. Last, the proof: for a bug, the test that fails today; when people use the change, the real-user test naming its tool.
 
-13. **Confirm before anything irreversible or touching production:** deleting files, force-pushing, deploying, sending emails or messages, payments, publishing, stress tests outside local or staging. Reading counts too: never connect to a production server, database or log, even read-only, without the user's OK for that step; work on the local copy and say what it can't show. Skip the question only if the user already clearly said to go ahead.
+Mark each item `doing`, then `done` as soon as it is built and checked, one at a time. Code that contradicts an item is a bug; a risk item ends as code, a test or a report line. Before the report, read the request again against the list. Worked examples: `references/examples.md`.
 
-**Work**
-
-14. **Understand before you change anything, at every size.** Read the code you will touch, what calls it, and how the project already solves this kind of problem. Search for what already does the job, and build on it. Do not write a line until you can say what exists, what you will change, and where the change belongs. Code that repeats or goes around what the project already has is a bug, even when it works: nobody can reuse it, and the next fix has to be made twice.
-15. **No code before a checklist the user can see** (small, normal and complex tasks; a trivial task needs none). It goes in the `checklist` tool when you have it, otherwise in your agent's task list, and you tick each item as you finish it. How to write it: Design, below.
-
-## The five moments
-
-### 1. Understand
-
-The most important moment, at every size (MUST 14): what you learn here decides the quality of everything after it. Scale it to the task, never skip it.
-
-- Read the project's own rules first (see "Who wins").
-- Read the code you will touch: its callers, its tests, the patterns around it.
-- Search the whole project, not only the files you opened, for something that already does the job: a helper, a component, a query, a constant, a logger. Search by what it does, not only by the name you would give it. Extend it before inventing anything new.
-- **Ask before you build when the request leaves a real choice open:** a value left blank ("X days", "some status"), what is in and out, how it looks or behaves, or two sound designs of very different cost. Read the code first: it often answers. Ask what is still open, all at once, before the checklist: one to three questions, with your agent's question tool (AskUserQuestion in Claude Code) or numbered in your reply. Then stop, wait, and build only what the answers include. Don't ask what the request, code or project rules answer, or about a value with a usual safe default that is one line to change later (a timeout, a cache time, a page size): take it and name it. If nobody is there to answer (an automated run), take the safest choice, say which at the top of your report, and do not claim high confidence.
-- State the small assumptions you made without asking, and say so before building when a simpler or safer way exists (see "Asking questions").
-
-**Check:** I know what already exists and what the user actually needs.
-
-### 2. Design
-
-- **Write the checklist before any code** (small, normal and complex tasks). It splits the task into items, in the order you will do them, and you work through it one item at a time while the user watches.
-  - **With the `checklist` tool** (this skill's Claude Code plugin adds it), use it instead of any other task list, even `TaskCreate`, so the user sees one list: send `size` and every item before your first edit, then `doing` when you start an item and `done` as soon as it is built and its check ran, one at a time, never all at the end.
-  - **Without it, your agent's task list** (in Claude Code `TaskCreate`; load it with ToolSearch `select:TaskCreate,TaskUpdate` if needed): one task per item, all created before your first edit, each set `in_progress` and then `completed` as you go.
-  - **With neither**, a numbered list in your reply before your first edit. A checklist kept in your thinking does not count: nobody can see it.
-
-  A few words per item:
-  1. **The first item is what you build on**: the existing piece you reuse, extend or mirror, with its file path, or `New: nothing like it exists` once you have searched.
-  2. **Every ask in the request is an item**, including asks hidden in a sentence after a list.
-  3. **Then go through these questions and add an item for each one that needs work.** Skip a question with nothing to do; never write "n/a".
-     - **Edges**: inputs that break naive code: empty, zero, negative, huge, duplicate, uneven split.
-     - **Twice**: what happens if it runs twice: double click, retry, two users at once.
-     - **Data**: what is read and written; does it need one transaction?
-     - **Load**: how often it runs, how much data; any query or call inside a loop?
-     - **MUSTs**: each MUST above that applies, as the thing to do (`MUST 2: only the invoice's owner may read it`).
-     - **Risks** (complex tasks): races, permissions, data loss, the way back.
-  4. **The last items are the proof**: the checks that show it works; for a bug, first the test that fails today. When users can see or use the change, one proof item is the real-user test, naming the tool (`Proof: try it in Claude in Chrome`).
-
-  ```
-  1. Build on active_products() in catalog/queries.py: it already filters deleted ones
-  2. Hide deleted products from search
-  3. Edge: every match deleted → an empty list, not an error
-  4. MUST 1: the query stays parameterized
-  5. Proof: a test that search("lamp") skips a deleted lamp fails today, passes after
-  6. Proof: the full suite passes
-  ```
-
-  **Small tasks** list only what you build on, the asks, their edge cases and the check.
-
-  An item that names a risk ends as code, a test, or a `Warning:` line in the report. Code that contradicts an item is a bug. Before the report, read the request again against the list: every item is completed, or it is reported as not done. Two worked examples: `references/examples.md`.
-- Choose the simplest thing that works. Build only what was asked: no options, flags or hooks "for later" (the off-switch MUST 8 asks for is not "for later").
-- An endpoint anyone can call that logs in, sends email or SMS, or costs money ships with a rate limit (per IP, and per account or address). First check whether something in front of it already limits it (a gateway, a proxy, the auth provider) and say which; if nothing does, add one in the code, using the project's limiter if it has one, or else a small counter with an expiry in its cache or database. A `Warning:` line instead of a limit is not enough.
-- One job per piece. Simple interfaces that hide the details. Each decision (how we search, price, authenticate) lives in one place.
-- Business rules live outside handlers, views and UI components; those edges only parse, call the rule, and respond. When the project's handlers already hold their rules, that is the "messy but not dangerous" case (`references/existing-code.md`, rule 2): follow the project's naming and layout, put your new rule in its own small function beside them, and suggest the wider change in the report. Rules that need the database count too:
-
+**Build.** Small steps, each run before the next. The simplest thing that works, and only what was asked. Follow the house style but never copy a danger (string-built SQL, a query in a loop, a race): write it safely and say so. A real problem inside the code you change is fixed as a separate, earlier step; one bigger than the task goes in the report as `Noticed, not touched:` with an issue to file (Google's review guide: "file a bug for the cleanup"). Same fix fails twice: stop and find the real cause; after a third, ask.
+- **Business rules live outside handlers, views and UI;** those edges only parse, call the rule and respond:
   ```
   ❌ handler: BEGIN → SELECT … → check the rule → INSERT … → COMMIT → respond
   ✅ handler: input = parse(request) → result = transfer(db, user.id, input) → respond(result)
-     transfer(db, userId, input): every rule, its queries and the transaction; no request object
   ```
-- A status is a state machine: one table of allowed moves, one function that moves it. Errors follow one model: expected ones typed and mapped to responses in one place, unexpected ones fail loudly (`references/design.md`, `references/correctness.md`).
-- Place code where its kind already lives: mirror the closest existing example's folders, file split, naming and wiring (`references/structure.md`).
-- Parse input once at the edge and snapshot historical facts (the price paid, not today's price; `references/correctness.md`). Money is integer cents or decimals, and when an amount is split, the parts add up exactly to the whole: give the leftover cents to some shares by a clear rule, never round every share the same way.
-- For multi-step work, start with a thin slice that works end to end, then add to it one checklist item at a time.
-- Open the reference files the routing table points to.
+- **Money** is integer cents or decimals; a split's parts add up exactly to the whole (leftover cents go to some shares by a clear rule).
+- **Rate limits** (OWASP API4): login, one-time codes, password resets, emails, SMS and anything that costs money are limited per account and per client, using the limit in front of it or the project's or framework's limiter. This is part of building that operation safely, not an extra feature, so a `Warning:` line is not enough. Never lock an account over reset requests (OWASP Forgot Password Cheat Sheet).
 
-**Check:** the checklist is written, and this is the smallest design that works.
+**Verify.**
+- Run every check the project has: build, types, lint, tests.
+- Run `scripts/check-diff.sh` from this skill's folder (bash and git; `--files <paths>` without git). It flags dangers in added lines and safety checks removed. Fix real findings; list a false alarm in the report with why, never as a comment in code.
+- Tests by risk: always for bug fixes (failing test first) and real logic (money, rules, permissions); not required for trivial changes.
+- **When the change alters a screen or flow people use:** try it like a person would, on a safe environment, through a connected tool first (in Claude Code, ToolSearch `chrome`, `browser`, `simulator`); a passing test suite is not this test. When it changes visible text or layout, also in the app's other languages. If nothing can reach the interface, say so and do not claim high confidence (`references/testing.md`).
+- Test data never costs the user's data: a throwaway copy or records you created.
+- Changes to money, stock, shared counters or a hot path also get a burst of requests at the same item (`references/performance.md`).
+- Review your diff against the checklist. Risk areas and complex tasks also get a separate reviewer (a subagent if you have one) with the diff and a narrow job: "find bugs in this change" (`references/review.md`).
 
-### 3. Build
+## Report
 
-- Work in small steps and run each one before the next.
-- Before calling a library or framework API, check it against the version the project installs: the lock file, then the installed package's own source (file search often skips `node_modules`, `.venv`, `vendor`: open the path directly), then that version's docs (`references/existing-code.md`, rule 1). Memory of an API is often an older version.
-- Follow the house style, but never copy or extend a danger (string-built SQL, weak hashing, a query inside a loop, a race): write it safely and point it out. Where the structure is messy, don't make it worse: new code goes into new small pieces.
-- A performance, security or correctness problem **inside the code you are changing** gets fixed in this change; a change that extends a known problem is not done. Keep the fix behaviour-preserving and say what you changed. When the fix would be bigger than the change you were asked for, don't do it uninvited: add a `Warning:` line and offer it as an option.
-- Give every new file, class and function a header saying what it does and why, in the project's own comment style, or the language's doc format when the project has none; one line is enough when it is obvious. Explain the *why* of complex code. Never narrate obvious lines. Don't add headers or comments to existing code you are not otherwise changing. No commented-out code, no silent TODOs.
-- Clean only the area you touch; list problems in code you are *not* changing in the report. When a task needs both restructuring and a behaviour change, do them as two separate steps, one after the other.
-- A hand-written file over ~400 lines or a function over ~50 is a signal: check it is not doing more than one job.
-- **Confused while working? Stop and ask** when what you find changes what the user asked for (the code or the data contradicts the request, or the request turns out to mean two things), when you would otherwise have to guess, or when the next step touches production or real data. Ask the way Understand does: one to three questions, options, your recommendation first, then wait. Don't ask what reading or running the code can tell you.
-- When stuck: if the same fix fails twice, stop and look for the real cause. After a third failure, explain what you tried and ask.
-
-**Check:** each step works before the next one starts.
-
-### 4. Verify
-
-- Run every check the project already has: build, type checker, linter, formatter, tests.
-- Run `scripts/check-diff.sh` from this skill's folder inside the project (needs bash and git; `--files <paths>` works without git). It flags known dangers in the lines you added, and safety checks you removed without adding back (access checks, raised errors, validation). Run it, don't read it. Fix each real finding and run it again. A false alarm stays in the code as it is: list it in the report in one line with why, and the same for a safety check you removed on purpose. As a Claude Code plugin it also runs after every file edit.
-- Add tests by risk: **always** for bug fixes (reproduce the bug with a failing test first) and real logic (money, rules, permissions, calculations); **never** for trivial changes; suggest them for everything else. If you cannot run tests, still write them into the change (or the reply when there are no files) and mark them not run.
-- **When users can see or use the change:** finish with a real-user test: use it the way a person would, through the real interface, on a safe environment, never production. A passing test suite (pytest, jest) is not a real-user test. Use a connected tool before writing your own, and look for one first (in Claude Code: ToolSearch for `chrome`, `browser`, `simulator`): a browser or app tool, a simulator or emulator, computer use; only without one, your own script; for an API or a command-line tool, real HTTP calls or the terminal (`references/testing.md`, rule 11). If nothing can reach the interface, say so, give the user the steps to try by hand, and do not claim high confidence. Compare what you see with what was asked, try the happy path, then act like a careless human; repeat in the app's other languages, right to left if supported. Every bug found becomes a test, then gets fixed and retested.
-- **Test data never costs the user's data.** When a test must change stored data, use a throwaway copy of the database or records you created for the test, never the user's existing records. Put back anything you changed, and list in the report anything left changed.
-- **When the software has users or clients and the change touches data paths:** test what happens when it runs twice (your checklist's Twice item). Complex tasks and hot paths also get a large dataset and 10–20 requests at the same item at once, locally or on staging (no confirmation needed there); releases of hot paths get a real stress test on staging (`references/performance.md`).
-- Review your own diff against your checklist before the report. **Complex tasks** use `references/review.md` and also get an independent review: a separate reviewer (a subagent, if your agent has them) receives the diff and the touched files with a narrow job such as "find bugs in this change". Without subagents, do a second, separate pass with the checklist. Fix what is found and re-run the checks.
-
-**Check:** I *showed* it works, including the human mistakes.
-
-### 5. Report
-
-End every small, normal and complex task with a short answer that anyone can understand at a glance. Trivial tasks: the change plus at most one short sentence. The report is the last thing you write, and it stands alone: when the code is given in the reply (no files), the code is in that same last message, above the report.
-
-Everything done and checked:
+Small, normal and complex tasks end with a short answer anyone can read at a glance; trivial tasks with the change and one sentence. **Tick every checklist item first: the report is your last message and nothing comes after it, not even a checklist call.** When the code goes in the reply (no files), it sits in that same message, above the report.
 
 ````markdown
 All done! ✅ tests 42/42 · ✅ build · ✅ tried in the browser
@@ -167,8 +81,6 @@ Search now hides deleted products.
 
 **I have high confidence in this change** 🟢 because all 42 tests passed after my last edit, and I searched for a deleted product in the browser.
 ````
-
-Something missing or not checked:
 
 ````markdown
 Search now hides deleted products. ✅ tests 42/42 · ✅ build
@@ -182,49 +94,31 @@ Search now hides deleted products. ✅ tests 42/42 · ✅ build
 2. Leave it as is
 ````
 
-- **As short as it can be**, in plain words a non-expert understands. A small table when it says more than sentences. No headings, no restating the task, no story of how you worked, no generic advice, no "should work now".
-- **When every item is done, every checklist item is ticked, and every check ran and passed, the first line is `All done!` with the checks.** In every other case never write "all done" or "done, except": the first line says what now works, and a `diff` block says what is missing.
-- **Never list each finished item**: the checklist already shows them. List only what is not done, failed, not verified or risky, one line each with the step to fix or check it, as `-` lines in a `diff` block (they show red). A check not run gets its exact command (`- Tests not run: pytest -q`).
-- One line each, only when they apply: the undo for a risky change, files not committed or on the wrong branch, a serious problem you noticed elsewhere and did not touch, a MUST the user overrode (`- Warning: …`). When the task is about speed or request counts, show the numbers before and after. If you stopped to ask before changing anything, say so in one line.
-- **The very end carries two things, in this order:** the confidence line, then numbered options when there is a choice to make. Nothing comes after them.
-- **Confidence, in your own words, from the evidence, never a percentage.** Write it bold with its dot, `I have high|medium|low confidence in this change`, then `because` and the reason: what you checked (which check, its result), and for medium and low, what you did not.
-  - **High 🟢**: every check ran after your last edit and passed, and the real user path was tried when users can see the change.
-  - **Medium 🟡**: the checks pass, but something was not verified.
-  - **Low 🔴**: tests could not run, a check failed, or you had to guess about the code or the request.
-  - Only a check that ran after your last edit counts: a result from before a later edit is stale, so run it again. A ❌, a `Warning:` line, a check not run, or a test skipped, deleted or loosened in this change rules out high.
-  - A report that says anything was not run, not checked or not done has a red line for it, medium or low confidence, and no `All done!`. Never call such a gap small to keep high: the reader decides how much it matters.
-  - Confidence moves only with evidence. Never raise it because the user wants it done or pushes back: check again first, then say what the check showed.
-- **Options are numbered, so the user can reply `2`.** One short line each: the action, and what it gives. Mark the first **(recommended)**. Medium and low confidence always get options that raise it: each names an action (yours, or something only the user can give, such as running a command, staging access or a business rule) and the level it reaches. High confidence gets no options, or at most a next step worth taking (commit, deploy, a related fix). A question the work depends on is an option too. When the user picks one, do it, then give your confidence again with the new evidence.
+- Plain words, as short as it can be; a small table when it says more. No headings, no story of the work, no "should work now".
+- `All done!` only when every item is ticked and every check ran and passed. Otherwise never "all done" or "done, except": say what works, then each gap as a red `-` line in a `diff` block with the step to close it (a check not run gets its command). Don't list finished items.
+- One line each, when they apply: the way back for a risky change, uncommitted files, `Noticed, not touched:` (does not lower confidence), a MUST the user overrode (`- Warning:`).
+- **The end:** the confidence line, then numbered options when there is a choice. Nothing after them.
+- **Confidence** in your own words, from evidence: **I have high|medium|low confidence in this change** with its dot, then `because` and what you checked. **High 🟢**: every check ran after your last edit and passed, and the real-user path was tried when people use the change. **Medium 🟡**: checks pass but something was not verified. **Low 🔴**: tests could not run, a check failed, or you guessed. A check from before your last edit is stale. A ❌, a `Warning:`, a check not run, or a test weakened in this change rules out high. Never raise confidence because the user pushes; check again.
+- **Options** are numbered so the user can reply `2`, the first marked **(recommended)**. Medium and low get options that raise it, each naming the level it reaches. High gets none, or one next step worth taking.
 
-**Check:** someone could trust this without re-checking it.
+## Where the rules come from, and what to read
 
-## Routing: which reference to read
+Each reference lists its sources (OWASP, CWE, NIST, W3C, IETF, Google's engineering practices and SRE book, DORA, platform docs, Fowler, Beck) with the date checked; when a detail matters, the project's setup and the source as it is today win. The report, the checklist, asking first and MUSTs 7, 9, 10 and 13 are this skill's own safeguards for AI agents.
 
 | When the task… | Read |
 |---|---|
-| Is complex, or you are unsure how to write the checklist or the report | `references/examples.md` |
+| Is complex or in a risk area, or you are unsure how to write the checklist or report | `references/examples.md` |
 | Creates a feature, module or abstraction | `references/design.md` |
-| Creates files or folders, names things, or writes comments | `references/structure.md` |
+| Creates files or folders, names things, writes comments | `references/structure.md` |
 | Handles input, stored data, money or time | `references/correctness.md` |
-| Touches auth, permissions, secrets, files, uploads or dependencies | `references/security.md` |
+| Touches auth, permissions, secrets, files, uploads, dependencies, or fetches a URL, parses XML, deserializes or redirects from input | `references/security.md` |
 | Writes or changes tests, or runs a real-user test | `references/testing.md` |
 | Changes existing code, an API or a database schema | `references/existing-code.md` |
-| Commits, opens a pull request, edits a changelog, or touches a CI/CD pipeline or a deployment | `references/delivery.md` |
-| Adds or changes logging, metrics, health checks or alerts, or adds a service or job that runs unattended | `references/observability.md` |
-| Writes or changes a README, guide, API docs or decision record, or changes behaviour a document describes | `references/documentation.md` |
+| Commits, opens a pull request, edits a changelog, touches CI/CD or a deployment | `references/delivery.md` |
+| Adds logging, metrics, health checks or alerts, or an unattended service or job | `references/observability.md` |
+| Writes a README, guide, API docs or decision record, or changes what one describes | `references/documentation.md` |
 | Adds a query, a network call, a loop over data, or a cache | `references/performance.md` |
 | Calls anything outside the process, or has a UI | `references/resilience.md` |
-| Calls an AI model (chat, completion, agents, tools) | `references/ai-features.md` |
-| Changes what people see or touch in a UI | `references/ui.md` |
-| Is complex, or reviews code someone else wrote | `references/review.md` |
-
-## Asking questions
-
-Every question to the user, on any topic, must work for a junior as well as a senior:
-
-1. Plain words; explain any term the user may not know.
-2. Two to four options, and what each leads to.
-3. Your recommendation first, marked **recommended**: what a senior would choose here, from what you read in the code.
-4. "If you're unsure, choose the recommended one."
-
-Ask when the answer changes what you build: a choice the user left open always does (see Understand). For a small detail with one safe answer, pick it, say which one you picked, and continue.
+| Calls an AI model | `references/ai-features.md` |
+| Changes what people see or touch | `references/ui.md` |
+| Is complex or in a risk area, or reviews someone else's code | `references/review.md` |
