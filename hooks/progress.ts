@@ -6,6 +6,7 @@
  * tested without the engine.
  */
 import type { Confidence, PromptKind, Run, Size } from '../types'
+import { CHECKLIST_TOOL } from './checklist'
 
 /** A new run; a tentative one is dropped if its turn turns out to be only a question. */
 export const startRun = (isTentative = false): Run =>
@@ -41,7 +42,7 @@ export const isCheckCommand = (command: string): boolean =>
 const AGENT_TOOLS = new Set(['Agent', 'Task'])
 
 /** The agent's own task-list tools: an item written there is a step of the task. */
-const CHECKLIST_TOOLS = new Set(['TaskCreate', 'TodoWrite'])
+const CHECKLIST_TOOLS = new Set(['TaskCreate', 'TodoWrite', CHECKLIST_TOOL])
 
 /** Whether a finished tool call is real work on a task: a checklist item, an edit, a check, or work handed to a subagent. */
 export const isTaskWork = (tool: string, command: string | undefined): boolean =>

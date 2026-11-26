@@ -98,8 +98,8 @@ The last two rows are the only places where version 1.6.0 scored lower: on small
 Every size starts the same way: the agent reads the code it will touch and looks for what already does the job.
 
 - **Understand first.** The first item on its checklist names what it builds on, so new code extends the project instead of repeating it.
-- **Asks when it matters.** A choice you left open gets one to three questions, each with options and a recommendation, before any code. Small details with a safe default are not asked about.
-- **A checklist you can watch.** The plan goes into the agent's task list and is ticked one item at a time. It covers your asks, the edge cases, the risks and the proof.
+- **Asks when it matters.** A choice you left open gets one to three questions, each with options and a recommendation, before any code; so does anything confusing it finds while working. Small details with a safe default are not asked about.
+- **A checklist you can watch.** The plan stays on screen above the input and is ticked one item at a time. It covers what the agent builds on, your asks, the edge cases, the risks and the proof.
 - **Tests like a user.** When people can see or use the change, the agent tries it through a connected tool: a browser extension, a built-in browser, a simulator. A passing test suite alone does not count.
 - **A short, honest report.** `All done!` only when everything passed. Otherwise what works, what is missing in red, then "I have high / medium / low confidence in this change, because…" and numbered options to raise it.
 - **Lightweight.** The core stays short; detailed guidance loads only when a task needs it.
@@ -114,7 +114,7 @@ Applied to every task, whatever its size. Only you can override one, and the age
 - 🔒 **Security:** data never becomes code · check access for every action **and every record** · never hand-roll auth or crypto · secrets stay out of code, git, logs and apps, and logs never hold personal data or raw errors · never weaken a safety check
 - 💾 **Data:** all-or-nothing writes, safe to repeat · never delete or overwrite data without an explicit OK · never break what is shipped
 - 🧾 **Honesty:** prove it, don't claim it · never weaken a test · never invent names, APIs or packages · fix the cause, not the symptom
-- ⚠️ **Actions:** confirm before anything irreversible or touching production
+- ⚠️ **Actions:** confirm before anything irreversible or touching production, and never read production data without your OK
 - 🧭 **Work:** understand before you change anything, at every size · no code before a checklist you can see
 
 ## Install
@@ -126,13 +126,7 @@ Applied to every task, whatever its size. Only you can override one, and the age
 /plugin install agent-skill-ultimate-coding@agent-skill-ultimate-coding
 ```
 
-**Turn on the task list (Claude Code, newer models).** The skill keeps its checklist in Claude Code's own task list, where you can watch it. On newer models Claude Code leaves that list off unless you turn it on. Add this to `~/.claude/settings.json`:
-
-```json
-{ "env": { "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1" } }
-```
-
-Without it the skill still works: the checklist is written as a numbered list in the reply.
+**The checklist.** In Claude Code the plugin draws the agent's checklist above the input while it works: a coloured meter, each item ticked as it is done, the item being worked on highlighted. Nothing to set up. You can turn it off any time in `/config` › *Checklist above the input*, but we recommend keeping it on. Without the plugin, the agent uses its own task list if it has one, or a numbered list in its reply.
 
 **Other agents:** copy the `skills/agent-skill-ultimate-coding/` folder into your agent's skills folder (for example `~/.agents/skills/` for Codex, Cursor, Gemini CLI and Copilot). Tested on Claude Code; feedback from other agents is welcome.
 

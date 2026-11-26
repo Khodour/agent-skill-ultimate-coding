@@ -94,3 +94,50 @@ test('a subagent\'s work never counts before the skill was used; /clear forgets 
   expect(await finished()).toBe(1)                                             // the skill is not in use in the new conversation
   await ui.unmount()
 })
+
+// ---- The checklist on screen ----
+
+const ABOVE = {
+  plugin: 'agent-skill-ultimate-coding', component: 'AbovePrompt', surface: 'terminal',
+  props: { hasSurvey: false, isCollapsed: false, isWorking: true, maxRows: 10, bodyColumns: 140 },
+} as const
+
+test('the checklist shows above the prompt while Claude works, folds into one line at the end, and never carries into the next task', async ($, on) => {
+  const { ui, skill, end, say, turn, edit } = await engine($, on)
+  const list = (input: object) => $.tool.call({ tool: 'mcp__agent-skill-ultimate-coding__checklist', ...input } as never) as Promise<{ result?: string }>
+  const above = await $.ui.mount(ABOVE as never)
+  const screen = async () => (await above.find({ type: 'Box' }))?.text ?? '(nothing)'
+  await skill()
+  expect(await screen()).toBe('(nothing)')                                       // no list yet: nothing drawn
+  const answer = await list({ size: 'Normal', items: ['Build on as_price()', 'receipt_line()', 'Edges: 0, negative', 'Proof: tests'] })
+  expect(answer.result).toMatch(/Checklist 0\/4 done, shown to the user above the prompt/)
+  await list({ doing: 1 })
+  let s = await screen()
+  expect(s).toMatch(/◆ Checklist · Normal\s+━{24}\s+0\/4/)
+  expect(s).toMatch(/[◐◓◑◒] Build on as_price\(\).*□ receipt_line\(\).*□ Edges: 0, negative.*□ Proof: tests/)
+  expect(s).toMatch(/Turn it off any time in \/config › Checklist above the input · recommended: keep it on$/)   // the grey hint, last
+  await list({ done: [1, 2], doing: 3 })
+  s = await screen()
+  expect(s).toMatch(/2\/4/)
+  expect(s).toMatch(/✔ Build on as_price\(\).*✔ receipt_line\(\).*[◐◓◑◒] Edges: 0, negative/)
+  await list({ done: [3] })
+  await end('Receipts now show prices.\n\n**I have medium confidence in this change** 🟡 because x\n1. a **(recommended)**\n2. b')
+  expect(await screen()).toMatch(/◆ Checklist · Normal\s+3\/4 done · open: Proof: tests/)
+  await say('now the footer'); await turn(); await edit()
+  expect(await screen()).toBe('(nothing)')                                       // a new task: the old list is gone
+  await above.unmount(); await ui.unmount()
+})
+
+test('a finished list says all done; the tool works even before the skill was called; /clear forgets the list', async ($, on) => {
+  const { ui, end } = await engine($, on)
+  const list = (input: object) => $.tool.call({ tool: 'mcp__agent-skill-ultimate-coding__checklist', ...input } as never)
+  const above = await $.ui.mount(ABOVE as never)
+  const screen = async () => (await above.find({ type: 'Box' }))?.text ?? '(nothing)'
+  await list({ size: 'Small', items: ['a', 'b'] })
+  await list({ done: [1, 2] })
+  await end('All done! ✅ tests 2/2\n\n**I have high confidence in this change** 🟢 because both tests passed after my last edit.')
+  expect(await screen()).toMatch(/◆ Checklist · Small\s+✔ all 2 done/)
+  await $.session.end({ sessionId: 's', reason: 'clear' } as never)
+  expect(await screen()).toBe('(nothing)')
+  await above.unmount(); await ui.unmount()
+})

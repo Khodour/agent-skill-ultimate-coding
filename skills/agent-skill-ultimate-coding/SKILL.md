@@ -59,12 +59,12 @@ When unsure, go one size up. A task that adds or changes logic (a condition, a l
 
 **Actions**
 
-13. **Confirm before anything irreversible or touching production:** deleting files, force-pushing, deploying, sending emails or messages, payments, publishing, stress tests outside local or staging. Skip the question only if the user already clearly said to go ahead.
+13. **Confirm before anything irreversible or touching production:** deleting files, force-pushing, deploying, sending emails or messages, payments, publishing, stress tests outside local or staging. Reading counts too: never connect to a production server, database or log, even read-only, without the user's OK for that step; work on the local copy and say what it can't show. Skip the question only if the user already clearly said to go ahead.
 
 **Work**
 
 14. **Understand before you change anything, at every size.** Read the code you will touch, what calls it, and how the project already solves this kind of problem. Search for what already does the job, and build on it. Do not write a line until you can say what exists, what you will change, and where the change belongs. Code that repeats or goes around what the project already has is a bug, even when it works: nobody can reuse it, and the next fix has to be made twice.
-15. **No code before a checklist the user can see** (small, normal and complex tasks; a trivial task needs none). It goes in your agent's task list, and you tick each item as you finish it. How to write it: Design, below.
+15. **No code before a checklist the user can see** (small, normal and complex tasks; a trivial task needs none). It goes in the `checklist` tool when you have it, otherwise in your agent's task list, and you tick each item as you finish it. How to write it: Design, below.
 
 ## The five moments
 
@@ -83,8 +83,9 @@ The most important moment, at every size (MUST 14): what you learn here decides 
 ### 2. Design
 
 - **Write the checklist before any code** (small, normal and complex tasks). It splits the task into items, in the order you will do them, and you work through it one item at a time while the user watches.
-  - **It goes in your agent's task list.** In Claude Code: `TaskCreate`, one task per item, all created before your first edit (if the tool is not loaded yet, load it first with ToolSearch `select:TaskCreate,TaskUpdate`). Set an item `in_progress` when you start it, and `completed` as soon as it is built and its check ran: one at a time, never all at the end.
-  - **Only when your agent has no task list**, write it as a numbered list in your reply, before your first edit. A checklist kept in your thinking does not count: nobody can see it.
+  - **With the `checklist` tool, it goes there** (this skill's Claude Code plugin adds it): send `size` and every item before your first edit, then `doing` with an item's number when you start it, and `done` as soon as it is built and its check ran: one at a time, never all at the end. It stays on screen above the prompt. Use it instead of any other task list, even when your agent also has one (`TaskCreate`), so the user sees one list.
+  - **Without it, in your agent's task list.** In Claude Code: `TaskCreate`, one task per item, all created before your first edit (if the tool is not loaded yet, load it first with ToolSearch `select:TaskCreate,TaskUpdate`). Set an item `in_progress` when you start it, and `completed` as soon as it is built and its check ran.
+  - **Only when you have neither**, write it as a numbered list in your reply, before your first edit. A checklist kept in your thinking does not count: nobody can see it.
 
   A few words per item:
   1. **The first item is what you build on**: the existing piece you reuse, extend or mirror, with its file path, or `New: nothing like it exists` once you have searched.
@@ -137,6 +138,7 @@ The most important moment, at every size (MUST 14): what you learn here decides 
 - Give every new file, class and function a header saying what it does and why, in the language's doc format; one line is enough when it is obvious. Explain the *why* of complex code. Never narrate obvious lines. Don't add headers or comments to existing code you are not otherwise changing. No commented-out code, no silent TODOs.
 - Clean only the area you touch; list problems in code you are *not* changing in the report. When a task needs both restructuring and a behaviour change, do them as two separate steps, one after the other.
 - A hand-written file over ~400 lines or a function over ~50 is a signal: check it is not doing more than one job.
+- **Confused while working? Stop and ask** when what you find changes what the user asked for (the code or the data contradicts the request, or the request turns out to mean two things), when you would otherwise have to guess, or when the next step touches production or real data. Ask the way Understand does: one to three questions, options, your recommendation first, then wait. Don't ask what reading or running the code can tell you.
 - When stuck: if the same fix fails twice, stop and look for the real cause. After a third failure, explain what you tried and ask.
 
 **Check:** each step works before the next one starts.
@@ -147,6 +149,7 @@ The most important moment, at every size (MUST 14): what you learn here decides 
 - Run `scripts/check-diff.sh` from this skill's folder inside the project (needs bash and git; `--files <paths>` works without git). It flags known dangers in the lines you added, and safety checks you removed without adding back (access checks, raised errors, validation). Run it, don't read it, and re-run it until it reports nothing. Fix each finding, or mark a false alarm on that line with a comment containing `check-diff: ok <reason>`; for a check you removed on purpose, say why in a comment containing `check-diff: ok removed-guard <reason>` in that file. As a Claude Code plugin it also runs after every file edit.
 - Add tests by risk: **always** for bug fixes (reproduce the bug with a failing test first) and real logic (money, rules, permissions, calculations); **never** for trivial changes; suggest them for everything else. If you cannot run tests, still write them into the change (or the reply when there are no files) and mark them not run.
 - **When users can see or use the change:** finish with a real-user test: use it the way a person would, through the real interface, on a safe environment, never production. A passing test suite (pytest, jest) is not a real-user test. Use a tool you are connected to before writing your own, and look for one first (in Claude Code: ToolSearch for `chrome`, `browser`, `simulator`, and the skills list): (1) a connected browser or app tool (Claude in Chrome, the built-in browser, a Playwright or other browser tool, a simulator or emulator tool, computer use); (2) only without one, a script of your own that drives a real browser or the real app; (3) for an API or a command-line tool, real HTTP calls or the terminal. If nothing can reach the interface, say so, give the user the steps to try by hand, and do not claim high confidence. Look at the result and compare it with what was asked (layout, order, alignment), not only that it runs. Try the happy path, then act like a careless human (see the checklist in `references/testing.md`). Compare results with expected values worked out separately. When the app has more than one language, repeat it in the other language, and right to left if supported. Every bug found becomes a test, then gets fixed and retested.
+- **Test data never costs the user's data.** When a test must change stored data, use a throwaway copy of the database or records you created for the test, never the user's existing records. Put back anything you changed, and list in the report anything left changed.
 - **When the software has users or clients and the change touches data paths:** test with a large dataset and send 10–20 requests at the same item at once, locally or on staging (no confirmation needed there). Hot paths and releases get a real stress test on staging (`references/performance.md`).
 - Review your own diff with `references/review.md`. **Complex tasks** also get an independent review: a separate reviewer (a subagent, if your agent has them) receives the diff and the touched files with a narrow job such as "find bugs in this change". Without subagents, do a second, separate pass with the checklist. Fix what is found and re-run the checks.
 

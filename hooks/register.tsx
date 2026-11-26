@@ -8,11 +8,13 @@
 import type { PluginOptions, Register } from 'claude-code'
 
 import { checkdiffTool, checkdiffUnderRow } from './checkdiff'
+import { CHECKLIST_TOOL } from './checklist'
+import { checklistRow, checklistViewStart, registerChecklistView } from './checklist-view'
 import { classifyPrompt, turnEnd } from './progress'
 import { reportPrompt, reportReset, reportStop, reportTool } from './report'
 import { registerScorecardViews, scorecardStart, scorecardTool, scorecardTurnEnd } from './scorecard'
 import {
-  trackerAgent, trackerPrompt, trackerRow, trackerSessionEnd, trackerSkill, trackerTool,
+  trackerAgent, trackerChecklist, trackerPrompt, trackerRegisterTool, trackerRow, trackerSessionEnd, trackerSkill, trackerTool,
   trackerTurnEnd, trackerTurnStart,
 } from './tracker'
 
@@ -20,6 +22,7 @@ const SKILL = 'agent-skill-ultimate-coding'
 
 /** Which features are on: the userConfig switches in plugin.json, each on unless set to false. */
 const featuresFrom = (options: PluginOptions) => ({
+  checklist: options.checklist !== false,
   scorecard: options.scorecard !== false,
   checkDiff: options.checkDiffLine !== false,
   report: options.reportCheck !== false,
@@ -28,6 +31,10 @@ const featuresFrom = (options: PluginOptions) => ({
 export const register: Register = (on, options) => {
   const features = featuresFrom(options)
   on('session.start', async ($, e, next) => {
+    if (features.checklist) {                        // the checklist tool, which the skill asks for on every task
+      await trackerRegisterTool($)
+      checklistViewStart($)
+    }
     if (features.scorecard) await scorecardStart($)
     return next(e)
   })
@@ -79,8 +86,13 @@ export const register: Register = (on, options) => {
     const isMain = e.agentId === undefined
     // Claude calls the Skill tool even when the skill is already loaded and no skill.prompt follows.
     if (isMain && e.tool === 'Skill' && String(e.skill).includes(SKILL)) await trackerSkill($)
-    // No call is held here: Claude decides the task's size, no rule in this code does.
-    const ran = await next(e)
+    // No call is held here: Claude decides the task's size, no rule in this code does. The plugin's
+    // own checklist tool is answered here, before Claude Code's permission check: it only records the
+    // list, and a question nobody can answer (claude -p, evals) would otherwise stop it. The engine's
+    // types know only built-in and connected tools, so the plugin's answer is cast to their result type.
+    const ran = features.checklist && (e.tool as string) === CHECKLIST_TOOL
+      ? ((await trackerChecklist($, e)) as unknown as Awaited<ReturnType<typeof next>>)
+      : await next(e)
     if (isMain) {
       await trackerTool($, e.tool, e, ran)
       await scorecardTool($, e.tool, e, ran)
@@ -113,6 +125,8 @@ export const register: Register = (on, options) => {
 
   // Under a tool's row: one hook for every feature that draws there, stacked in order.
   on('ui.render', { component: 'ToolUse' }, async ($, e, next) => {
+    // The checklist tool's row is one short line; ctrl+o (expanded) still shows the full call.
+    if (features.checklist && e.props.tool === CHECKLIST_TOOL && e.props.isExpanded !== true) return checklistRow($, e.props.input, $.ui.resolve(e))
     if (e.props.isRunning) return next(e)
     const { Box, Text } = $.ui.resolve(e)
     const under = [
@@ -127,5 +141,6 @@ export const register: Register = (on, options) => {
     )
   })
 
+  if (features.checklist) registerChecklistView(on)
   if (features.scorecard) registerScorecardViews(on)
 }

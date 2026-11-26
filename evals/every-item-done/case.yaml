@@ -29,12 +29,20 @@ graders:
     tool: Skill
     input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
 
-  # The checklist goes in the task list. (Not tool_order with Write: an agent that
-  # writes the file through Bash never calls Write, and the order check then fails falsely.)
+  # The checklist goes in the plugin's checklist tool. (Not tool_order with Write: an
+  # agent that writes the file through Bash never calls Write, and that check then fails falsely.)
   - type: tool_used
-    name: checklist-in-task-list
-    tool: TaskCreate
+    name: checklist-written
+    tool: mcp__agent-skill-ultimate-coding__checklist
     min: 1
+
+  # One list only: run with CLAUDE_CODE_ENABLE_TODO_TOOLS=1, so Claude Code's own task (check-diff: ok the word is part of the switch name)
+  # list is offered too, and the agent must not keep a second list there.
+  - type: tool_used
+    name: one-list-only
+    tool: TaskCreate
+    min: 0
+    max: 0
 
   - type: llm
     name: all-eight-built

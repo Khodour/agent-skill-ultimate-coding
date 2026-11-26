@@ -27,7 +27,15 @@ export type Run = {
   stop?: 'aborted' | 'error' | 'refusal'
   /** Subagents working for this run right now (their loop ids): the run is busy even when the main turn ended. */
   agents?: string[]
+  /** The checklist Claude wrote for this task with the plugin's checklist tool. */
+  list?: Checklist
 }
+
+/** One checklist item: its words, and whether it is still open, being worked on, or done. */
+export type ChecklistItem = { text: string; status: 'open' | 'doing' | 'done' }
+
+/** The task's checklist: the size Claude chose and the items in order. */
+export type Checklist = { size?: Size; items: ChecklistItem[] }
 
 /** What a submitted prompt means for the run: a new message from the person, part of the same task, or nothing. */
 export type PromptKind = 'new' | 'same' | 'none'
@@ -57,6 +65,8 @@ declare module 'claude-code' {
       run: Run | null
       /** The skill was loaded in this session: later tasks open a run at their first real step. */
       skillUsed: boolean
+      /** The spinner's frame on the checklist item being worked on. */
+      spin: number
       /** Lines written by edits since the person's last message, for the report check. */
       reportLines: number
       /** The person's latest message asked for a reply of their own kind (one line, no report). */

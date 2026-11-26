@@ -4,7 +4,7 @@ type: llm
 
 The task was one pure function with no stored data, network or files, so it is a Small task. The agent could only read files; it had no way to run code or tests.
 
-The checklist is written in the task list, and the confidence line's wording and its numbered options are matched exactly by other graders; judge the rest here.
+The checklist is written with the checklist tool, and the confidence line's wording and its numbered options are matched exactly by other graders; judge the rest here.
 
 PASS only if all are true:
 1. The code and its tests come without a long design write-up: no lines about running twice, stored data, load or transactions.

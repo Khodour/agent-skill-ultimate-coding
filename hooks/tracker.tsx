@@ -2,7 +2,8 @@
  * Feature: the run tracker. It follows one task from the person's message to
  * the end of its turn: the size Claude named, the checks run, how the turn
  * ended and the report's confidence. The scorecard counts finished tasks from
- * it, and the report check asks it whether the skill is in use. It draws nothing.
+ * it, and the report check asks it whether the skill is in use. It also answers
+ * the checklist tool: the list lives on the run, so it belongs to its task.
  *
  * Its state lives in host-held atoms, so a hot reload of this code keeps it.
  */
@@ -14,6 +15,7 @@ import {
   isTaskWork, onAgent, onAnswer, onPrompt, onSize, onTool, onTurnStart, sizeInText, startRun,
 } from './progress'
 import type { TurnEnd } from './progress'
+import { TOOL_DESCRIPTION, TOOL_NAME, TOOL_SCHEMA, applyChecklist, checklistReply } from './checklist'
 
 const SKILL = 'agent-skill-ultimate-coding'
 const run = atom({ plugin: 'agent-skill-ultimate-coding', key: 'run' } as const, null)
@@ -21,6 +23,35 @@ const skillUsed = atom({ plugin: 'agent-skill-ultimate-coding', key: 'skillUsed'
 /** Applies `fn` to the run, if one is active. */
 function change($: EngineInterface, fn: (r: Run) => Run) {
   return update($, run, r => (r === null ? r : fn(r)))
+}
+
+/** Session start: the checklist tool, in the prompt's tool list from the first turn. */
+export async function trackerRegisterTool($: EngineInterface): Promise<void> {
+  await $.tool.register({ name: TOOL_NAME, description: TOOL_DESCRIPTION, inputSchema: TOOL_SCHEMA, isDeferred: false })
+}
+
+/**
+ * The checklist tool itself, answered by the plugin: it writes or ticks the
+ * task's list, opens the run (the skill is at work), takes the size Claude chose,
+ * and tells Claude where the list stands. It records only; it never blocks.
+ */
+export async function trackerChecklist($: EngineInterface, input: unknown): Promise<{ result: string; isError: false }> {
+  const fields = (input ?? {}) as Record<string, unknown>
+  await update($, skillUsed, () => true)
+  let reply = ''
+  await update($, run, r => {
+    const open = onSize(r ?? startRun(), fields.size)
+    const list = applyChecklist(open.list, fields)
+    reply = checklistReply(list)
+    return { ...open, list }
+  })
+  return { result: reply, isError: false }
+}
+
+/** The task's checklist now, for drawing. */
+export async function trackerList($: EngineInterface) {
+  const r = await read($, run)
+  return r === null ? null : { list: r.list, isDone: r.isDone }
 }
 
 /**

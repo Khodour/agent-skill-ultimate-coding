@@ -2,7 +2,7 @@ import { expect, mock, test } from 'claude-code/testing'
 import type { On } from 'claude-code'
 import type { Engine } from 'claude-code/testing'
 
-const ALL_OFF = { scorecard: false, checkDiffLine: false }
+const ALL_OFF = { checklist: false, scorecard: false, checkDiffLine: false }
 const SKILL = { tool: 'Skill', skill: 'agent-skill-ultimate-coding:agent-skill-ultimate-coding' }
 
 /** Stands in for Claude Code and records what the plugin asked it to do. */
@@ -29,8 +29,8 @@ test('with every switch on (the default), every feature acts', async ($, on) => 
   const seen = engine(on)
   const edit = await work($)
   expect(seen.commands).toEqual(['uc-score'])
-  // No tool is added and no edit is held, even one about money: Claude decides the task's size.
-  expect(seen.tools).toEqual([])
+  // Only the checklist tool is added, and no edit is held, even one about money: Claude decides the task's size.
+  expect(seen.tools).toEqual(['checklist'])
   expect(edit.deny).toBe(undefined)
   expect(seen.processes).toBe(1)                                               // check-diff ran on the edit
 })
@@ -47,4 +47,12 @@ test('one switch off leaves the others on', { options: { scorecard: false } }, a
   await work($)
   expect(seen.commands).toEqual([])                                            // the scorecard's command is gone
   expect(seen.processes).toBe(1)                                               // check-diff still ran
+})
+
+test('the checklist switch off: no checklist tool, so Claude falls back to its own task list or a numbered list', { options: { checklist: false } }, async ($, on) => {
+  const seen = engine(on)
+  await work($)
+  expect(seen.tools).toEqual([])
+  expect(seen.commands).toEqual(['uc-score'])                                 // the other features stay on
+  expect(seen.processes).toBe(1)
 })
