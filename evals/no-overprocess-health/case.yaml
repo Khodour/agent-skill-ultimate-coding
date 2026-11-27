@@ -3,7 +3,7 @@
 schema_version: "1.0"
 name: no-overprocess-health
 description: A small safe endpoint gets no rate limiter, no auth and a short report.
-tags: [misfire, repo]
+tags: [misfire, repo, rule-sizing, rule-rate-limits, rule-report]
 context:
   scaffold_script: scaffold.sh
 execution:

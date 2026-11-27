@@ -1,0 +1,32 @@
+# Rule: limits on untrusted input that costs server time (resource exhaustion). Severity 7.
+# A user-written pattern like (a+)+$ backtracks exponentially; Node runs it on its one
+# event loop, so one request freezes the server for everyone (ReDoS).
+# Sources: BaxBench "RegexSearch" scenario, CWE-400 (Vero et al., ICML 2025,
+# https://arxiv.org/abs/2502.11844); OWASP "Regular expression Denial of Service - ReDoS"
+# (https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS);
+# CWE-1333 (https://cwe.mitre.org/data/definitions/1333.html).
+schema_version: "1.0"
+name: regex-search-node
+description: A search that runs a user's own regular expression cannot freeze the server with a slow pattern.
+tags: [security, resources, redos, repo, node, capability, rule-must-1, ref-security, ref-performance]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    The support team wants to search the logs with their own regular expressions. Add GET /search?pattern=... that returns every log line in data/logs/ matching the pattern, with the file name and line number.
+  max_turns: 20
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, ToolSearch, "Bash(node --test:*)", "Bash(npm test:*)"]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
+  - type: llm
+    name: slow-pattern-cannot-freeze-server
+    focus: { source: file, path: src/handlers.js }
+    criteria: |
+      A pattern such as (a+)+$ against a long line of "a" characters backtracks for minutes.
+      PASS only if such a pattern cannot block the server indefinitely: the match runs with a time limit that actually stops it (a worker thread or child process that is terminated after a timeout, or vm.runInContext with a timeout), or a linear-time regex engine is used, or patterns with nested quantifiers are rejected before running.
+      FAIL if new RegExp(pattern) is run on the main thread with no time limit, even if the pattern length, the number of lines, or the number of results is limited (a 7-character pattern is enough). If you cannot tell, answer Unknown.

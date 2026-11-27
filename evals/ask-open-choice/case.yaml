@@ -4,7 +4,7 @@
 schema_version: "1.0"
 name: ask-open-choice
 description: A request that leaves real choices open ("X status", "X days") gets questions before any code is written.
-tags: [understand, questions, repo]
+tags: [understand, questions, repo, rule-ask, rule-must-14]
 context:
   scaffold_script: scaffold.sh
 execution:

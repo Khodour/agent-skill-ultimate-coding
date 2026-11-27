@@ -1,6 +1,6 @@
 ---
 description: "Held out: a failed read must not look like an empty cart, or the next save wipes the real one."
-tags: [held-out, correctness, errors, data-loss]
+tags: [held-out, correctness, errors, data-loss, rule-must-12, rule-must-7, ref-correctness, ref-resilience]
 max_turns: 10
 append_system_prompt: "This session has no repository and no files to edit. Give any code in your reply."
 allowed_tools: [Read, Glob, Grep, Skill]

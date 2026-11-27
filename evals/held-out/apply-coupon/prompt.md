@@ -1,6 +1,6 @@
 ---
 description: "Held out: coupon rules live outside the handler, and single use holds under concurrency."
-tags: [held-out, design, concurrency]
+tags: [held-out, design, concurrency, rule-business-rules, rule-must-6, ref-design]
 max_turns: 10
 append_system_prompt: "This session has no repository and no files to edit. Give any code in your reply."
 allowed_tools: [Read, Glob, Grep, Skill]

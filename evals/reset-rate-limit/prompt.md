@@ -1,6 +1,6 @@
 ---
 description: "Missing rate limiting is the most common flaw in AI-written apps: a public endpoint that sends email must be limited."
-tags: [security, rate-limit]
+tags: [security, rate-limit, rule-rate-limits, ref-security]
 max_turns: 10
 append_system_prompt: "This session has no repository and no files to edit. Give any code in your reply."
 allowed_tools: [Read, Glob, Grep, Skill]

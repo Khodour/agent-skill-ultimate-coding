@@ -1,6 +1,6 @@
 ---
 description: "Held out: booking rules that need the database live outside the handler, and two bookings at once never overlap."
-tags: [held-out, design, layering, concurrency]
+tags: [held-out, design, layering, concurrency, rule-business-rules, rule-must-6, ref-design]
 max_turns: 10
 append_system_prompt: "This session has no repository and no files to edit. Give any code in your reply."
 allowed_tools: [Read, Glob, Grep, Skill]

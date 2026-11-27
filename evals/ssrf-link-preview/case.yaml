@@ -4,7 +4,7 @@
 schema_version: "1.0"
 name: ssrf-link-preview
 description: A server fetching a user's URL blocks internal addresses and does not follow redirects blindly.
-tags: [security, ssrf, repo]
+tags: [security, ssrf, repo, rule-must-1, ref-security]
 context:
   scaffold_script: scaffold.sh
 execution:

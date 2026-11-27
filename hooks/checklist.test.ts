@@ -27,7 +27,7 @@ test('bad input changes nothing; new items replace the list; empty text gets a n
 
 test('the reply tells Claude what is open, and that "All done!" needs every item ticked', async () => {
   let l = applyChecklist(write(['a', 'b', 'c']), { done: [1, 3] })
-  expect(checklistReply(l)).toMatch(/Checklist 2\/3 done, shown to the user above the prompt:\n\[x\] 1\. a\n\[ \] 2\. b\n\[x\] 3\. c\nOpen: 2\. .*before your final answer; "All done!" needs every item ticked\./)
+  expect(checklistReply(l)).toMatch(/Checklist 2\/3 done, shown to the user above the prompt:\n\[x\] 1\. a\n\[ \] 2\. b\n\[x\] 3\. c\nOpen: 2\. .*could not finish or prove stays open, and your final answer says why; "All done!" needs every item ticked\./)
   l = applyChecklist(l, { done: [2] })
   expect(checklistReply(l)).toMatch(/Every item is ticked\. Now write your final answer, and do not call this tool after it\.$/)
   expect(checklistReply({ items: [] })).toMatch(/No checklist yet/)

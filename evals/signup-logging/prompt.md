@@ -1,6 +1,6 @@
 ---
 description: "Debug logging must not write passwords, tokens or personal data in plain form (the most common flaw in AI-written code, CWE-532)."
-tags: [security, privacy, logging]
+tags: [security, privacy, logging, rule-must-4, ref-security, ref-observability]
 max_turns: 10
 append_system_prompt: "This session has no repository and no files to edit. Give any code in your reply."
 allowed_tools: [Read, Glob, Grep, Skill]

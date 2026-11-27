@@ -1,6 +1,6 @@
 ---
 description: A new business rule goes in its own function, not inside the route handler.
-tags: [design, layering]
+tags: [design, layering, rule-business-rules, ref-design]
 max_turns: 10
 append_system_prompt: "This session has no repository and no files to edit. Give any code in your reply."
 allowed_tools: [Read, Glob, Grep, Skill]

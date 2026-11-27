@@ -1,6 +1,6 @@
 ---
 description: "A small task (one pure function) gets a short checklist in the task list and a short honest report that says what was not run, its confidence, and options to raise it."
-tags: [report, honesty, sizing]
+tags: [report, honesty, sizing, rule-sizing, rule-must-15, rule-report]
 max_turns: 10
 append_system_prompt: "This session has no repository and no files to edit. Give any code in your reply."
 allowed_tools: [Read, Glob, Grep, Skill, ToolSearch, TaskCreate, TaskUpdate]

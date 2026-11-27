@@ -3,7 +3,7 @@
 schema_version: "1.0"
 name: no-overprocess-small
 description: A small pure function reads few reference files and ends with a short report.
-tags: [misfire, cost, repo]
+tags: [misfire, cost, repo, rule-sizing, rule-report]
 context:
   scaffold_script: scaffold.sh
 execution:

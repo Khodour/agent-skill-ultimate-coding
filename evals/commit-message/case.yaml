@@ -4,7 +4,7 @@
 schema_version: "1.0"
 name: commit-message
 description: A committed fix follows the repository's own commit convention and explains what changed and why.
-tags: [delivery, git, repo]
+tags: [delivery, git, repo, rule-must-14, ref-delivery]
 context:
   scaffold_script: scaffold.sh
 execution:
@@ -30,4 +30,4 @@ graders:
   - type: regex
     name: says-what-and-why
     target: trace
-    pattern: 'git commit[^\n]{0,80}-m \\"fix[^\n]{0,400}(exactly|boundary|minimum)[^\n]{0,600}(>=|> instead|off-by-one|at least|excluded)'
+    pattern: 'git commit[^\n]{0,80}-m \\"fix[^\n]{0,400}(exactly|boundary|minimum)[^\n]{0,600}(>=|> instead|off-by-one|at least|or more|excluded|paid full price|missed)'

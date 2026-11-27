@@ -1,6 +1,6 @@
 ---
 description: An architecture opinion without code is not a coding task.
-tags: [trigger, no-fire]
+tags: [trigger, no-fire, rule-trigger]
 max_turns: 6
 append_system_prompt: "This session has no repository and no files to edit. Answer in your reply."
 allowed_tools: [Read, Glob, Grep, Skill]

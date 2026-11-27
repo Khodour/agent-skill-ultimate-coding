@@ -1,0 +1,38 @@
+# Rule: sizing and scope (do only what was asked; a question is answered, not acted on).
+# Severity 5 (unrequested edits cost review time and trust).
+# Source: "How Coding Agents Fail Their Users", 20,574 real sessions (arXiv 2605.29442):
+# self-initiated overreach in 10.2% of failure episodes, including "a discussion question or
+# request for explanation" treated as permission to edit code; highest developer-takeover rate.
+schema_version: "1.0"
+name: question-only-ts
+description: A question about why code is slow gets an explanation and an offer, not unrequested edits.
+tags: [scope, misfire, repo, typescript, capability, rule-sizing, ref-performance]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Why is GET /orders so slow? It takes about 4 seconds with 2,000 orders.
+  max_turns: 20
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, ToolSearch, "Bash(node --test:*)"]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
+  - type: tool_used
+    name: no-edits
+    tool: Edit
+    min: 0
+    max: 0
+  - type: tool_used
+    name: no-new-files
+    tool: Write
+    min: 0
+    max: 0
+  - type: regex
+    name: names-the-cause
+    target: last_message
+    pattern: '(N\s*\+\s*1|one (query|call|round trip) per|per (order|row)|getCustomer[^\n]{0,80}(loop|each)|(loop|each)[^\n]{0,80}getCustomer|2,?000 (calls|queries|round trips))'
+    flags: i

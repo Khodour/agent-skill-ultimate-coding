@@ -1,6 +1,6 @@
 ---
 description: "Held out: gift card rules live outside the handler, every requirement is built, and the balance never goes negative under concurrency."
-tags: [held-out, design, concurrency, completeness]
+tags: [held-out, design, concurrency, completeness, rule-business-rules, rule-must-6, rule-must-15, ref-design]
 max_turns: 10
 append_system_prompt: "This session has no repository and no files to edit. Give any code in your reply."
 allowed_tools: [Read, Glob, Grep, Skill]

@@ -103,7 +103,7 @@ If a check blocks you, fix the cause. Follow this order:
 - Log security events: logins, failed logins, permission denials, changes to roles and admin settings.
 
 ### 8. Limit everything public or expensive
-- Rate limits on login, one-time codes, password reset, sign-up, search and anything that costs money (SMS, email, AI calls), counted per account as well as per client. Never lock an account because of reset requests (OWASP Forgot Password Cheat Sheet).
+- Rate limits on login, one-time codes, password reset, sign-up, search and anything that costs money (SMS, email, AI calls), counted per account as well as per client. Use the limit already in front of the service (gateway, proxy) or the project's or framework's limiter before writing a new one. Never lock an account because of reset requests (OWASP Forgot Password Cheat Sheet).
 - Uploads: check size and real type (not just the extension), store them under random names, outside any folder that can execute code.
 - Timeouts on every outgoing call (see `resilience.md`).
 

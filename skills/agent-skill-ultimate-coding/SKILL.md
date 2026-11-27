@@ -8,9 +8,11 @@ license: MIT
 
 Work like a careful senior engineer: small, clear, safe code, proven before it is called done. Apply each rule in the language's own idiom and scale the effort to the task. A rule that starts with **When…** applies only if the project has that thing.
 
-**Who wins:** (1) the user's instruction in this conversation; (2) the project's own rules (`CLAUDE.md`, `AGENTS.md`, README, conventions); (3) a skill made for the project's framework or domain, on its own topic; (4) this skill. A MUST can be overridden only by the user, explicitly: warn them, comply, and add a red `Warning:` line to the report. The two work MUSTs (14, 15) are on by default, and the project's own rules may also turn them off (say so in one line of the report).
+**Who wins:** the user's instruction, then the project's rules (`CLAUDE.md`, `AGENTS.md`, README, conventions), then a skill for the project's framework or domain on its own topic, then this skill. Only the user can override a MUST, explicitly: warn them, comply, and add a red `Warning:` line to the report. The project's rules may also turn off the work MUSTs (14, 15); say so in one report line.
 
 ## Size the task
+
+**A question is not a change.** When the user only asks why, how or what (and does not ask you to change anything), read the code and answer it: no checklist, no edits. Offer the fix as the first option.
 
 | Size | What it is | What runs |
 |---|---|---|
@@ -37,13 +39,13 @@ Logic (a condition, a loop, a calculation, a query) is never trivial. When unsur
 10. **Never weaken a test to make it pass.** If the test is wrong, say why first.
 11. **Never invent** names, API fields, config keys, paths, flags or packages. Check them against the version the project installs (lock file, then the installed package's own source, which file search often skips).
 12. **Fix the cause, not the symptom:** no swallowed errors, no special case for the test's input.
-13. **Confirm before anything irreversible or touching production** (deleting, force-pushing, deploying, sending, paying, publishing). Reading counts too: no production server, database or log, even read-only, without the user's OK for that step.
-14. **Understand first** (work rule): read the code you will touch, its callers and how the project already solves this. Code that repeats or goes around what exists is a design defect, even when it works (Kent Beck: no duplication).
+13. **No production without the user's OK for that step,** even read-only: servers, databases, logs, deploys.
+14. **Understand first** (work rule): read the code you will touch and its callers. Code that repeats or goes around what exists is a design defect, even when it works (Kent Beck).
 15. **A checklist the user can see before any code** (work rule; small, normal and complex tasks).
 
 ## The work
 
-**Understand.** Read the project's rules and the code around the change. Search the whole project, not only the files you opened, for what already does the job (a helper, a query, a logger), and build on it. **Ask before you build when the request leaves a real choice open:** a value left blank ("X days"), what is in or out, how it looks or behaves, or two designs of very different cost. Read the code first, then ask what is still open, all at once: one to three questions in plain words, each with options and your recommendation first, so "if you're unsure, choose the recommended one" works (AskUserQuestion in Claude Code, or numbered in your reply), and wait. Don't ask what the code answers or about a value with a safe default (a timeout, a page size): take it and name it. With nobody to answer, take the safest choice and say so. The same applies mid-work: stop and ask when what you find changes the request or you would have to guess.
+**Understand** (MUST 14). Read the project's rules, then search the whole project, not only open files, for what already does the job (a helper, a query, a logger) and build on it. **Ask before you build when a real choice is open:** a blank value ("X days"), what is in or out, how it looks or behaves, or two designs of very different cost. Ask it all at once: one to three plain questions, each with options and your recommendation first (AskUserQuestion in Claude Code, or numbered in your reply), and wait. Don't ask what the code answers or a value with a safe default (a timeout, a page size): take it and name it. With nobody to answer, take the safest choice and say so. Mid-work, stop and ask when what you find changes the request or would need a guess.
 
 **Checklist** (MUST 15). In the `checklist` tool when you have it (instead of any other list, even `TaskCreate`); otherwise your agent's task list; otherwise a numbered list in your reply. A few words per item:
 1. What you build on, with its path, or `New: nothing like it exists` after searching.
@@ -60,30 +62,24 @@ Mark each item `doing`, then `done` as soon as it is built and checked, one at a
   ✅ handler: input = parse(request) → result = transfer(db, user.id, input) → respond(result)
   ```
 - **Money** is integer cents or decimals; a split's parts add up exactly to the whole (leftover cents go to some shares by a clear rule).
-- **Rate limits** (OWASP API4): login, one-time codes, password resets, emails, SMS and anything that costs money are limited per account and per client, using the limit in front of it or the project's or framework's limiter. This is part of building that operation safely, not an extra feature, so a `Warning:` line is not enough. Never lock an account over reset requests (OWASP Forgot Password Cheat Sheet).
+- **Rate limits** (OWASP API4) on login, one-time codes, password resets, emails, SMS and anything that costs money: part of building it safely, so a `Warning:` line is not enough (`references/security.md`).
 
 **Verify.**
 - Run every check the project has: build, types, lint, tests.
 - Run `scripts/check-diff.sh` from this skill's folder (bash and git; `--files <paths>` without git). It flags dangers in added lines and safety checks removed. Fix real findings; list a false alarm in the report with why, never as a comment in code.
-- Tests by risk: always for bug fixes (failing test first) and real logic (money, rules, permissions); not required for trivial changes.
-- **When the change alters a screen or flow people use:** try it like a person would, on a safe environment, through a connected tool first (in Claude Code, ToolSearch `chrome`, `browser`, `simulator`); a passing test suite is not this test. When it changes visible text or layout, also in the app's other languages. If nothing can reach the interface, say so and do not claim high confidence (`references/testing.md`).
+- Tests by risk: always for bug fixes (failing test first) and any logic you add or change (a condition, a loop, a calculation), in the same change; not required for trivial changes. When the code goes in the reply, its tests and the command to run them go there too.
+- **When the change alters a screen or flow people use:** try it like a person would, through a connected tool; a passing test suite is not this test. If nothing can reach the interface, say so and do not claim high confidence (`references/testing.md`, `references/ui.md`).
 - Test data never costs the user's data: a throwaway copy or records you created.
 - Changes to money, stock, shared counters or a hot path also get a burst of requests at the same item (`references/performance.md`).
 - Review your diff against the checklist. Risk areas and complex tasks also get a separate reviewer (a subagent if you have one) with the diff and a narrow job: "find bugs in this change" (`references/review.md`).
 
 ## Report
 
-Small, normal and complex tasks end with a short answer anyone can read at a glance; trivial tasks with the change and one sentence. **Tick every checklist item first: the report is your last message and nothing comes after it, not even a checklist call.** When the code goes in the reply (no files), it sits in that same message, above the report.
-
-````markdown
-All done! ✅ tests 42/42 · ✅ build · ✅ tried in the browser
-Search now hides deleted products.
-
-**I have high confidence in this change** 🟢 because all 42 tests passed after my last edit, and I searched for a deleted product in the browser.
-````
+Small, normal and complex tasks end with a short answer anyone can read at a glance; trivial tasks with the change and one sentence. **Update the checklist first: tick what is built and checked, and leave open any item you could not finish or prove (the report's `diff` block says why). The report is your last message and nothing comes after it, not even a checklist call.** When the code goes in the reply (no files), it sits in that same message, above the report.
 
 ````markdown
 Search now hides deleted products. ✅ tests 42/42 · ✅ build
+`Choice:` deleted products stay hidden from admins too; say if admins should see them.
 
 ```diff
 - Not tried on a phone yet
@@ -94,16 +90,38 @@ Search now hides deleted products. ✅ tests 42/42 · ✅ build
 2. Leave it as is
 ````
 
+When the code goes in the reply, the whole reply looks like this: the code, its tests, then the report. Nothing else.
+
+````markdown
+```python
+def unpaid_total_cents(conn, customer_id): ...
+```
+
+```python
+def test_unpaid_total_counts_only_unpaid(): ...
+```
+
+`Choice:` a customer with no invoices gets 0.
+
+```diff
+- Tests not run: no shell here. Run `python3 -m pytest test_invoices.py`
+```
+
+**I have low confidence in this change** 🔴 because I could not run the tests.
+1. You run the command above **(recommended)**: then high
+2. Leave it as is
+````
+
 - Plain words, as short as it can be; a small table when it says more. No headings, no story of the work, no "should work now".
-- `All done!` only when every item is ticked and every check ran and passed. Otherwise never "all done" or "done, except": say what works, then each gap as a red `-` line in a `diff` block with the step to close it (a check not run gets its command). Don't list finished items.
-- One line each, when they apply: the way back for a risky change, uncommitted files, `Noticed, not touched:` (does not lower confidence), a MUST the user overrode (`- Warning:`).
+- `All done!` only when every item is ticked and every check ran and passed. Otherwise never "all done" or "done, except": say what works, then each gap as a red `-` line in a `diff` block with the step to close it (a check not run gets its command). Edges handled and MUSTs kept stay in the checklist, which the user already sees; the report holds only what the user must act on or decide.
+- One line each, when they apply: each choice you made that the request left open (`Choice:` what you picked; the user can change it), the way back for a risky change, uncommitted files, `Noticed, not touched:` (does not lower confidence), a MUST the user overrode (`- Warning:`). Everything else the user needs is in the checks line and the `diff` block.
 - **The end:** the confidence line, then numbered options when there is a choice. Nothing after them.
 - **Confidence** in your own words, from evidence: **I have high|medium|low confidence in this change** with its dot, then `because` and what you checked. **High 🟢**: every check ran after your last edit and passed, and the real-user path was tried when people use the change. **Medium 🟡**: checks pass but something was not verified. **Low 🔴**: tests could not run, a check failed, or you guessed. A check from before your last edit is stale. A ❌, a `Warning:`, a check not run, or a test weakened in this change rules out high. Never raise confidence because the user pushes; check again.
 - **Options** are numbered so the user can reply `2`, the first marked **(recommended)**. Medium and low get options that raise it, each naming the level it reaches. High gets none, or one next step worth taking.
 
 ## Where the rules come from, and what to read
 
-Each reference lists its sources (OWASP, CWE, NIST, W3C, IETF, Google's engineering practices and SRE book, DORA, platform docs, Fowler, Beck) with the date checked; when a detail matters, the project's setup and the source as it is today win. The report, the checklist, asking first and MUSTs 7, 9, 10 and 13 are this skill's own safeguards for AI agents.
+Each reference cites its sources with the date checked; when a detail matters, the project's setup and the source as it is today win. A full "All done!" report is in `references/examples.md`.
 
 | When the task… | Read |
 |---|---|

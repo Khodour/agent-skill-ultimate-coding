@@ -1,6 +1,6 @@
 ---
 description: An AI summary on a busy page is cached, shown as text, and cannot break the page.
-tags: [performance, security, ai]
+tags: [performance, security, ai, rule-must-1, ref-ai-features, ref-performance]
 max_turns: 10
 append_system_prompt: "This session has no repository and no files to edit. Give any code in your reply."
 allowed_tools: [Read, Glob, Grep, Skill]

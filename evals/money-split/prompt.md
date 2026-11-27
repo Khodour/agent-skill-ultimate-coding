@@ -1,6 +1,6 @@
 ---
 description: Money must be exact and shares must add up to the total.
-tags: [correctness, money]
+tags: [correctness, money, rule-money, ref-correctness]
 max_turns: 10
 append_system_prompt: "This session has no repository and no files to edit. Give any code in your reply."
 allowed_tools: [Read, Glob, Grep, Skill]

@@ -18,7 +18,7 @@ export const TOOL_DESCRIPTION =
   'then the edge cases, risks and MUSTs that need work, then the proof). Then call it as you work: `doing` with the number of the item ' +
   'you start, `done` with the numbers of items built and checked, one step at a time, never all at the end. ' +
   'Sending `items` again replaces the list. Use this instead of any other task list, so the user sees one list. ' +
-  'Tick every item before you write your final answer: that answer (with the code, when there are no files) is your last message, and nothing comes after it, not even this tool.'
+  'Before your final answer, tick what is built and checked, and leave open any item you could not finish or prove; the answer says why. That answer (with the code, when there are no files) is your last message, and nothing comes after it, not even this tool.'
 export const TOOL_SCHEMA = {
   type: 'object',
   properties: {
@@ -70,7 +70,7 @@ export const checklistReply = (list: Checklist): string => {
   const open = list.items.flatMap((t, i) => (t.status === 'done' ? [] : [i + 1]))
   const left = open.length === 0
     ? 'Every item is ticked. Now write your final answer, and do not call this tool after it.'
-    : `Open: ${open.join(', ')}. Tick each with \`done\` as soon as it is built and checked, before your final answer; "All done!" needs every item ticked.`
+    : `Open: ${open.join(', ')}. Tick each with \`done\` as soon as it is built and checked. An item you could not finish or prove stays open, and your final answer says why; "All done!" needs every item ticked.`
   return `Checklist ${done}/${total} done, shown to the user above the prompt:\n${lines.join('\n')}\n${left}`
 }
 
