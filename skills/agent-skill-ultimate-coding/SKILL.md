@@ -63,7 +63,7 @@ Logic (a condition, a loop, a calculation, a query) is never trivial. When unsur
 Mark each item `doing`, then `done` as soon as it is built and checked, one at a time. Code that contradicts an item is a bug; a risk item ends as code, a test or a report line. Before the report, read the request again against the list. Worked examples: `references/examples.md`.
 
 **Build.** Small steps, each run before the next. The simplest thing that works, and only what was asked. Follow the house style but never copy a danger (string-built SQL, a query in a loop, a race): write it safely and say so. A real problem inside the code you change is fixed as a separate, earlier step; one bigger than the task goes in the report as `Noticed, not touched:` with an issue to file (Google's review guide: "file a bug for the cleanup"). Same fix fails twice: stop and find the real cause; after a third, ask.
-- **Business rules live outside handlers, views and UI;** those edges only parse, call the rule and respond:
+- **Business rules live outside handlers, views and UI;** those edges only parse, call the rule and respond. The rule's transaction and locks live inside its function too:
   ```
   ❌ handler: BEGIN → SELECT … → check the rule → INSERT … → COMMIT → respond
   ✅ handler: input = parse(request) → result = transfer(db, user.id, input) → respond(result)
@@ -82,7 +82,7 @@ Mark each item `doing`, then `done` as soon as it is built and checked, one at a
 
 ## Report
 
-Small, normal and complex tasks end with a short answer anyone can read at a glance; trivial tasks with the change and one sentence. **Update the checklist first: tick what is built and checked, and leave open any item you could not finish or prove (the report's `diff` block says why). The report is your last message and nothing comes after it, not even a checklist call.** When the code goes in the reply (no files), it sits in that same message, above the report.
+Small, normal and complex tasks end with a short answer anyone can read at a glance; trivial tasks with the change and one sentence. A turn that ends in questions (Understand, a change request, a new project) has no report: the questions are the last thing the user reads. **Update the checklist first: tick what is built and checked, and leave open any item you could not finish or prove (the report's `diff` block says why). The report is your last message and nothing comes after it, not even a checklist call.** When the code goes in the reply (no files), it sits in that same message, above the report.
 
 ````markdown
 Search now hides deleted products. ✅ tests 42/42 · ✅ build

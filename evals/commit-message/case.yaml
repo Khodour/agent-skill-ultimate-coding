@@ -21,13 +21,14 @@ graders:
     input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
 
   # The eval sandbox may refuse the commit itself, so the message is read from the commit
-  # command the agent wrote (the trace holds it JSON-escaped, on one line).
+  # command the agent wrote (the trace holds it JSON-escaped, on one line), given with -m or as a
+  # heredoc on -F - (both seen 2026-11-28).
   - type: regex
     name: follows-the-convention
     target: trace
-    pattern: 'git commit[^\n]{0,80}-m \\"fix(\([a-z-]+\))?!?: \S'
+    pattern: 'git commit[^\n]{0,80}(-m \\"|<<[^\n]{0,12}?\\n)fix(\([a-z-]+\))?!?: \S'
 
   - type: regex
     name: says-what-and-why
     target: trace
-    pattern: 'git commit[^\n]{0,80}-m \\"fix[^\n]{0,400}(exactly|boundary|minimum)[^\n]{0,600}(>=|> instead|off-by-one|at least|or more|excluded|paid full price|missed)'
+    pattern: 'git commit[^\n]{0,80}(-m \\"|<<[^\n]{0,12}?\\n)fix[^\n]{0,400}(exactly|boundary|minimum)[^\n]{0,600}(>=|> instead|off-by-one|at least|or more|excluded|paid full price|missed)'

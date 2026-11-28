@@ -54,9 +54,9 @@ Every case runs **with and without** the skill, three times, on hard tasks only 
 | Model | Without the skill | With the skill |
 |---|:---:|:---:|
 | Claude Sonnet 5.5 | 0.60 | ✅ **0.99** |
-| Claude Haiku 5.5 | 0.48 | ✅ **0.86** |
+| Claude Haiku 5.5 | 0.54 | ✅ **0.88** |
 
-2026-11-28, Sonnet judge: Sonnet on all 33 cases, Haiku on 21 (its repo cases are still to re-run). Every case, every score and the few where the skill did not help are in [evals/RESULTS.md](evals/RESULTS.md). The extra care costs about twice the turns of an agent working without it.
+2026-11-28, Sonnet judge: Sonnet and Haiku on all 33 cases. Every case, every score and the few where the skill did not help are in [evals/RESULTS.md](evals/RESULTS.md). The extra care costs about twice the turns of an agent working without it.
 
 ## Install
 

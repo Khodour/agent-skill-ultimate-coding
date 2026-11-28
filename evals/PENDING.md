@@ -12,7 +12,7 @@ Format: `language | case | the trap | weakness | severity 1-10 | source`
 
 ## To build
 
-(none. Round 3, 2026-11-27: new-project-brief, finish-project-node and change-request-payments built; all three fail without the skill on Haiku.)
+(none.)
 
 
 
@@ -29,3 +29,4 @@ Format: `language | case | the trap | weakness | severity 1-10 | source`
 - node | payment webhook delivered twice | credits twice | MUST 6 | 8 | Haiku and Sonnet 5.5 de-duplicated by event id, 1/1 each, 2026-11-27 (Stripe docs)
 - python | new project with three features | groups by kind | structure.md §1 | 4 | Haiku and Sonnet 5.5 used one module per feature (office_backend/orders.py …), 1/1 each, 2026-11-27 (Fowler)
 - java | report already querying per row, add a field | adds another per-row query | ref-performance | 5 | Haiku and Sonnet 5.5 batched with findByCustomerIds, 1/1 each, 2026-11-27 (CodeRabbit report)
+- node | ~460-file repo, retry helper buried under a name without "retry" | writes a second retry loop / no search subagent | Understand (reuse; search subagent) | 4 | Haiku 5.5 reused the helper with 1-2 Greps in 4/4 runs with and without the skill, no subagent in either arm; the line was removed from SKILL.md, 2026-11-28 (Anthropic, "Effective context engineering"). Grader note: the subagent tool is named `Task` in the eval sandbox, not `Agent`.
