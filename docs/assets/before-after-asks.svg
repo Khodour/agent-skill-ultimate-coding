@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" width="1200" height="560" role="img" aria-labelledby="t d">
+<title id="t">A guess, then a question with options</title>
+<desc id="d">Without the skill: asked for a nightly job that deletes old orders, the agent guesses 30 days, deletes paid orders too, with no way back; next morning 1,940 paid orders are gone. With the skill: two questions before it builds, how old is old (2 years recommended, 1 year, 90 days) and what happens to paid orders (keep and archive recommended, or delete), safe defaults named for the rest, and nothing deleted until the user chooses.</desc>
+<style>
+  .s{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif} .m{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}
+  .flow{stroke-dasharray:16 984;animation:flow 2.4s linear infinite}
+  .lost{stroke-dasharray:22 978;animation:flow 7s linear infinite}
+  @keyframes flow{from{stroke-dashoffset:1000}to{stroke-dashoffset:0}}
+  .grow{transform-box:fill-box;transform-origin:left center;animation:grow .9s cubic-bezier(.2,.7,.2,1) backwards}
+  @keyframes grow{from{transform:scaleX(0)}}
+  @media (prefers-reduced-motion:reduce){.flow,.lost{animation:none;stroke-dasharray:none;opacity:0}.grow{animation:none}}</style>
+<rect width="1200" height="560" rx="20" fill="#0d1117"/>
+
+<rect x="20" y="20" width="570" height="520" rx="16" fill="#161b22" stroke="#30363d"/>
+<circle cx="50" cy="51" r="5" fill="#f85149"/>
+<text x="64" y="56" class="s" font-size="12" font-weight="700" fill="#f85149" text-anchor="start" letter-spacing="1.6">WITHOUT THE SKILL</text>
+<text x="44" y="88" class="s" font-size="21" font-weight="700" fill="#e6edf3" text-anchor="start">Reads your mind. Gets it wrong.</text>
+<rect x="610" y="20" width="570" height="520" rx="16" fill="#161b22" stroke="#30363d"/>
+<circle cx="640" cy="51" r="5" fill="#3fb950"/>
+<text x="654" y="56" class="s" font-size="12" font-weight="700" fill="#3fb950" text-anchor="start" letter-spacing="1.6">WITH THE SKILL</text>
+<text x="634" y="88" class="s" font-size="21" font-weight="700" fill="#e6edf3" text-anchor="start">Asks first. Your data survives.</text><circle cx="600" cy="280" r="17" fill="#0d1117" stroke="#30363d"/><path d="M593 280h13m-5-5 5 5-5 5" fill="none" stroke="#e6edf3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="170" y="120" width="396" height="40" rx="12" fill="#1f2a37" stroke="#30363d"/>
+<text x="186" y="149" class="s" font-size="15" font-weight="400" fill="#e6edf3" text-anchor="start">Add a nightly job that deletes old orders.</text>
+<rect x="44" y="186" width="440" height="62" rx="12" fill="#21262d" stroke="#30363d"/>
+<text x="60" y="215" class="s" font-size="15" font-weight="400" fill="#e6edf3" text-anchor="start">Done ✅ The job deletes orders older</text>
+<text x="60" y="237" class="s" font-size="15" font-weight="400" fill="#e6edf3" text-anchor="start">than 30 days, every night at 02:00.</text>
+<g><rect x="44" y="277" width="186.45" height="26" rx="13" fill="#2d1517" stroke="#8e2c2a"/><text x="55" y="294.68" class="s" font-size="13" font-weight="600" fill="#ffa198" text-anchor="start">✕ &quot;30 days&quot; is a guess</text></g>
+<g><rect x="44" y="319" width="208.87499999999997" height="26" rx="13" fill="#2d1517" stroke="#8e2c2a"/><text x="55" y="336.68" class="s" font-size="13" font-weight="600" fill="#ffa198" text-anchor="start">✕ paid orders deleted too</text></g>
+<g><rect x="44" y="361" width="119.175" height="26" rx="13" fill="#2d1517" stroke="#8e2c2a"/><text x="55" y="378.68" class="s" font-size="13" font-weight="600" fill="#ffa198" text-anchor="start">✕ no way back</text></g>
+<rect x="44" y="414" width="522" height="104" rx="12" fill="#2d1517" stroke="#8e2c2a"/>
+<text x="66" y="448" class="s" font-size="12" font-weight="700" fill="#ffa198" text-anchor="start" letter-spacing="1.4">NEXT MORNING</text>
+<text x="66" y="478" class="s" font-size="15" font-weight="400" fill="#e6edf3" text-anchor="start">Accounting cannot find last month’s invoices.</text>
+<text x="66" y="502" class="s" font-size="15" font-weight="600" fill="#ffa198" text-anchor="start">1,940 paid orders are gone.</text>
+<rect x="760" y="120" width="396" height="40" rx="12" fill="#1f2a37" stroke="#30363d"/>
+<text x="776" y="149" class="s" font-size="15" font-weight="400" fill="#e6edf3" text-anchor="start">Add a nightly job that deletes old orders.</text>
+<rect x="634" y="186" width="522" height="296" rx="12" fill="#0d1117" stroke="#30363d"/>
+<text x="656" y="218" class="s" font-size="15" font-weight="700" fill="#e6edf3" text-anchor="start">Two questions before I build it</text>
+<text x="656" y="254" class="s" font-size="14" font-weight="600" fill="#8b949e" text-anchor="start">How old is “old”?</text>
+<circle cx="664" cy="277" r="7" fill="none" stroke="#3fb950" stroke-width="2"/><circle cx="664" cy="277" r="3.5" fill="#3fb950"/><text x="680" y="282" class="s" font-size="14" font-weight="600" fill="#e6edf3" text-anchor="start">2 years (recommended)</text><circle cx="888" cy="277" r="7" fill="none" stroke="#6e7681" stroke-width="2"/><text x="904" y="282" class="s" font-size="14" font-weight="400" fill="#8b949e" text-anchor="start">1 year</text><circle cx="998" cy="277" r="7" fill="none" stroke="#6e7681" stroke-width="2"/><text x="1014" y="282" class="s" font-size="14" font-weight="400" fill="#8b949e" text-anchor="start">90 days</text>
+<text x="656" y="328" class="s" font-size="14" font-weight="600" fill="#8b949e" text-anchor="start">What happens to paid orders?</text>
+<circle cx="664" cy="351" r="7" fill="none" stroke="#3fb950" stroke-width="2"/><circle cx="664" cy="351" r="3.5" fill="#3fb950"/><text x="680" y="356" class="s" font-size="14" font-weight="600" fill="#e6edf3" text-anchor="start">Keep them: archive, never delete (recommended)</text>
+<circle cx="664" cy="381" r="7" fill="none" stroke="#6e7681" stroke-width="2"/><text x="680" y="386" class="s" font-size="14" font-weight="400" fill="#8b949e" text-anchor="start">Delete them too</text>
+<path d="M656 414h478" stroke="#30363d"/>
+<text x="656" y="446" class="s" font-size="13" font-weight="400" fill="#8b949e" text-anchor="start">Takes the safe default for the rest: batches of 500, a dry run first.</text>
+<text x="656" y="468" class="s" font-size="13" font-weight="400" fill="#8b949e" text-anchor="start">You can change any of it.</text>
+<g><rect x="634" y="497" width="298.575" height="26" rx="13" fill="#11291a" stroke="#24683a"/><text x="645" y="514.68" class="s" font-size="13" font-weight="600" fill="#7ee787" text-anchor="start">✓ nothing is deleted until you choose</text></g>
+</svg>

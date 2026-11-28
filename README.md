@@ -8,56 +8,36 @@
 
 **Small, clear, safe code that is _proven_ before it is called done.**
 
+Light and powerful: a small core of about 4k tokens that pulls in detail only when the task needs it.
+
 [![GitHub stars](https://img.shields.io/github/stars/Khodour/agent-skill-ultimate-coding?style=flat-square&logo=github)](https://github.com/Khodour/agent-skill-ultimate-coding/stargazers)
 [![Version](https://img.shields.io/badge/dynamic/json?style=flat-square&label=version&color=C96A43&url=https%3A%2F%2Fraw.githubusercontent.com%2FKhodour%2Fagent-skill-ultimate-coding%2Fmain%2F.claude-plugin%2Fplugin.json&query=%24.version)](.claude-plugin/plugin.json)
 [![License: MIT](https://img.shields.io/badge/license-MIT-f4c430?style=flat-square)](LICENSE)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-A9502E?style=flat-square)](#install)
-[![Evals](https://img.shields.io/badge/evals-with%20vs%20without-2EA44F?style=flat-square)](#proven-with-evals)
+[![Evals](https://img.shields.io/badge/evals-with%20vs%20without-2EA44F?style=flat-square)](#how-it-powers-up-the-agent)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Khodour%20Fouani-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/kodr-fouani-b75523179/)
 
-**[Why](#why-every-developer-needs-it) · [What it does](#what-it-does) · [Proof](#proven-with-evals) · [Install](#install) · [Contributing](#contributing)**
+**[Install](#install) · [What it solves](#what-it-solves) · [Proof](#how-it-powers-up-the-agent) · [Contributing](#contributing)**
+
+<sub>Works in any language, including</sub><br>
+![TypeScript](https://img.shields.io/badge/TypeScript-30363d?style=flat-square&logo=typescript&logoColor=white)
+![Python](https://img.shields.io/badge/Python-30363d?style=flat-square&logo=python&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-30363d?style=flat-square&logo=javascript&logoColor=white)
+![Java](https://img.shields.io/badge/Java-30363d?style=flat-square&logo=openjdk&logoColor=white)
+![C#](https://img.shields.io/badge/C%23-30363d?style=flat-square&logo=dotnet&logoColor=white)
+![Go](https://img.shields.io/badge/Go-30363d?style=flat-square&logo=go&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-30363d?style=flat-square&logo=php&logoColor=white)
+![C++](https://img.shields.io/badge/C%2B%2B-30363d?style=flat-square&logo=cplusplus&logoColor=white)
+![Rust](https://img.shields.io/badge/Rust-30363d?style=flat-square&logo=rust&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-30363d?style=flat-square&logo=kotlin&logoColor=white)
+![Swift](https://img.shields.io/badge/Swift-30363d?style=flat-square&logo=swift&logoColor=white)
+![Ruby](https://img.shields.io/badge/Ruby-30363d?style=flat-square&logo=ruby&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-30363d?style=flat-square&logo=dart&logoColor=white)
 
 </div>
 
 
 ---
-
-AI agents write code that **works**. Too often it is also **spaghetti**: it runs today, but the logic is tangled through the handlers, the input goes straight into the query, the same code is copied three times, nothing is tested, and the agent says "fixed" without proof.
-
-This skill makes the agent work like a careful senior engineer, in any language, so the code it writes is **organized, secure, reliable and proven**.
-
-<p align="center">
-  <img src="docs/assets/spaghetti-vs-organized.svg" alt="Left, without the skill: code that works but is spaghetti, with lines tangled between a route, SQL built from input, nested ifs, copied code, a secret in the code and a TODO, and warnings for SQL injection, no tests and breaking on a retry. Right, with the skill: the same feature organized into route, service and data layers, with tests for the logic, input kept as data, access checked, safe retries, secrets out of the code, building on what exists, and proof before it is called done." width="100%">
-</p>
-
-## Why every developer needs it
-
-Code that only works is a debt you pay later: every change gets slower, bugs hide in the tangle, and one missed check becomes a security incident. AI agents already know the rules of good engineering. What they lack is **consistency**: under pressure they skip them. The skill brings that discipline to every task, big or small.
-
-## What it does
-
-| | Without the skill | With the skill |
-|---|---|---|
-| 🧱 **Organized** | Logic tangled into handlers, code copied | Clear layers, builds on what already exists |
-| 🔒 **Secure** | Input glued into queries, secrets in code | Input stays data, access checked, secrets out |
-| ♻️ **Reliable** | Breaks on a double click or a retry | Safe to repeat, never breaks what is shipped |
-| 🧪 **Tested** | "Works on my run" | Tests for every piece of logic it adds |
-| 🗣️ **Honest** | "Fixed!" without running anything | Proof, or a clear line on what was not checked |
-| 🤝 **Asks first** | Guesses what you left open | Asks, with options and a recommendation |
-
-It scales the effort to the task: a typo stays a one-line change, and a payment feature gets the full treatment. Your instructions and your project's own rules always come first.
-
-## Proven with evals
-
-Every case runs **with and without** the skill (three times on Sonnet and Haiku, once on Opus), on hard tasks only (cases the model already solves on its own are removed, because they prove nothing).
-
-| Model | Without the skill | With the skill |
-|---|:---:|:---:|
-| Claude Sonnet 5.5 | 0.60 | ✅ **0.99** |
-| Claude Haiku 5.5 | 0.54 | ✅ **0.88** |
-| Claude Opus 5.5 | 0.63 | ✅ **0.97** |
-
-2026-11-28, Sonnet judge: Sonnet and Haiku on all 33 cases (3 runs per arm), Opus on 33 (1 run per arm). Every case, every score and the few where the skill did not help are in [evals/RESULTS.md](evals/RESULTS.md). The extra care costs about twice the turns of an agent working without it.
 
 ## Install
 
@@ -75,6 +55,56 @@ The plugin loads the skill for every coding task and shows the agent's checklist
 ```markdown
 For every coding task, load the agent-skill-ultimate-coding skill first and follow it.
 ```
+
+## What it solves
+
+AI agents write code that **works**. Too often it is also **spaghetti**: tasty today, impossible to untangle tomorrow. Each picture is the same task: without the skill on the left, with it on the right.
+
+### 🍝 A bowl of spaghetti → 🍕 a neatly sliced pizza
+
+<p align="center"><img src="docs/assets/before-after-spaghetti.svg" alt="Without the skill: a 1,240-line routes file tangled with utils, an old utils copy, helpers, db, email and config, with SQL built from input, code copied three times, a key in the code and no tests. With the skill: routes, service and repository layers, each with one job, tests passing 12 of 12, access checked, secrets in the environment, safe to retry." width="100%"></p>
+
+### 🗂️ "Where's checkout?" → planned first, sliced by feature
+
+<p align="center"><img src="docs/assets/before-after-structure.svg" alt="Without the skill: everything in a 2,400-line app.js, utils and utils2 with the same code, final_FINAL.js, an empty test file and a committed .env. With the skill: docs/project.md with scope and sprints, one folder per feature with routes, service, repository and tests beside the code, and a .env.example so secrets stay out of git." width="100%"></p>
+
+### 🔒 An open front door → a bouncer on every route
+
+<p align="center"><img src="docs/assets/before-after-security.svg" alt="Without the skill: the order id glued into SQL, the request body with the password logged, no check that the order belongs to the user, a key in the code; the attack id 7 OR 1=1 returns every customer's orders. With the skill: the order is fetched for this user only with query parameters, 404 by default, the key from the environment; the same attack gets 404 Not Found." width="100%"></p>
+
+### ♻️ Double click, double trouble → click twice, sell once
+
+<p align="center"><img src="docs/assets/before-after-reliability.svg" alt="Without the skill: two clicks on Buy with one item left both sell, stock goes to minus one; $100.00 split three ways gives 99.99. With the skill: one atomic update, the second click gets sold out; the split is 33.34, 33.33 and 33.33, exactly 100.00." width="100%"></p>
+
+### 🧪 "Fixed!" (it was not) → receipts, not vibes
+
+<p align="center"><img src="docs/assets/before-after-proof.svg" alt="Without the skill: the agent says fixed with no test run, and two days later production throws total is NaN. With the skill: a test that fails first, the cause fixed, tests 42 of 42 after the last edit, a red line for what was not tried, and an honest medium confidence line with options." width="100%"></p>
+
+### 🤝 Mind reading → asking first
+
+<p align="center"><img src="docs/assets/before-after-asks.svg" alt="Without the skill: asked for a job that deletes old orders, the agent guesses 30 days and deletes paid orders too. With the skill: two questions with a recommended option each, safe defaults named for the rest, and nothing deleted until you choose." width="100%"></p>
+
+### 🧭 Rewrites first → reads the room first
+
+<p align="center"><img src="docs/assets/before-after-change-request.svg" alt="Without the skill: told to finish the project, the agent writes 14 files, rebuilds an existing login and breaks 12 tests. With the skill: it shows what is done, half-built and missing, runs the tests, asks two questions, writes a change request file, and writes no code until you confirm." width="100%"></p>
+
+### ⚖️ A 9-step plan for a typo → a typo fix for a typo
+
+<p align="center"><img src="docs/assets/before-after-right-sized.svg" alt="Without the skill: a question about a slow page gets a six-file rewrite, and a typo gets a nine-step plan. With the skill: the question gets the cause and an offer to fix it, and the typo gets a one-line change." width="100%"></p>
+
+Your instructions and your project's own rules always come first. The skill is the sous-chef, not the head chef.
+
+## How it powers up the agent
+
+Every case runs the same task **with and without** the skill, and graders check the result. Only hard cases are kept: a task the model already gets right on its own proves nothing, so it is removed. Grey is without the skill, green is with it.
+
+<p align="center"><img src="docs/assets/chart-sonnet.svg" alt="Claude Sonnet 5.5: 60% of checks passed without the skill, 99% with it. Organized code 0% to 100%, secure by default 60% to 100%, reliable data 59% to 100%, proven and honest 48% to 92%, asks and plans first 54% to 100%, right-sized 99% to 100%." width="100%"></p>
+
+<p align="center"><img src="docs/assets/chart-opus.svg" alt="Claude Opus 5.5: 63% of checks passed without the skill, 97% with it. Organized code 20% to 100%, secure by default 60% to 80%, reliable data 50% to 100%, proven and honest 66% to 97%, asks and plans first 35% to 100%, right-sized 100% both ways." width="100%"></p>
+
+<p align="center"><img src="docs/assets/chart-haiku.svg" alt="Claude Haiku 5.5: 54% of checks passed without the skill, 88% with it. Organized code 13% to 67%, secure by default 24% to 87%, reliable data 50% to 70%, proven and honest 57% to 97%, asks and plans first 29% to 97%, right-sized 100% both ways." width="100%"></p>
+
+2026-11-28, Sonnet judge, 33 cases: 3 runs per case on Sonnet and Haiku, 1 on Opus. "Right-sized" checks that the skill stays out of the way (questions, small tasks, non-coding requests), so the same score both ways is the goal. Opus's "Secure by default" counts one correct answer that the judge failed (read by hand). Every case, every score and the few where the skill did not help are in [evals/RESULTS.md](evals/RESULTS.md). The extra care costs about twice the turns of an agent working without it.
 
 ## Run the evals yourself
 

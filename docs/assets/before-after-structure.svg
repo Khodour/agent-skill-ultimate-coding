@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" width="1200" height="560" role="img" aria-labelledby="t d">
+<title id="t">A messy project, then a planned and structured one</title>
+<desc id="d">Without the skill: everything in a 2,400-line app.js, utils and utils2 with the same code, helpers_new, final_FINAL, an empty test file, a committed .env with secrets, and a stuff folder with a copy of app.js. With the skill: docs/project.md with scope and sprints, a sprint file, one folder per feature (orders with routes, service, repository and tests beside the code), payments, a .env.example so secrets stay out of git, and a README.</desc>
+<style>
+  .s{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif} .m{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}
+  .flow{stroke-dasharray:16 984;animation:flow 2.4s linear infinite}
+  .lost{stroke-dasharray:22 978;animation:flow 7s linear infinite}
+  @keyframes flow{from{stroke-dashoffset:1000}to{stroke-dashoffset:0}}
+  .grow{transform-box:fill-box;transform-origin:left center;animation:grow .9s cubic-bezier(.2,.7,.2,1) backwards}
+  @keyframes grow{from{transform:scaleX(0)}}
+  @media (prefers-reduced-motion:reduce){.flow,.lost{animation:none;stroke-dasharray:none;opacity:0}.grow{animation:none}}</style>
+<rect width="1200" height="560" rx="20" fill="#0d1117"/>
+
+<rect x="20" y="20" width="570" height="520" rx="16" fill="#161b22" stroke="#30363d"/>
+<circle cx="50" cy="51" r="5" fill="#f85149"/>
+<text x="64" y="56" class="s" font-size="12" font-weight="700" fill="#f85149" text-anchor="start" letter-spacing="1.6">WITHOUT THE SKILL</text>
+<text x="44" y="88" class="s" font-size="21" font-weight="700" fill="#e6edf3" text-anchor="start">Where’s checkout? Nobody knows.</text>
+<rect x="610" y="20" width="570" height="520" rx="16" fill="#161b22" stroke="#30363d"/>
+<circle cx="640" cy="51" r="5" fill="#3fb950"/>
+<text x="654" y="56" class="s" font-size="12" font-weight="700" fill="#3fb950" text-anchor="start" letter-spacing="1.6">WITH THE SKILL</text>
+<text x="634" y="88" class="s" font-size="21" font-weight="700" fill="#e6edf3" text-anchor="start">Planned first, sliced by feature.</text><circle cx="600" cy="280" r="17" fill="#0d1117" stroke="#30363d"/><path d="M593 280h13m-5-5 5 5-5 5" fill="none" stroke="#e6edf3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="44" y="110" width="522" height="422" rx="12" fill="#0d1117" stroke="#30363d"/>
+<path d="M44 144h522" stroke="#30363d"/>
+<circle cx="62" cy="127" r="5" fill="#ff5f57" opacity=".85"/><circle cx="80" cy="127" r="5" fill="#febc2e" opacity=".85"/><circle cx="98" cy="127" r="5" fill="#28c840" opacity=".85"/>
+<text x="305" y="132" class="m" font-size="12" font-weight="400" fill="#8b949e" text-anchor="middle">my-shop</text>
+<text x="64" y="172" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58"></tspan><tspan fill="#79c0ff">my-shop/</tspan></text>
+<text x="64" y="199" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">├─ </tspan><tspan fill="#e6edf3">app.js</tspan></text><g><rect x="326" y="181.5" width="194.5" height="25" rx="12.5" fill="#2d1517" stroke="#8e2c2a"/><text x="337" y="198.32" class="s" font-size="12" font-weight="600" fill="#ffa198" text-anchor="start">✕ everything, 2,400 lines</text></g>
+<text x="64" y="226" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">├─ </tspan><tspan fill="#e6edf3">utils.js</tspan></text>
+<text x="64" y="253" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">├─ </tspan><tspan fill="#e6edf3">utils2.js</tspan></text><g><rect x="326" y="235.5" width="139.3" height="25" rx="12.5" fill="#2d1517" stroke="#8e2c2a"/><text x="337" y="252.32" class="s" font-size="12" font-weight="600" fill="#ffa198" text-anchor="start">✕ same code twice</text></g>
+<text x="64" y="280" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">├─ </tspan><tspan fill="#e6edf3">helpers_new.js</tspan></text>
+<text x="64" y="307" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">├─ </tspan><tspan fill="#e6edf3">final_FINAL.js</tspan></text><g><rect x="326" y="289.5" width="139.3" height="25" rx="12.5" fill="#2d1517" stroke="#8e2c2a"/><text x="337" y="306.32" class="s" font-size="12" font-weight="600" fill="#ffa198" text-anchor="start">✕ which one runs?</text></g>
+<text x="64" y="334" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">├─ </tspan><tspan fill="#e6edf3">test.js</tspan></text><g><rect x="326" y="316.5" width="56.5" height="25" rx="12.5" fill="#21262d" stroke="#30363d"/><text x="337" y="333.32" class="s" font-size="12" font-weight="600" fill="#8b949e" text-anchor="start">empty</text></g>
+<text x="64" y="361" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">├─ </tspan><tspan fill="#ffa198">.env</tspan></text><g><rect x="326" y="343.5" width="132.39999999999998" height="25" rx="12.5" fill="#2d1517" stroke="#8e2c2a"/><text x="337" y="360.32" class="s" font-size="12" font-weight="600" fill="#ffa198" text-anchor="start">✕ secrets in git</text></g>
+<text x="64" y="388" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">└─ </tspan><tspan fill="#79c0ff">stuff/</tspan></text>
+<text x="64" y="415" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">   ├─ </tspan><tspan fill="#79c0ff">old/</tspan></text>
+<text x="64" y="442" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">   └─ </tspan><tspan fill="#e6edf3">copy of app.js</tspan></text>
+<rect x="634" y="110" width="522" height="422" rx="12" fill="#0d1117" stroke="#30363d"/>
+<path d="M634 144h522" stroke="#30363d"/>
+<circle cx="652" cy="127" r="5" fill="#ff5f57" opacity=".85"/><circle cx="670" cy="127" r="5" fill="#febc2e" opacity=".85"/><circle cx="688" cy="127" r="5" fill="#28c840" opacity=".85"/>
+<text x="895" y="132" class="m" font-size="12" font-weight="400" fill="#8b949e" text-anchor="middle">my-shop</text>
+<text x="654" y="172" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58"></tspan><tspan fill="#79c0ff">my-shop/</tspan></text>
+<text x="654" y="199" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">├─ </tspan><tspan fill="#79c0ff">docs/</tspan></text>
+<text x="654" y="226" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">│  ├─ </tspan><tspan fill="#e6edf3">project.md</tspan></text><g><rect x="916" y="208.5" width="139.3" height="25" rx="12.5" fill="#11291a" stroke="#24683a"/><text x="927" y="225.32" class="s" font-size="12" font-weight="600" fill="#7ee787" text-anchor="start">✓ scope + sprints</text></g>
+<text x="654" y="253" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">│  └─ </tspan><tspan fill="#e6edf3">sprints/sprint_1.md</tspan></text>
+<text x="654" y="280" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">├─ </tspan><tspan fill="#79c0ff">src/</tspan></text>
+<text x="654" y="307" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">│  ├─ </tspan><tspan fill="#79c0ff">orders/</tspan></text><g><rect x="916" y="289.5" width="187.6" height="25" rx="12.5" fill="#11291a" stroke="#24683a"/><text x="927" y="306.32" class="s" font-size="12" font-weight="600" fill="#7ee787" text-anchor="start">✓ one folder per feature</text></g>
+<text x="654" y="334" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">│  │  ├─ </tspan><tspan fill="#e6edf3">orders.routes.js</tspan></text>
+<text x="654" y="361" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">│  │  ├─ </tspan><tspan fill="#e6edf3">orders.service.js</tspan></text>
+<text x="654" y="388" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">│  │  ├─ </tspan><tspan fill="#e6edf3">orders.repo.js</tspan></text>
+<text x="654" y="415" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">│  │  └─ </tspan><tspan fill="#e6edf3">orders.test.js</tspan></text><g><rect x="916" y="397.5" width="180.7" height="25" rx="12.5" fill="#11291a" stroke="#24683a"/><text x="927" y="414.32" class="s" font-size="12" font-weight="600" fill="#7ee787" text-anchor="start">✓ tests beside the code</text></g>
+<text x="654" y="442" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">│  └─ </tspan><tspan fill="#79c0ff">payments/ …</tspan></text>
+<text x="654" y="469" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">├─ </tspan><tspan fill="#e6edf3">.env.example</tspan></text><g><rect x="916" y="451.5" width="194.5" height="25" rx="12.5" fill="#11291a" stroke="#24683a"/><text x="927" y="468.32" class="s" font-size="12" font-weight="600" fill="#7ee787" text-anchor="start">✓ secrets stay out of git</text></g>
+<text x="654" y="496" class="m" font-size="15" xml:space="preserve"><tspan fill="#484f58">└─ </tspan><tspan fill="#e6edf3">README.md</tspan></text>
+</svg>

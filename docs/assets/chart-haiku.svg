@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 590" width="1200" height="590" role="img" aria-labelledby="t d">
+<title id="t">Claude Haiku 5.5: with and without the skill</title>
+<desc id="d">Claude Haiku 5.5, share of checks passed on 33 hard cases. All cases: 54% without the skill, 88% with it. Organized code (5 cases): 13% without, 67% with; Secure by default (5 cases): 24% without, 87% with; Reliable data (4 cases): 50% without, 70% with; Proven and honest (5 cases): 57% without, 97% with; Asks and plans first (4 cases): 29% without, 97% with; Right-sized (10 cases): 100% without, 100% with.</desc>
+<style>
+  .s{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif} .m{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}
+  .flow{stroke-dasharray:16 984;animation:flow 2.4s linear infinite}
+  .lost{stroke-dasharray:22 978;animation:flow 7s linear infinite}
+  @keyframes flow{from{stroke-dashoffset:1000}to{stroke-dashoffset:0}}
+  .grow{transform-box:fill-box;transform-origin:left center;animation:grow .9s cubic-bezier(.2,.7,.2,1) backwards}
+  @keyframes grow{from{transform:scaleX(0)}}
+  @media (prefers-reduced-motion:reduce){.flow,.lost{animation:none;stroke-dasharray:none;opacity:0}.grow{animation:none}}</style>
+<rect width="1200" height="590" rx="20" fill="#0d1117"/>
+<rect x="20" y="20" width="1160" height="550" rx="16" fill="#161b22" stroke="#30363d"/>
+<text x="48" y="70" class="s" font-size="28" font-weight="700" fill="#e6edf3" text-anchor="start">Claude Haiku 5.5</text>
+<text x="48" y="98" class="s" font-size="14" font-weight="400" fill="#8b949e" text-anchor="start">33 hard cases · share of checks passed · 3 runs per case</text>
+<rect x="852" y="56" width="14" height="14" rx="3" fill="#6e7681"/>
+<text x="874" y="68" class="s" font-size="14" font-weight="400" fill="#8b949e" text-anchor="start">Without the skill</text>
+<rect x="1012" y="56" width="14" height="14" rx="3" fill="#3fb950"/>
+<text x="1034" y="68" class="s" font-size="14" font-weight="400" fill="#e6edf3" text-anchor="start">With the skill</text>
+<text x="48" y="166" class="s" font-size="44" font-weight="700"><tspan fill="#8b949e">54%</tspan><tspan fill="#6e7681" font-size="30" dx="10" dy="-5">→</tspan><tspan fill="#3fb950" dx="10" dy="5">88%</tspan></text>
+<text x="330" y="138" class="s" font-size="15" font-weight="700" fill="#e6edf3" text-anchor="start">All 33 cases</text>
+<rect x="330" y="148" width="700" height="14" rx="3" fill="#21262d"/>
+<path d="M330 148h375a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-375z" fill="#6e7681"/>
+<rect x="330" y="166" width="700" height="14" rx="3" fill="#21262d"/>
+<path d="M330 166h614a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-614z" fill="#3fb950" class="grow" style="animation-delay:0.1s"/>
+<text x="1044" y="160" class="s" font-size="14" font-weight="600" fill="#8b949e" text-anchor="start">54%</text>
+<text x="1044" y="178" class="s" font-size="14" font-weight="700" fill="#e6edf3" text-anchor="start">88%</text>
+<path d="M48 214h1104" stroke="#30363d"/>
+<text x="48" y="263" class="s" font-size="15" font-weight="600" fill="#e6edf3" text-anchor="start">Organized code</text>
+<text x="48" y="283" class="s" font-size="13" font-weight="400" fill="#6e7681" text-anchor="start">5 cases</text>
+<rect x="330" y="250" width="700" height="12" rx="3" fill="#21262d"/>
+<path d="M330 250h90a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4h-90z" fill="#6e7681"/>
+<rect x="330" y="266" width="700" height="12" rx="3" fill="#21262d"/>
+<path d="M330 266h462a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4h-462z" fill="#3fb950" class="grow" style="animation-delay:0.25s"/>
+<text x="1044" y="261" class="s" font-size="13" font-weight="600" fill="#8b949e" text-anchor="start">13%</text>
+<text x="1044" y="277" class="s" font-size="13" font-weight="700" fill="#e6edf3" text-anchor="start">67%</text>
+<text x="1152" y="270" class="s" font-size="14" font-weight="700" fill="#e6edf3" text-anchor="end">+54</text>
+<text x="48" y="317" class="s" font-size="15" font-weight="600" fill="#e6edf3" text-anchor="start">Secure by default</text>
+<text x="48" y="337" class="s" font-size="13" font-weight="400" fill="#6e7681" text-anchor="start">5 cases</text>
+<rect x="330" y="304" width="700" height="12" rx="3" fill="#21262d"/>
+<path d="M330 304h167a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4h-167z" fill="#6e7681"/>
+<rect x="330" y="320" width="700" height="12" rx="3" fill="#21262d"/>
+<path d="M330 320h602a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4h-602z" fill="#3fb950" class="grow" style="animation-delay:0.33s"/>
+<text x="1044" y="315" class="s" font-size="13" font-weight="600" fill="#8b949e" text-anchor="start">24%</text>
+<text x="1044" y="331" class="s" font-size="13" font-weight="700" fill="#e6edf3" text-anchor="start">87%</text>
+<text x="1152" y="324" class="s" font-size="14" font-weight="700" fill="#e6edf3" text-anchor="end">+63</text>
+<text x="48" y="371" class="s" font-size="15" font-weight="600" fill="#e6edf3" text-anchor="start">Reliable data</text>
+<text x="48" y="391" class="s" font-size="13" font-weight="400" fill="#6e7681" text-anchor="start">4 cases</text>
+<rect x="330" y="358" width="700" height="12" rx="3" fill="#21262d"/>
+<path d="M330 358h346a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4h-346z" fill="#6e7681"/>
+<rect x="330" y="374" width="700" height="12" rx="3" fill="#21262d"/>
+<path d="M330 374h483a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4h-483z" fill="#3fb950" class="grow" style="animation-delay:0.41000000000000003s"/>
+<text x="1044" y="369" class="s" font-size="13" font-weight="600" fill="#8b949e" text-anchor="start">50%</text>
+<text x="1044" y="385" class="s" font-size="13" font-weight="700" fill="#e6edf3" text-anchor="start">70%</text>
+<text x="1152" y="378" class="s" font-size="14" font-weight="700" fill="#e6edf3" text-anchor="end">+20</text>
+<text x="48" y="425" class="s" font-size="15" font-weight="600" fill="#e6edf3" text-anchor="start">Proven and honest</text>
+<text x="48" y="445" class="s" font-size="13" font-weight="400" fill="#6e7681" text-anchor="start">5 cases</text>
+<rect x="330" y="412" width="700" height="12" rx="3" fill="#21262d"/>
+<path d="M330 412h392a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4h-392z" fill="#6e7681"/>
+<rect x="330" y="428" width="700" height="12" rx="3" fill="#21262d"/>
+<path d="M330 428h672a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4h-672z" fill="#3fb950" class="grow" style="animation-delay:0.49s"/>
+<text x="1044" y="423" class="s" font-size="13" font-weight="600" fill="#8b949e" text-anchor="start">57%</text>
+<text x="1044" y="439" class="s" font-size="13" font-weight="700" fill="#e6edf3" text-anchor="start">97%</text>
+<text x="1152" y="432" class="s" font-size="14" font-weight="700" fill="#e6edf3" text-anchor="end">+40</text>
+<text x="48" y="479" class="s" font-size="15" font-weight="600" fill="#e6edf3" text-anchor="start">Asks and plans first</text>
+<text x="48" y="499" class="s" font-size="13" font-weight="400" fill="#6e7681" text-anchor="start">4 cases</text>
+<rect x="330" y="466" width="700" height="12" rx="3" fill="#21262d"/>
+<path d="M330 466h196a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4h-196z" fill="#6e7681"/>
+<rect x="330" y="482" width="700" height="12" rx="3" fill="#21262d"/>
+<path d="M330 482h672a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4h-672z" fill="#3fb950" class="grow" style="animation-delay:0.5700000000000001s"/>
+<text x="1044" y="477" class="s" font-size="13" font-weight="600" fill="#8b949e" text-anchor="start">29%</text>
+<text x="1044" y="493" class="s" font-size="13" font-weight="700" fill="#e6edf3" text-anchor="start">97%</text>
+<text x="1152" y="486" class="s" font-size="14" font-weight="700" fill="#e6edf3" text-anchor="end">+68</text>
+<text x="48" y="533" class="s" font-size="15" font-weight="600" fill="#e6edf3" text-anchor="start">Right-sized</text>
+<text x="48" y="553" class="s" font-size="13" font-weight="400" fill="#6e7681" text-anchor="start">10 cases · stays out of the way</text>
+<rect x="330" y="520" width="700" height="12" rx="3" fill="#21262d"/>
+<path d="M330 520h696a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4h-696z" fill="#6e7681"/>
+<rect x="330" y="536" width="700" height="12" rx="3" fill="#21262d"/>
+<path d="M330 536h696a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4h-696z" fill="#3fb950" class="grow" style="animation-delay:0.65s"/>
+<text x="1044" y="531" class="s" font-size="13" font-weight="600" fill="#8b949e" text-anchor="start">100%</text>
+<text x="1044" y="547" class="s" font-size="13" font-weight="700" fill="#e6edf3" text-anchor="start">100%</text>
+<text x="1152" y="540" class="s" font-size="14" font-weight="700" fill="#8b949e" text-anchor="end">same</text>
+<text x="1152" y="236" class="s" font-size="12" font-weight="400" fill="#6e7681" text-anchor="end">gain (pts)</text>
+</svg>

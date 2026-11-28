@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" width="1200" height="560" role="img" aria-labelledby="t d">
+<title id="t">A claim without proof, then a proven fix with an honest report</title>
+<desc id="d">Without the skill: asked to fix the checkout total, the agent says Fixed, everything works, with no test run and the cause not found; two days later production throws TypeError total is NaN because the coupon was applied twice. With the skill: a test that fails today, the cause fixed in cart/total.js, tests 42 of 42 and the build after the last edit, a red line saying it was not tried in the browser yet, medium confidence with the reason, and numbered options to reach high.</desc>
+<style>
+  .s{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif} .m{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}
+  .flow{stroke-dasharray:16 984;animation:flow 2.4s linear infinite}
+  .lost{stroke-dasharray:22 978;animation:flow 7s linear infinite}
+  @keyframes flow{from{stroke-dashoffset:1000}to{stroke-dashoffset:0}}
+  .grow{transform-box:fill-box;transform-origin:left center;animation:grow .9s cubic-bezier(.2,.7,.2,1) backwards}
+  @keyframes grow{from{transform:scaleX(0)}}
+  @media (prefers-reduced-motion:reduce){.flow,.lost{animation:none;stroke-dasharray:none;opacity:0}.grow{animation:none}}</style>
+<rect width="1200" height="560" rx="20" fill="#0d1117"/>
+
+<rect x="20" y="20" width="570" height="520" rx="16" fill="#161b22" stroke="#30363d"/>
+<circle cx="50" cy="51" r="5" fill="#f85149"/>
+<text x="64" y="56" class="s" font-size="12" font-weight="700" fill="#f85149" text-anchor="start" letter-spacing="1.6">WITHOUT THE SKILL</text>
+<text x="44" y="88" class="s" font-size="21" font-weight="700" fill="#e6edf3" text-anchor="start">&quot;Fixed!&quot; (Narrator: it was not.)</text>
+<rect x="610" y="20" width="570" height="520" rx="16" fill="#161b22" stroke="#30363d"/>
+<circle cx="640" cy="51" r="5" fill="#3fb950"/>
+<text x="654" y="56" class="s" font-size="12" font-weight="700" fill="#3fb950" text-anchor="start" letter-spacing="1.6">WITH THE SKILL</text>
+<text x="634" y="88" class="s" font-size="21" font-weight="700" fill="#e6edf3" text-anchor="start">Receipts, not vibes.</text><circle cx="600" cy="280" r="17" fill="#0d1117" stroke="#30363d"/><path d="M593 280h13m-5-5 5 5-5 5" fill="none" stroke="#e6edf3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="44" y="110" width="522" height="236" rx="12" fill="#0d1117" stroke="#30363d"/>
+<path d="M44 144h522" stroke="#30363d"/>
+<circle cx="62" cy="127" r="5" fill="#ff5f57" opacity=".85"/><circle cx="80" cy="127" r="5" fill="#febc2e" opacity=".85"/><circle cx="98" cy="127" r="5" fill="#28c840" opacity=".85"/>
+<text x="305" y="132" class="m" font-size="12" font-weight="400" fill="#8b949e" text-anchor="middle">claude</text>
+<text x="64" y="172" class="m" font-size="15" xml:space="preserve"><tspan fill="#8b949e">&gt; </tspan><tspan fill="#e6edf3">fix the checkout total</tspan></text>
+<text x="64" y="214" class="m" font-size="15" xml:space="preserve"><tspan fill="#e6edf3">● </tspan><tspan fill="#e6edf3">Fixed! The total is correct now.</tspan></text>
+<text x="64" y="240" class="m" font-size="15" xml:space="preserve"><tspan fill="#e6edf3">  Everything works. ✅</tspan></text>
+<g><rect x="64" y="287" width="119.175" height="26" rx="13" fill="#2d1517" stroke="#8e2c2a"/><text x="75" y="304.68" class="s" font-size="13" font-weight="600" fill="#ffa198" text-anchor="start">✕ 0 tests run</text></g><g><rect x="193.175" y="287" width="96.75" height="26" rx="13" fill="#2d1517" stroke="#8e2c2a"/><text x="204.175" y="304.68" class="s" font-size="13" font-weight="600" fill="#ffa198" text-anchor="start">✕ no proof</text></g><g><rect x="299.925" y="287" width="149.075" height="26" rx="13" fill="#2d1517" stroke="#8e2c2a"/><text x="310.925" y="304.68" class="s" font-size="13" font-weight="600" fill="#ffa198" text-anchor="start">✕ cause not found</text></g>
+<rect x="44" y="370" width="522" height="148" rx="12" fill="#2d1517" stroke="#8e2c2a"/>
+<text x="66" y="404" class="s" font-size="12" font-weight="700" fill="#ffa198" text-anchor="start" letter-spacing="1.4">TWO DAYS LATER, IN PRODUCTION</text>
+<text x="66" y="444" class="m" font-size="16" xml:space="preserve"><tspan fill="#ffa198">TypeError: total is NaN</tspan></text>
+<text x="66" y="472" class="m" font-size="13" xml:space="preserve"><tspan fill="#8b949e">  at applyCoupon (cart/total.js:31)</tspan></text>
+<text x="66" y="500" class="s" font-size="13" font-weight="400" fill="#8b949e" text-anchor="start">The coupon was applied twice. The test that would catch it never existed.</text>
+<rect x="634" y="110" width="522" height="408" rx="12" fill="#0d1117" stroke="#30363d"/>
+<path d="M634 144h522" stroke="#30363d"/>
+<circle cx="652" cy="127" r="5" fill="#ff5f57" opacity=".85"/><circle cx="670" cy="127" r="5" fill="#febc2e" opacity=".85"/><circle cx="688" cy="127" r="5" fill="#28c840" opacity=".85"/>
+<text x="895" y="132" class="m" font-size="12" font-weight="400" fill="#8b949e" text-anchor="middle">claude</text>
+<text x="654" y="172" class="m" font-size="15" xml:space="preserve"><tspan fill="#8b949e">&gt; </tspan><tspan fill="#e6edf3">fix the checkout total</tspan></text>
+<text x="654" y="206" class="m" font-size="14" xml:space="preserve"><tspan fill="#3fb950">✓ </tspan><tspan fill="#e6edf3">test that fails today: coupon twice</tspan></text>
+<text x="654" y="230" class="m" font-size="14" xml:space="preserve"><tspan fill="#3fb950">✓ </tspan><tspan fill="#e6edf3">fixed the cause in cart/total.js:31</tspan></text>
+<text x="654" y="254" class="m" font-size="14" xml:space="preserve"><tspan fill="#3fb950">✓ </tspan><tspan fill="#e6edf3">tests 42/42 · build after the last edit</tspan></text>
+<path d="M654 276h482" stroke="#30363d"/>
+<text x="654" y="306" class="s" font-size="14" font-weight="600" fill="#e6edf3" text-anchor="start">Checkout applies the coupon once.  ✅ tests 42/42 · ✅ build</text>
+<rect x="654" y="322" width="482" height="34" rx="6" fill="#2d1517"/>
+<text x="668" y="344" class="m" font-size="14" xml:space="preserve"><tspan fill="#ffa198">- Not tried in the browser yet</tspan></text>
+<text x="654" y="386" class="s" font-size="14" font-weight="700" fill="#e6edf3" text-anchor="start">I have medium confidence in this change</text>
+<circle cx="944" cy="381" r="6" fill="#d29922"/>
+<text x="958" y="386" class="s" font-size="14" font-weight="400" fill="#8b949e" text-anchor="start">because the tests pass</text>
+<text x="654" y="408" class="s" font-size="14" font-weight="400" fill="#8b949e" text-anchor="start">after my last edit, but I have not tried it in the browser.</text>
+<text x="654" y="444" class="s" font-size="14" font-weight="400" fill="#e6edf3" text-anchor="start">1. I try it in the browser (recommended): then high</text>
+<text x="654" y="470" class="s" font-size="14" font-weight="400" fill="#e6edf3" text-anchor="start">2. Leave it as is</text>
+<g><rect x="654" y="481.5" width="160" height="25" rx="12.5" fill="#11291a" stroke="#24683a"/><text x="665" y="498.32" class="s" font-size="12" font-weight="600" fill="#7ee787" text-anchor="start">✓ failing test first</text></g><g><rect x="824" y="481.5" width="208.29999999999998" height="25" rx="12.5" fill="#11291a" stroke="#24683a"/><text x="835" y="498.32" class="s" font-size="12" font-weight="600" fill="#7ee787" text-anchor="start">✓ says what was not checked</text></g>
+</svg>

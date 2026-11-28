@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" width="1200" height="560" role="img" aria-labelledby="t d">
+<title id="t">Spaghetti code, then organized layers</title>
+<desc id="d">Without the skill: one 1,240-line routes file tangled with utils, an old utils copy, helpers, db, email and config; SQL built from input, code copied three times, a key in the code, seven nested ifs, a TODO, no tests, and it breaks on a retry. With the skill: three layers, routes that read input and reply, a service with the business rules in one transaction, and a repository with parameterized queries; tests pass 12 of 12, access is checked, secrets come from the environment, and it is safe to retry.</desc>
+<style>
+  .s{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif} .m{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}
+  .flow{stroke-dasharray:16 984;animation:flow 2.4s linear infinite}
+  .lost{stroke-dasharray:22 978;animation:flow 7s linear infinite}
+  @keyframes flow{from{stroke-dashoffset:1000}to{stroke-dashoffset:0}}
+  .grow{transform-box:fill-box;transform-origin:left center;animation:grow .9s cubic-bezier(.2,.7,.2,1) backwards}
+  @keyframes grow{from{transform:scaleX(0)}}
+  @media (prefers-reduced-motion:reduce){.flow,.lost{animation:none;stroke-dasharray:none;opacity:0}.grow{animation:none}}</style>
+<rect width="1200" height="560" rx="20" fill="#0d1117"/>
+
+<rect x="20" y="20" width="570" height="520" rx="16" fill="#161b22" stroke="#30363d"/>
+<circle cx="50" cy="51" r="5" fill="#f85149"/>
+<text x="64" y="56" class="s" font-size="12" font-weight="700" fill="#f85149" text-anchor="start" letter-spacing="1.6">WITHOUT THE SKILL</text>
+<text x="44" y="88" class="s" font-size="21" font-weight="700" fill="#e6edf3" text-anchor="start">Spaghetti: pull one noodle, all move.</text>
+<rect x="610" y="20" width="570" height="520" rx="16" fill="#161b22" stroke="#30363d"/>
+<circle cx="640" cy="51" r="5" fill="#3fb950"/>
+<text x="654" y="56" class="s" font-size="12" font-weight="700" fill="#3fb950" text-anchor="start" letter-spacing="1.6">WITH THE SKILL</text>
+<text x="634" y="88" class="s" font-size="21" font-weight="700" fill="#e6edf3" text-anchor="start">Neatly sliced: one job per piece.</text><circle cx="600" cy="280" r="17" fill="#0d1117" stroke="#30363d"/><path d="M593 280h13m-5-5 5 5-5 5" fill="none" stroke="#e6edf3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<g fill="none" stroke-width="4" stroke-linecap="round" opacity=".85"><path d="M110 150 C 300 90, 160 330, 360 260 S 560 130, 500 340 S 230 470, 150 380" stroke="#f0883e"/><path d="M500 148 C 310 250, 540 330, 280 310 C 130 295, 70 230, 180 360 C 250 450, 440 460, 540 410" stroke="#db61a2"/><path d="M120 270 C 230 160, 400 430, 450 230 S 310 130, 190 210 S 340 450, 490 455" stroke="#e3b341"/><path d="M320 140 C 150 230, 540 270, 350 380 S 90 310, 140 460" stroke="#ff7b72"/><path d="M540 270 C 420 150, 170 430, 310 450 S 540 260, 380 190" stroke="#8b949e"/><path d="M70 330 C 200 300, 260 120, 420 170 S 560 470, 330 420 S 120 200, 260 150" stroke="#ffa657"/><path d="M440 460 C 520 380, 380 300, 470 220 S 250 90, 200 300 S 60 420, 100 230" stroke="#d29922"/></g>
+<path d="M110 150 C 300 90, 160 330, 360 260 S 560 130, 500 340 S 230 470, 150 380 C 100 330, 60 250, 180 210 S 420 470, 540 410" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" pathLength="1000" class="lost"/>
+<rect x="44" y="118" width="214" height="32" rx="8" fill="#21262d" stroke="#30363d"/><text x="56" y="139" class="m" font-size="13" font-weight="400" fill="#e6edf3" text-anchor="start">routes.js · 1,240 lines</text>
+<rect x="430" y="118" width="86" height="32" rx="8" fill="#21262d" stroke="#30363d"/><text x="442" y="139" class="m" font-size="13" font-weight="400" fill="#e6edf3" text-anchor="start">utils.js</text>
+<rect x="392" y="206" width="122" height="32" rx="8" fill="#21262d" stroke="#30363d"/><text x="404" y="227" class="m" font-size="13" font-weight="400" fill="#e6edf3" text-anchor="start">utils_old.js</text>
+<rect x="48" y="296" width="112" height="32" rx="8" fill="#21262d" stroke="#30363d"/><text x="60" y="317" class="m" font-size="13" font-weight="400" fill="#e6edf3" text-anchor="start">helpers2.js</text>
+<rect x="272" y="248" width="62" height="32" rx="8" fill="#21262d" stroke="#30363d"/><text x="284" y="269" class="m" font-size="13" font-weight="400" fill="#e6edf3" text-anchor="start">db.js</text>
+<rect x="452" y="318" width="86" height="32" rx="8" fill="#21262d" stroke="#30363d"/><text x="464" y="339" class="m" font-size="13" font-weight="400" fill="#e6edf3" text-anchor="start">email.js</text>
+<rect x="236" y="404" width="96" height="32" rx="8" fill="#21262d" stroke="#30363d"/><text x="248" y="425" class="m" font-size="13" font-weight="400" fill="#e6edf3" text-anchor="start">config.js</text>
+<g><rect x="160" y="183.5" width="217.048" height="25" rx="12.5" fill="#2d1517" stroke="#8e2c2a"/><text x="171" y="200.32" class="m" font-size="12" font-weight="600" fill="#ffa198" text-anchor="start">✕ &quot;SELECT …&quot; + req.query.id</text></g>
+<g><rect x="300" y="341" width="104.225" height="26" rx="13" fill="#2d1517" stroke="#8e2c2a"/><text x="311" y="358.68" class="s" font-size="13" font-weight="600" fill="#ffa198" text-anchor="start">✕ copied 3×</text></g>
+<g><rect x="52" y="447.5" width="188.152" height="25" rx="12.5" fill="#2d1517" stroke="#8e2c2a"/><text x="63" y="464.32" class="m" font-size="12" font-weight="600" fill="#ffa198" text-anchor="start">✕ API_KEY = &quot;…&quot; in code</text></g>
+<g><rect x="352" y="277" width="126.64999999999999" height="26" rx="13" fill="#2d1517" stroke="#8e2c2a"/><text x="363" y="294.68" class="s" font-size="13" font-weight="600" fill="#ffa198" text-anchor="start">✕ 7 nested ifs</text></g>
+<g><rect x="356" y="449.5" width="144.808" height="25" rx="12.5" fill="#21262d" stroke="#30363d"/><text x="367" y="466.32" class="m" font-size="12" font-weight="600" fill="#8b949e" text-anchor="start">// TODO fix later</text></g>
+<g><rect x="44" y="497" width="134.125" height="26" rx="13" fill="#2d1517" stroke="#8e2c2a"/><text x="55" y="514.68" class="s" font-size="13" font-weight="600" fill="#ffa198" text-anchor="start">✕ SQL injection</text></g><g><rect x="188.125" y="497" width="164.02499999999998" height="26" rx="13" fill="#2d1517" stroke="#8e2c2a"/><text x="199.125" y="514.68" class="s" font-size="13" font-weight="600" fill="#ffa198" text-anchor="start">✕ breaks on a retry</text></g><g><rect x="362.15" y="497" width="96.75" height="26" rx="13" fill="#2d1517" stroke="#8e2c2a"/><text x="373.15" y="514.68" class="s" font-size="13" font-weight="600" fill="#ffa198" text-anchor="start">✕ no tests</text></g>
+
+<rect x="640" y="118" width="330" height="78" rx="12" fill="#0d1117" stroke="#30363d"/>
+<rect x="640" y="118" width="5" height="78" rx="2" fill="#79c0ff"/>
+<text x="662" y="150" class="m" font-size="15" font-weight="600" fill="#e6edf3" text-anchor="start">orders.routes.js</text>
+<text x="662" y="174" class="s" font-size="14" font-weight="400" fill="#8b949e" text-anchor="start">read input → call the rule → reply</text>
+<path d="M805 196V232" stroke="#30363d" stroke-width="2"/><path d="M799 225l6 7 6-7" fill="none" stroke="#8b949e" stroke-width="2"/>
+<path d="M805 196V232" stroke="#3fb950" stroke-width="3" pathLength="1000" class="flow" stroke-linecap="round"/>
+
+<rect x="640" y="232" width="330" height="78" rx="12" fill="#0d1117" stroke="#30363d"/>
+<rect x="640" y="232" width="5" height="78" rx="2" fill="#3fb950"/>
+<text x="662" y="264" class="m" font-size="15" font-weight="600" fill="#e6edf3" text-anchor="start">orders.service.js</text>
+<text x="662" y="288" class="s" font-size="14" font-weight="400" fill="#8b949e" text-anchor="start">the business rules, one transaction</text>
+<path d="M805 310V346" stroke="#30363d" stroke-width="2"/><path d="M799 339l6 7 6-7" fill="none" stroke="#8b949e" stroke-width="2"/>
+<path d="M805 310V346" stroke="#3fb950" stroke-width="3" pathLength="1000" class="flow" stroke-linecap="round"/>
+
+<rect x="640" y="346" width="330" height="78" rx="12" fill="#0d1117" stroke="#30363d"/>
+<rect x="640" y="346" width="5" height="78" rx="2" fill="#d29922"/>
+<text x="662" y="378" class="m" font-size="15" font-weight="600" fill="#e6edf3" text-anchor="start">orders.repo.js</text>
+<text x="662" y="402" class="s" font-size="14" font-weight="400" fill="#8b949e" text-anchor="start">queries with parameters</text>
+<path d="M970 271h30" stroke="#30363d" stroke-width="2" stroke-dasharray="4 4"/>
+<rect x="1000" y="246" width="156" height="50" rx="10" fill="#11291a" stroke="#24683a"/>
+<text x="1014" y="267" class="m" font-size="13" font-weight="600" fill="#e6edf3" text-anchor="start">orders.test.js</text>
+<text x="1014" y="286" class="s" font-size="13" font-weight="600" fill="#7ee787" text-anchor="start">✓ 12 passed</text>
+<g><rect x="1000" y="144" width="141.6" height="26" rx="13" fill="#11291a" stroke="#24683a"/><text x="1011" y="161.68" class="s" font-size="13" font-weight="600" fill="#7ee787" text-anchor="start">✓ access checked</text></g>
+<g><rect x="1000" y="372" width="156.54999999999998" height="26" rx="13" fill="#11291a" stroke="#24683a"/><text x="1011" y="389.68" class="s" font-size="13" font-weight="600" fill="#7ee787" text-anchor="start">✓ input stays data</text></g>
+<g><rect x="1000" y="317" width="134.125" height="26" rx="13" fill="#11291a" stroke="#24683a"/><text x="1011" y="334.68" class="s" font-size="13" font-weight="600" fill="#7ee787" text-anchor="start">✓ safe to retry</text></g>
+<g><rect x="1000" y="187" width="141.6" height="26" rx="13" fill="#11291a" stroke="#24683a"/><text x="1011" y="204.68" class="s" font-size="13" font-weight="600" fill="#7ee787" text-anchor="start">✓ secrets in env</text></g>
+<rect x="640" y="446" width="516" height="44" rx="10" fill="#11291a" stroke="#24683a"/>
+<text x="662" y="474" class="s" font-size="14" font-weight="600" fill="#7ee787" text-anchor="start">✓ tests 12/12  ·  ✓ build  ·  ✓ lint  ·  ✓ reuses the db helper</text>
+<g><rect x="640" y="503" width="104.225" height="26" rx="13" fill="#11291a" stroke="#24683a"/><text x="651" y="520.68" class="s" font-size="13" font-weight="600" fill="#7ee787" text-anchor="start">✓ organized</text></g><g><rect x="754.225" y="503" width="81.8" height="26" rx="13" fill="#11291a" stroke="#24683a"/><text x="765.225" y="520.68" class="s" font-size="13" font-weight="600" fill="#7ee787" text-anchor="start">✓ secure</text></g><g><rect x="846.025" y="503" width="186.45" height="26" rx="13" fill="#11291a" stroke="#24683a"/><text x="857.025" y="520.68" class="s" font-size="13" font-weight="600" fill="#7ee787" text-anchor="start">✓ proven before &quot;done&quot;</text></g>
+</svg>
