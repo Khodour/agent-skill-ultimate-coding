@@ -47,25 +47,6 @@ export type Checklist = { size?: Size; items: ChecklistItem[]; startedAt?: numbe
 /** What a submitted prompt means for the run: a new message from the person, part of the same task, or nothing. */
 export type PromptKind = 'new' | 'same' | 'none'
 
-/** The session's running totals, for the scorecard panel. */
-export type Score = {
-  tasks: { Trivial: number; Small: number; Normal: number; Complex: number; Unsized: number }
-  confidence: { High: number; Medium: number; Low: number }
-  edits: number
-  checks: number
-  checksFailed: number
-}
-
-/** One danger check-diff found in an edit's added lines. */
-export type Finding = { line: number; rule: string; message: string }
-
-/** What check-diff said about one edit. */
-export type CheckResult =
-  | { status: 'checking' }
-  | { status: 'clean' }
-  | { status: 'found'; findings: Finding[] }
-  | { status: 'error'; message: string }
-
 declare module 'claude-code' {
   interface PluginState {
     'agent-skill-ultimate-coding': {
@@ -74,15 +55,6 @@ declare module 'claude-code' {
       skillUsed: boolean
       /** The spinner's frame on the checklist item being worked on. */
       spin: number
-      /** Lines written by edits since the person's last message, for the report check. */
-      reportLines: number
-      /** The person's latest message asked for a reply of their own kind (one line, no report). */
-      personSetReply: boolean
-      /** Whether each working directory's own rules set a report format, read once per directory. */
-      projectFormats: Record<string, boolean>
-      score: Score
-      /** check-diff's verdict per edit, by tool call id; the newest 100. */
-      checkdiff: Record<string, CheckResult>
     }
   }
 }

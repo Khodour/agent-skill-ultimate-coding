@@ -7,12 +7,9 @@
  */
 import type { PluginOptions, Register } from 'claude-code'
 
-import { checkdiffTool, checkdiffUnderRow } from './checkdiff'
 import { CHECKLIST_TOOL } from './checklist'
 import { checklistRow, checklistViewStart, registerChecklistView } from './checklist-view'
 import { classifyPrompt, turnEnd } from './progress'
-import { reportPrompt, reportReset, reportStop, reportTool } from './report'
-import { registerScorecardViews, scorecardStart, scorecardTool, scorecardTurnEnd } from './scorecard'
 import {
   trackerAgent, trackerChecklist, trackerPrompt, trackerRegisterTool, trackerRow, trackerSessionEnd, trackerSkill, trackerTool,
   trackerTurnEnd, trackerTurnStart,
@@ -24,9 +21,6 @@ const SKILL = 'agent-skill-ultimate-coding'
 const featuresFrom = (options: PluginOptions) => ({
   checklist: options.checklist !== false,
   checklistTimer: options.checklistTimer !== false,
-  scorecard: options.scorecard !== false,
-  checkDiff: options.checkDiffLine !== false,
-  report: options.reportCheck !== false,
 })
 
 export const register: Register = (on, options) => {
@@ -36,7 +30,6 @@ export const register: Register = (on, options) => {
       await trackerRegisterTool($)
       checklistViewStart($, features.checklistTimer)
     }
-    if (features.scorecard) await scorecardStart($)
     return next(e)
   })
 
@@ -45,7 +38,6 @@ export const register: Register = (on, options) => {
   on('prompt.submit', async ($, e, next) => {
     const kind = classifyPrompt(e)
     await trackerPrompt($, kind)
-    if (features.report) await reportPrompt($, kind, e.text)
     return next(e)
   }).catch(($, e, next) => next(e))
 
@@ -72,7 +64,6 @@ export const register: Register = (on, options) => {
   on('session.end', async ($, e, next) => {
     if (e.reason === 'clear' || e.reason === 'resume') {
       await trackerSessionEnd($)
-      await reportReset($)
     }
     return next(e)
   }).catch(($, e, next) => next(e))
@@ -96,9 +87,6 @@ export const register: Register = (on, options) => {
       : await next(e)
     if (isMain) {
       await trackerTool($, e.tool, e, ran)
-      await scorecardTool($, e.tool, e, ran)
-      if (features.checkDiff) await checkdiffTool($, e.tool, e.tool_use_id, e, ran)
-      if (features.report) await reportTool($, e.tool, e, ran)
     } else {
       await trackerTool($, e.tool, e, ran, true)       // a subagent's edits and checks move the run it works for
     }
@@ -107,41 +95,18 @@ export const register: Register = (on, options) => {
 
   on('turn.complete', async ($, e, next) => {
     if (e.agentId === undefined) {
-      const { before, after } = await trackerTurnEnd($, e.answer, turnEnd(e.reason))
-      await scorecardTurnEnd($, before, after)
+      await trackerTurnEnd($, e.answer, turnEnd(e.reason))
     } else {
       await trackerAgent($, e.agentId, false)            // a subagent's run ended (an aborted one too)
     }
     return next(e)
   })
 
-  // Claude about to stop: after a turn that changed code, one nudge to end with the skill's report
-  // and its confidence, unless the project's own rules set a format of their own.
-  on('classic.Stop', async ($, e, next) => {
-    const result = await next(e)
-    if (!features.report) return result
-    const nudge = await reportStop($, e)
-    return nudge === null ? result : { ...result, block: nudge }
-  }).catch(($, e, next) => next(e))   // a failing check never keeps Claude from stopping
-
-  // Under a tool's row: one hook for every feature that draws there, stacked in order.
+  // The checklist tool's row is one short line; ctrl+o (expanded) still shows the full call.
   on('ui.render', { component: 'ToolUse' }, async ($, e, next) => {
-    // The checklist tool's row is one short line; ctrl+o (expanded) still shows the full call.
     if (features.checklist && e.props.tool === CHECKLIST_TOOL && e.props.isExpanded !== true) return checklistRow($, e.props.input, $.ui.resolve(e))
-    if (e.props.isRunning) return next(e)
-    const { Box, Text } = $.ui.resolve(e)
-    const under = [
-      features.checkDiff ? await checkdiffUnderRow($, e.props.tool, e.props.tool_use_id, { Box, Text }) : null,
-    ].filter(x => x !== null)
-    if (under.length === 0) return next(e)
-    return (
-      <Box flexDirection="column">
-        {await next(e)}
-        {under}
-      </Box>
-    )
+    return next(e)
   })
 
   if (features.checklist) registerChecklistView(on, features.checklistTimer)
-  if (features.scorecard) registerScorecardViews(on)
 }

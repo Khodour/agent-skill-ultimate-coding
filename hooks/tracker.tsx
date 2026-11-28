@@ -1,9 +1,8 @@
 /**
  * Feature: the run tracker. It follows one task from the person's message to
  * the end of its turn: the size Claude named, the checks run, how the turn
- * ended and the report's confidence. The scorecard counts finished tasks from
- * it, and the report check asks it whether the skill is in use. It also answers
- * the checklist tool: the list lives on the run, so it belongs to its task.
+ * ended. It answers the checklist tool: the list lives on the run, so it belongs
+ * to its task, and a new task starts with no list.
  *
  * Its state lives in host-held atoms, so a hot reload of this code keeps it.
  */
@@ -52,14 +51,6 @@ export async function trackerChecklist($: EngineInterface, input: unknown): Prom
 export async function trackerList($: EngineInterface) {
   const r = await read($, run)
   return r === null ? null : { list: r.list, isDone: r.isDone }
-}
-
-/** The task's size and whether it has a checklist, for the report check. */
-export async function trackerTask($: EngineInterface): Promise<{ size?: string; hasChecklist: boolean }> {
-  const r = await read($, run)
-  if (r === null) return { hasChecklist: false }
-  const size = r.list?.size ?? r.size
-  return { ...(size ? { size } : {}), hasChecklist: (r.list?.items.length ?? 0) > 0 }
 }
 
 /**
@@ -139,7 +130,7 @@ export async function trackerRow($: EngineInterface, text: string) {
   await update($, run, r => onSize(r ?? startRun(), size))
 }
 
-/** The turn ended: report, confidence, paused, stopped or finished. Returns the run before and after, for the scorecard. */
+/** The turn ended: report, confidence, paused, stopped or finished. */
 export async function trackerTurnEnd($: EngineInterface, answer: string, end: TurnEnd = 'answer'): Promise<{ before: Run | null; after: Run | null }> {
   const before = await read($, run)
   const after = before === null ? null : onAnswer(before, answer, end)

@@ -1,5 +1,5 @@
 {
-  "description": "SessionStart adds one line of context (also after /clear or compaction) so Claude loads the skill for every coding task; agents often skip skills for short requests. PostToolUse runs the skill's check-diff script on each edited file and hands Claude, as additionalContext, any known danger in that file's uncommitted changes (dangers it adds, safety checks it removes). It always exits 0, so it can never break a session. The hooks module (register.tsx) adds what you see in Claude Code (the check-diff line under edits, a /uc-score scorecard), each switchable in /config; Claude Code versions without hooks modules ignore it.",
+  "description": "SessionStart adds one line of context (also after /clear or compaction) so Claude loads the skill for every coding task; agents often skip skills for short requests. The hooks module (register.tsx) adds the checklist tool and draws it above the input, switchable in /config; Claude Code versions without hooks modules ignore it.",
   "hooks": {
     "SessionStart": [
       {
@@ -8,17 +8,6 @@
           {
             "type": "command",
             "command": "echo 'For every coding task (writing, fixing, debugging, refactoring, reviewing or testing code, even a small fix), load the agent-skill-ultimate-coding:agent-skill-ultimate-coding skill first and follow it. Any task that adds or changes logic starts with its checklist, before any code: in the checklist tool when you have it, otherwise in your task list.'"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/skills/agent-skill-ultimate-coding/scripts/check-diff.sh\" --hook"
           }
         ]
       }

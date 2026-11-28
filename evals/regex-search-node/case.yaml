@@ -25,7 +25,9 @@ graders:
     input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
   - type: llm
     name: slow-pattern-cannot-freeze-server
-    focus: { source: file, path: src/handlers.js }
+    # The judge reads the trace, so it sees code in any file (agents move the search out of
+    # handlers.js; a handlers.js-only judge failed a correct worker-thread fix on Opus, 2026-11-28).
+    focus: trace
     criteria: |
       A pattern such as (a+)+$ against a long line of "a" characters backtracks for minutes.
       PASS only if such a pattern cannot block the server indefinitely: the match runs with a time limit that actually stops it (a worker thread or child process that is terminated after a timeout, or vm.runInContext with a timeout), or a linear-time regex engine is used, or patterns with nested quantifiers are rejected before running.

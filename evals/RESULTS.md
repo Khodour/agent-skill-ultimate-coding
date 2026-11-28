@@ -1,6 +1,6 @@
 # Eval results
 
-Every case runs **with and without the skill**, 3 times each, on two models. The score is the share of checks passed, averaged over the runs. Only hard cases are kept (the model scored below 1.00 without the skill), plus trigger checks (`no-fire-*`, `no-overprocess-*`) that make sure the skill stays out of the way when it should (Anthropic, *Demystifying evals for AI agents*).
+Every case runs **with and without the skill**, on three models (3 runs per arm on Sonnet and Haiku, 1 on Opus). The score is the share of checks passed, averaged over the runs. Only hard cases are kept (the model scored below 1.00 without the skill), plus trigger checks (`no-fire-*`, `no-overprocess-*`) that make sure the skill stays out of the way when it should (Anthropic, *Demystifying evals for AI agents*).
 
 Skill version: the working tree of 2026-11-28 (2.3.0 plus the project gate, `new-project.md`, `update-project.md` and the checklist timer). Judge: Claude Sonnet 5.5 for every case. Repo cases ran with `--scaffold --allow-tools Edit Write Bash`; read-only cases ran without `--allow-tools`, so they keep their own tool list. Runs void because of the account's usage limit are left out, never counted as 0.
 
@@ -106,3 +106,56 @@ Cost: 7.4 turns per run with the skill, 4.3 without; 1.26× the spend.
 | ssrf-link-preview | tuned | 0.89 | 1.00 | 9.7 → 21.7 |
 | stock-race | tuned | 0.67 | 0.78 | 1.0 → 5.3 |
 | thin-handler | tuned | 0.67 | 1.00 | 1.0 → 5.0 |
+
+## Claude Opus 5.5
+
+- Run started: 2026-11-28T08:55:00.859Z · Claude Code 2.1.332
+- Agent: Claude Opus 5.5 · judge: Claude Sonnet 5.5
+- Runs per case: **1** per arm (cost: $13.27 for 66 runs)
+- small-report and every-item-done are re-graded from the saved traces with their current code graders (a regex that accepted only "confidence in this change", and an honesty judge that failed an honest report).
+- regex-search-node with the skill scores 0.00 as graded, but its answer is correct (a worker thread terminated after 2 s, read by hand): the judge read only `src/handlers.js` and the code was in `src/search.js`. The judge now reads the trace; the case is not re-run (test budget).
+- independent-outbound-timeout did not run (its folder name differs from its case name, so `--case` matched nothing).
+
+| Group | Cases | Without the skill | With the skill |
+|---|:---:|:---:|:---:|
+| Held-out (written before tuning, never used to change the skill) | 4 | 0.25 | 1.00 |
+| Tuned (used while building the skill) | 29 | 0.68 | 0.96 |
+| **All** | 33 | 0.63 | 0.97 |
+
+Cost: 6.8 turns per run with the skill, 3.7 without; 1.47× the spend.
+
+| Case | Group | Without | With | Turns without → with |
+|---|---|:---:|:---:|:---:|
+| apply-coupon | held-out | 0.00 | 1.00 | 1.0 → 5.0 |
+| book-room | held-out | 0.00 | 1.00 | 1.0 → 5.0 |
+| cart-load | held-out | 1.00 | 1.00 | 1.0 → 5.0 |
+| redeem-gift-card | held-out | 0.00 | 1.00 | 1.0 → 5.0 |
+| ai-review-summary | tuned | 0.00 | 1.00 | 1.0 → 5.0 |
+| ask-open-choice | tuned | 0.67 | 1.00 | 3.0 → 5.0 |
+| bugfix-honesty | tuned | 1.00 | 1.00 | 1.0 → 5.0 |
+| change-request-payments | tuned | 0.43 | 1.00 | 7.0 → 9.0 |
+| commit-message | tuned | 1.00 | 1.00 | 5.0 → 13.0 |
+| every-item-done | tuned | 0.80 | 1.00 | 8.0 → 10.0 |
+| finish-project-node | tuned | 0.29 | 1.00 | 8.0 → 12.0 |
+| money-split | tuned | 0.00 | 1.00 | 1.0 → 5.0 |
+| new-project-brief | tuned | 0.00 | 1.00 | 21.0 → 5.0 |
+| no-fire-commit-message | tuned | 1.00 | 1.00 | 1.0 → 1.0 |
+| no-fire-csv-to-excel | tuned | 1.00 | 1.00 | 1.0 → 1.0 |
+| no-fire-explain-mutex | tuned | 1.00 | 1.00 | 1.0 → 1.0 |
+| no-fire-meeting-summary | tuned | 1.00 | 1.00 | 1.0 → 1.0 |
+| no-fire-release-notes | tuned | 1.00 | 1.00 | 1.0 → 1.0 |
+| no-fire-rest-or-grpc | tuned | 1.00 | 1.00 | 1.0 → 1.0 |
+| no-overprocess-health | tuned | 1.00 | 1.00 | 8.0 → 12.0 |
+| no-overprocess-small | tuned | 1.00 | 1.00 | 9.0 → 13.0 |
+| perf-n-plus-one | tuned | 0.00 | 1.00 | 1.0 → 6.0 |
+| question-only-ts | tuned | 1.00 | 1.00 | 6.0 → 8.0 |
+| regex-search-node | tuned | 1.00 | 0.00 | 9.0 → 14.0 |
+| repo-bugfix | tuned | 1.00 | 1.00 | 7.0 → 13.0 |
+| report-format | tuned | 0.29 | 0.86 | 1.0 → 5.0 |
+| reset-rate-limit | tuned | 1.00 | 1.00 | 1.0 → 4.0 |
+| service-layer | tuned | 0.00 | 1.00 | 1.0 → 5.0 |
+| signup-logging | tuned | 0.00 | 1.00 | 1.0 → 5.0 |
+| small-report | tuned | 0.20 | 1.00 | 1.0 → 5.0 |
+| ssrf-link-preview | tuned | 1.00 | 1.00 | 9.0 → 29.0 |
+| stock-race | tuned | 1.00 | 1.00 | 1.0 → 5.0 |
+| thin-handler | tuned | 1.00 | 1.00 | 1.0 → 6.0 |

@@ -49,14 +49,15 @@ It scales the effort to the task: a typo stays a one-line change, and a payment 
 
 ## Proven with evals
 
-Every case runs **with and without** the skill, three times, on hard tasks only (cases the model already solves on its own are removed, because they prove nothing).
+Every case runs **with and without** the skill (three times on Sonnet and Haiku, once on Opus), on hard tasks only (cases the model already solves on its own are removed, because they prove nothing).
 
 | Model | Without the skill | With the skill |
 |---|:---:|:---:|
 | Claude Sonnet 5.5 | 0.60 | ✅ **0.99** |
 | Claude Haiku 5.5 | 0.54 | ✅ **0.88** |
+| Claude Opus 5.5 | 0.63 | ✅ **0.97** |
 
-2026-11-28, Sonnet judge: Sonnet and Haiku on all 33 cases. Every case, every score and the few where the skill did not help are in [evals/RESULTS.md](evals/RESULTS.md). The extra care costs about twice the turns of an agent working without it.
+2026-11-28, Sonnet judge: Sonnet and Haiku on all 33 cases (3 runs per arm), Opus on 33 (1 run per arm). Every case, every score and the few where the skill did not help are in [evals/RESULTS.md](evals/RESULTS.md). The extra care costs about twice the turns of an agent working without it.
 
 ## Install
 

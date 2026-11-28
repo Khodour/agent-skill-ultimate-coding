@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 import type { Run } from '../types'
 import {
-  asksPerson, classifyPrompt, confidenceOf, hasAgents, isCheckCommand, isFinishedAnswer, isTaskWork, onAgent, onAnswer, onPrompt, onSize, onTool,
+  classifyPrompt, confidenceOf, hasAgents, isCheckCommand, isFinishedAnswer, isTaskWork, onAgent, onAnswer, onPrompt, onSize, onTool,
   onTurnStart, sizeInText, startRun, turnEnd,
 } from './progress'
 
@@ -22,14 +22,14 @@ test('a run counts its checks and keeps the size Claude named; it never holds a 
 test('only commands that run a check count as checks, not ones that mention a test', async () => {
   const checks = ['npm test', 'pytest -q', 'python -m pytest tests/', 'npx tsc -p .', 'cd app && npm run build', 'yarn lint',
     'go test ./...', 'cargo clippy', './gradlew :app:testDebugUnitTest', './gradlew :app:assembleDebug', 'claude plugin validate .',
-    'bash "/a b/scripts/check-diff.sh"', 'bash tests/check-diff/run.sh', 'CI=1 npx vitest run', 'make test', 'php artisan test',
+    'bash tests/run.sh', 'CI=1 npx vitest run', 'make test', 'php artisan test',
     // forms seen in a live session: a path before the program
     'S=/tmp/x && $S/venv/bin/python -m pytest -q test_calc.py 2>&1 | tail -5', '/tmp/v/bin/python3.12 -m pytest',
-    '/bin/bash "/a b/scripts/check-diff.sh" --files calc.py', './node_modules/.bin/jest', '.venv/bin/ruff check .',
+    './node_modules/.bin/jest', '.venv/bin/ruff check .',
     '"$S/venv/bin/python" -m pytest -q -p no:cacheprovider 2>&1; echo "exit=$?"', 'PY=/v/bin/python; "$PY" -m pytest -q | tail -8']
   const looks = ['test -f calc.py', '[ -f calc.py ] && echo ok', 'ls tests/', 'cat test_calc.py', 'git status', 'which tsc',
     'grep -rn "pytest" .', 'ls -la && git status --short && (test -f calc.py && cat calc.py)', 'echo build done',
-    'python3 -m pytest --version 2>&1; git status --short', 'npx tsc --version', 'cat "/a/check-diff.sh"',
+    'python3 -m pytest --version 2>&1; git status --short', 'npx tsc --version', 'cat "/a/run.sh"',
     'python3 -m venv /tmp/v', 'python3 -m pip install pytest', 'python -m http.server']
   for (const c of checks) expect([c, isCheckCommand(c)]).toEqual([c, true])
   for (const c of looks) expect([c, isCheckCommand(c)]).toEqual([c, false])
@@ -52,19 +52,9 @@ test('an answered turn is done and keeps the report\'s confidence', async () => 
   expect(answered(work, 'I added the function.').confidence).toBe(null)       // no confidence line
 })
 
-test('an answer asks the person when it has a "Waiting for you" part or a question in its last paragraph', async () => {
-  expect(asksPerson('### 1. What was done\nx\n### 3. Waiting for you\n1. commit?')).toBe(true)
-  expect(asksPerson('Done. Should I also add tests?')).toBe(true)
-  expect(asksPerson('I added the function.')).toBe(false)
-  // seen live: the question is not on the last line
-  expect(asksPerson('**Confidence: High 🟢** x\n\nShould I commit these two files to `main`? If yes, I will propose a message.')).toBe(true)
-  expect(asksPerson('Is it fast? Yes: 3 ms.\n\nAll done.')).toBe(false)       // a question earlier, not at the end
-})
-
 test('the report shape the user\'s session wrote (bold headings, no numbers) is still a report', async () => {
   const bold = 'You can now make banners.\n\n**Checks**\n- ✅ syntax\n\n**Needs attention**\n- x\n\n**Waiting for you**\n1. Commit?'
   expect(isFinishedAnswer(bold)).toBe(true)
-  expect(asksPerson(bold)).toBe(true)
   expect(isFinishedAnswer('**Confidence: High 🟢** all ran')).toBe(true)
   expect(isFinishedAnswer('I changed the name.')).toBe(false)
 })
@@ -103,7 +93,7 @@ test('only the person\'s own new message, sent while idle, is new; everything el
     .map(k => idle(k))).toEqual(Array(8).fill('same'))
   expect(idle('plugin', { asUser: true })).toBe('new')
   expect(classifyPrompt({ origin: { kind: 'composer' }, turnId: 't1' })).toBe('same')        // typed into the running turn
-  expect(classifyPrompt({ origin: { kind: 'composer' }, command: { name: 'uc-score' } })).toBe('none')
+  expect(classifyPrompt({ origin: { kind: 'composer' }, command: { name: 'help' } })).toBe('none')
   expect(classifyPrompt({ origin: { kind: 'unclassified' }, isMeta: true })).toBe('none')
   expect(classifyPrompt({})).toBe('new')                                                      // an engine with no origins: the person typed it
 })

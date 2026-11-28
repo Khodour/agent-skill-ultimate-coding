@@ -28,10 +28,10 @@ const AT = String.raw`["']?(?:[^\s"']*\/)?`
 const RUNNER = String.raw`(?:(?:npx|bunx|pnpm\s+exec|pnpm|yarn|npm(?:\s+run)?|bun(?:\s+run)?|["']?[^\s"']+["']?\s+-m|uv\s+run|poetry\s+run|bundle\s+exec)\s+)`
 const CHECKER = String.raw`${AT}(?:pytest|jest|vitest|mocha|tsc|eslint|biome|ruff|mypy|pyright|flake8|pylint|rspec|phpunit|phpstan|psalm|rubocop|unittest|tox|swiftlint|ktlint|detekt|xcodebuild|shellcheck)`
 const SCRIPT = String.raw`(?:test|tests|lint|build|typecheck|type-check|check|ci|verify|validate)[\w:-]*`
-const COMPOUND = String.raw`(?:go\s+(?:test|vet|build)|cargo\s+(?:test|check|clippy|build)|swift\s+(?:test|build)|dotnet\s+(?:test|build)|mix\s+(?:test|compile)|rake\s+(?:test|spec)|make\s+${SCRIPT}|\.?\/?gradlew?\s+(?:\S+\s+)*?\S*(?:[Tt]est|[Bb]uild|assemble|lint|check)\S*|mvn\s+(?:\S+\s+)*?(?:test|verify|package)|claude\s+plugin\s+(?:test|validate)|php\s+artisan\s+test|${AT}(?:bash|sh)\s+["']?[^"']*(?:check-diff\.sh|tests?\/[^"'\s]*\.sh))`
+const COMPOUND = String.raw`(?:go\s+(?:test|vet|build)|cargo\s+(?:test|check|clippy|build)|swift\s+(?:test|build)|dotnet\s+(?:test|build)|mix\s+(?:test|compile)|rake\s+(?:test|spec)|make\s+${SCRIPT}|\.?\/?gradlew?\s+(?:\S+\s+)*?\S*(?:[Tt]est|[Bb]uild|assemble|lint|check)\S*|mvn\s+(?:\S+\s+)*?(?:test|verify|package)|claude\s+plugin\s+(?:test|validate)|php\s+artisan\s+test|${AT}(?:bash|sh)\s+["']?[^"']*(?:tests?\/[^"'\s]*\.sh))`
 const CHECK_PART = new RegExp(String.raw`^(?:\w+=\S*\s+)*(?:${RUNNER}?${CHECKER}|${RUNNER}${SCRIPT}|${COMPOUND})(?=\s|$|["'])`)
 
-/** Whether a shell command runs a check: tests, a type check, lint, a build, validate or check-diff. */
+/** Whether a shell command runs a check: tests, a type check, lint, a build, or validate. */
 export const isCheckCommand = (command: string): boolean =>
   command.split(/&&|\|\||;|\||\n/).some(part => {
     const p = part.trim().replace(/^\(+\s*/, '').replace(/^(?:time|timeout\s+\S+)\s+/, '')
@@ -105,7 +105,6 @@ export const confidenceOf = (answer: string): Confidence | null => {
 // A report in any of the shapes Claude writes it: the confidence line every report ends with,
 // or the older three-part headings (numbered or bold).
 const REPORT = /(?:^|\n)\s*(?:#{1,4}\s*(?:\d\.\s*)?|\*\*)(?:What was done|Needs attention|Waiting for you)\b/i
-const WAITING = /(?:^|\n)\s*(?:#{1,4}\s*(?:\d\.\s*)?|\*\*)Waiting for you\b/i
 
 /** How a turn ended, as `turn.complete`'s `reason` gives it. */
 export type TurnEnd = 'answer' | 'aborted' | 'error' | 'refusal'
@@ -119,17 +118,6 @@ export const hasReport = (answer: string): boolean => REPORT.test(answer) || con
 
 /** Whether a turn's final answer finishes its task: it holds a report. */
 export const isFinishedAnswer = (answer: string): boolean => hasReport(answer)
-
-/**
- * Whether the answer hands a question to the person: a "Waiting for you" part, or a
- * question in its last paragraph ("Should I commit? If yes, I'll ..."). The report
- * check uses it: a question before the work is done is not a missing report.
- */
-export const asksPerson = (answer: string): boolean => {
-  if (WAITING.test(answer)) return true
-  const last = answer.trim().split(/\n\s*\n/).pop() ?? ''
-  return /\?(?:[*_`)\s]|$)/.test(last)
-}
 
 /**
  * A turn ended. Stopped by Esc, an API error or a refusal: marked so. Answered:

@@ -27,24 +27,6 @@
       "title": "Timer on the checklist",
       "description": "A count-up timer on the checklist: the task's total time in its header, and how long each item took. Wall-clock time, waits included.",
       "default": true
-    },
-    "scorecard": {
-      "type": "boolean",
-      "title": "Session scorecard (/uc-score)",
-      "description": "A /uc-score panel summing up the session: tasks by size, confidence, edits, checks and check-diff results.",
-      "default": true
-    },
-    "checkDiffLine": {
-      "type": "boolean",
-      "title": "check-diff line under edits",
-      "description": "Show check-diff's verdict under each file edit. Claude still gets the findings either way.",
-      "default": true
-    },
-    "reportCheck": {
-      "type": "boolean",
-      "title": "Report check",
-      "description": "After a turn that changed code, if Claude stops without the skill's report and its confidence, it is asked once to add them. Skipped when the project's own CLAUDE.md or AGENTS.md sets its own report format.",
-      "default": true
     }
   }
 }

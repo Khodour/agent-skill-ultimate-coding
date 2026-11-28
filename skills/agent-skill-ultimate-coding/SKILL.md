@@ -73,7 +73,6 @@ Mark each item `doing`, then `done` as soon as it is built and checked, one at a
 
 **Verify.**
 - Run every check the project has: build, types, lint, tests.
-- Run `scripts/check-diff.sh` from this skill's folder (bash and git; `--files <paths>` without git). It flags dangers in added lines and safety checks removed. Fix real findings; list a false alarm in the report with why, never as a comment in code.
 - Tests by risk: always for bug fixes (failing test first) and any logic you add or change (a condition, a loop, a calculation), in the same change; not required for trivial changes. When the code goes in the reply, its tests and the command to run them go there too.
 - **When the change alters a screen or flow people use:** try it like a person would, through a connected tool; a passing test suite is not this test. If nothing can reach the interface, say so and do not claim high confidence (`references/testing.md`, `references/ui.md`).
 - Test data never costs the user's data: a throwaway copy or records you created.

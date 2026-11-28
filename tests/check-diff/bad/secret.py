@@ -1,1 +1,0 @@
-STRIPE_API_KEY = "live_9fQ2aLpX7mRt3vKz"
