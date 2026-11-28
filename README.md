@@ -104,7 +104,7 @@ Every case runs the same task **with and without** the skill, and graders check 
 
 <p align="center"><img src="docs/assets/chart-haiku.svg" alt="Claude Haiku 5.5: 54% of checks passed without the skill, 92% with it. Organized code 13% to 87%, secure by default 24% to 87%, reliable data 50% to 78%, proven and honest 57% to 97%, asks and plans first 29% to 97%, right-sized 100% both ways." width="100%"></p>
 
-2026-11-28, Sonnet judge, 33 cases: 3 runs per case on Sonnet and Haiku, 1 on Opus. "Right-sized" checks that the skill stays out of the way (questions, small tasks, non-coding requests), so the same score both ways is the goal. Every case, every score and the few where the skill did not help are in [evals/RESULTS.md](evals/RESULTS.md). The extra care costs about twice the turns of an agent working without it.
+2026-11-28, 33 cases, graded by code checks and a separate AI judge: 3 runs per case on Sonnet and Haiku, 1 on Opus. "Right-sized" checks that the skill stays out of the way (questions, small tasks, non-coding requests), so the same score both ways is the goal. Every case, every score and the few where the skill did not help are in [evals/RESULTS.md](evals/RESULTS.md). The extra care costs about twice the turns of an agent working without it.
 
 ## Run the evals yourself
 
