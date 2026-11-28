@@ -2,7 +2,7 @@
 
 Every case runs **with and without the skill**, on three models (3 runs per arm on Sonnet and Haiku, 1 on Opus). The score is the share of checks passed, averaged over the runs. Only hard cases are kept (the model scored below 1.00 without the skill), plus trigger checks (`no-fire-*`, `no-overprocess-*`) that make sure the skill stays out of the way when it should (Anthropic, *Demystifying evals for AI agents*).
 
-The last section covers changes made after 2.4.0. Skill version of the tables before it: 2.4.0 (2.3.0 plus the project gate, `new-project.md`, `update-project.md`, the checklist timer, the report and money-split fixes, and the diff check removed). Most cases ran on the working tree of 2026-11-28 before the diff check was removed; the cases that removal touches ran again afterwards (last section). Judge: Claude Sonnet 5.5 for every case. Repo cases ran with `--scaffold --allow-tools Edit Write Bash`; read-only cases ran without `--allow-tools`, so they keep their own tool list. Runs void because of the account's usage limit are left out, never counted as 0.
+The last section covers 2.5.0. Skill version of the tables before it: 2.4.0 (2.3.0 plus the project gate, `new-project.md`, `update-project.md`, the checklist timer, the report and money-split fixes, and the diff check removed). Most cases ran on the working tree of 2026-11-28 before the diff check was removed; the cases that removal touches ran again afterwards (last section). Judge: Claude Sonnet 5.5 for every case. Repo cases ran with `--scaffold --allow-tools Edit Write Bash`; read-only cases ran without `--allow-tools`, so they keep their own tool list. Runs void because of the account's usage limit are left out, never counted as 0.
 
 ## Claude Sonnet 5.5
 
@@ -174,9 +174,9 @@ After the cut that removed the diff check from `SKILL.md`, the cases that test t
 | report-format | 0.29 | 1.00 |
 | small-report | 0.20 | 1.00 |
 
-## After 2.4.0 (2026-11-28, not yet released)
+## 2.5.0 (2026-11-28): what changed since 2.4.0
 
-The tables above describe 2.4.0. This section covers four changes to `SKILL.md` made after it, each checked on the cases it touches. Judge: Claude Sonnet 5.5. No run was lost to the usage limit.
+The tables above describe 2.4.0. This section covers the four changes to `SKILL.md` in 2.5.0, each checked on the cases it touches. Judge: Claude Sonnet 5.5. No run was lost to the usage limit.
 
 **1. The MUST list was shortened.** Eighteen new traps for the MUSTs that had no case (access checks, hand-rolled auth, weakened safety checks, breaking shipped code, weakened tests, invented names) were built and screened; Claude Haiku 5.5 passed every one without the skill (`evals/PENDING.md`, "Tried, too easy"). So those seven MUSTs are now one line, and the eight with a failing case keep their full text. The 17 cases tagged for the eight kept MUSTs then ran once per arm:
 
