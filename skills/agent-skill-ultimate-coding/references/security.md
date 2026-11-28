@@ -106,6 +106,10 @@ If a check blocks you, fix the cause. Follow this order:
 - Rate limits on login, one-time codes, password reset, sign-up, search and anything that costs money (SMS, email, AI calls), counted per account as well as per client. Use the limit already in front of the service (gateway, proxy) or the project's or framework's limiter before writing a new one. Never lock an account because of reset requests (OWASP Forgot Password Cheat Sheet).
 - Uploads: check size and real type (not just the extension), store them under random names, outside any folder that can execute code.
 - Timeouts on every outgoing call (see `resilience.md`).
+- **Work that input can make run long** (a regular expression, a query or an expression the user wrote; a very large payload) gets a limit that really stops it: OWASP API4 lists "Execution timeouts" among the limits every API needs. A cap on the input's length does not stop a slow pattern, so it is an extra, not the fix. In this order:
+  1. An engine or mode that cannot run away: a regular expression engine without backtracking, a statement timeout on the database (CWE-1333: "Use regular expressions that do not support backtracking").
+  2. Run the work where it can be ended: a separate thread or process that is stopped after a time limit, so one request cannot hold the server for everyone (CWE-1333: "consider limits on execution time for the process").
+  3. Refuse the input that is known to be slow (nested repeats in a pattern), and say so in the error.
 
 ### 9. Few, maintained, pinned dependencies
 - Add a library only when it earns its place; a few lines of your own code can beat a new dependency.
@@ -127,4 +131,5 @@ Four attacks where input chooses *where* or *what*, not only a value. Each follo
 Checked on 2026-11-26. Re-read the original when a detail matters.
 - OWASP Cheat Sheets: [SSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html), [Deserialization](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html), [Unvalidated redirects and forwards](https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html), [XXE prevention](https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html), [Authentication](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html), [Forgot password](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html), [Logging](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)
 - [OWASP API Security Top 10 (2023), API4: Unrestricted resource consumption](https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/)
+- MITRE [CWE-1333: Inefficient Regular Expression Complexity](https://cwe.mitre.org/data/definitions/1333.html), potential mitigations (read 2026-11-28)
 - MITRE CWE: [918](https://cwe.mitre.org/data/definitions/918.html), [502](https://cwe.mitre.org/data/definitions/502.html), [601](https://cwe.mitre.org/data/definitions/601.html), [611](https://cwe.mitre.org/data/definitions/611.html)

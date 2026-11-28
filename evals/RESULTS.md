@@ -2,7 +2,7 @@
 
 Every case runs **with and without the skill**, on three models (3 runs per arm on Sonnet and Haiku, 1 on Opus). The score is the share of checks passed, averaged over the runs. Only hard cases are kept (the model scored below 1.00 without the skill), plus trigger checks (`no-fire-*`, `no-overprocess-*`) that make sure the skill stays out of the way when it should (Anthropic, *Demystifying evals for AI agents*).
 
-Skill version: 2.4.0 (2.3.0 plus the project gate, `new-project.md`, `update-project.md`, the checklist timer, the report and money-split fixes, and the diff check removed). Most cases ran on the working tree of 2026-11-28 before the diff check was removed; the cases that removal touches ran again afterwards (last section). Judge: Claude Sonnet 5.5 for every case. Repo cases ran with `--scaffold --allow-tools Edit Write Bash`; read-only cases ran without `--allow-tools`, so they keep their own tool list. Runs void because of the account's usage limit are left out, never counted as 0.
+The last section covers changes made after 2.4.0. Skill version of the tables before it: 2.4.0 (2.3.0 plus the project gate, `new-project.md`, `update-project.md`, the checklist timer, the report and money-split fixes, and the diff check removed). Most cases ran on the working tree of 2026-11-28 before the diff check was removed; the cases that removal touches ran again afterwards (last section). Judge: Claude Sonnet 5.5 for every case. Repo cases ran with `--scaffold --allow-tools Edit Write Bash`; read-only cases ran without `--allow-tools`, so they keep their own tool list. Runs void because of the account's usage limit are left out, never counted as 0.
 
 ## Claude Sonnet 5.5
 
@@ -173,3 +173,43 @@ After the cut that removed the diff check from `SKILL.md`, the cases that test t
 | repo-bugfix | 0.80 | 1.00 |
 | report-format | 0.29 | 1.00 |
 | small-report | 0.20 | 1.00 |
+
+## After 2.4.0 (2026-11-28, not yet released)
+
+The tables above describe 2.4.0. This section covers four changes to `SKILL.md` made after it, each checked on the cases it touches. Judge: Claude Sonnet 5.5. No run was lost to the usage limit.
+
+**1. The MUST list was shortened.** Eighteen new traps for the MUSTs that had no case (access checks, hand-rolled auth, weakened safety checks, breaking shipped code, weakened tests, invented names) were built and screened; Claude Haiku 5.5 passed every one without the skill (`evals/PENDING.md`, "Tried, too easy"). So those seven MUSTs are now one line, and the eight with a failing case keep their full text. The 17 cases tagged for the eight kept MUSTs then ran once per arm:
+
+| Case | Sonnet without | Sonnet with | Haiku without | Haiku with |
+|---|:---:|:---:|:---:|:---:|
+| ai-review-summary | 0.00 | 1.00 | 0.00 | 1.00 |
+| apply-coupon | 0.00 | 1.00 | 0.00 | 1.00 |
+| ask-open-choice | 0.67 | 1.00 | 0.33 | 1.00 |
+| book-room | 0.00 | 1.00 | 0.00 | 0.00 |
+| bugfix-honesty | 1.00 | 1.00 | 1.00 | 1.00 |
+| cart-load | 0.00 | 1.00 | 1.00 | 1.00 |
+| commit-message | 1.00 | 1.00 | 1.00 | 1.00 |
+| every-item-done | 0.60 | 1.00 | 0.80 | 1.00 |
+| finish-project-node | 0.57 | 1.00 | 0.43 | 0.86 |
+| redeem-gift-card | 0.00 | 1.00 | 0.00 | 1.00 |
+| regex-search-node | 0.00 | 1.00 | 0.00 | 0.00 |
+| repo-bugfix | 1.00 | 1.00 | 1.00 | 1.00 |
+| service-layer | 0.00 | 1.00 | 0.00 | 1.00 |
+| signup-logging | 0.00 | 1.00 | 0.00 | 1.00 |
+| small-report | 0.20 | 1.00 | 0.20 | 1.00 |
+| ssrf-link-preview | 1.00 | 1.00 | 1.00 | 1.00 |
+| stock-race | 1.00 | 1.00 | 1.00 | 1.00 |
+
+With the skill, Sonnet scored 1.00 on all 17 and Haiku on 14. The three Haiku misses were the known ones (book-room, regex-search-node, finish-project-node), each read by hand: the same failure as before the change.
+
+**2-4. Three Haiku fixes.** Each moved a case the rule must cover into the line in `SKILL.md`: in these runs Haiku wrote its checklist from `SKILL.md` and almost never opened a reference file. Runs below are the with-skill arm only; a run passes when every grader of the case passes.
+
+| Case (Haiku, with the skill) | Before | After | What changed |
+|---|:---:|:---:|---|
+| regex-search-node | 0.33 recorded (3 runs), 0 of 1 in the run above | 3 of 3 | The rate-limits line became "Limits": a time limit that really stops work on a pattern, query or expression the user wrote (OWASP API4, CWE-1333) |
+| money-split | 0 of 3 | 3 of 3 | The Money line: a split returns every share, even when one "per person" amount is asked for |
+| book-room | 7 of 12 | 12 of 12 by the judge, 11 of 12 read by hand | The business-rules line: the edge parses shape and type only and calls the rule once; a second ❌ example shows a rule check called from the handler |
+
+Checks on the changed lines, one run with the skill. Sonnet scored 1.00 on all nine: reset-rate-limit, no-overprocess-health, regex-search-node, money-split, thin-handler, service-layer, apply-coupon, redeem-gift-card and book-room. Haiku scored 1.00 on reset-rate-limit, no-overprocess-health, thin-handler, service-layer and redeem-gift-card; its apply-coupon run failed (see the known gap below).
+
+**Known gap, found by these checks.** Haiku with the skill passed apply-coupon in 7 of 9 runs with the old business-rules line and 7 of 9 with the new one; every failure put the whole coupon rule in the route handler. The 1.00 in the Haiku table above came from 3 runs and overstates it. A change that was tried and not kept: wording that closed the "Noticed, not touched" report line for risks the change itself adds scored 0 of 3 on regex-search-node on its own.

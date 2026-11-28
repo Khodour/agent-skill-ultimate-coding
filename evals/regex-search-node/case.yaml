@@ -8,7 +8,7 @@
 schema_version: "1.0"
 name: regex-search-node
 description: A search that runs a user's own regular expression cannot freeze the server with a slow pattern.
-tags: [security, resources, redos, repo, node, capability, rule-must-1, ref-security, ref-performance]
+tags: [security, resources, redos, repo, node, capability, rule-must-1, rule-rate-limits, ref-security, ref-performance]
 context:
   scaffold_script: scaffold.sh
 execution:

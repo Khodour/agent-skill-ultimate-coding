@@ -34,21 +34,16 @@ Logic (a condition, a loop, a calculation, a query) is never trivial. When unsur
 
 ## The MUSTs
 
-1. **Data never becomes code.** Parameters and safe APIs, never input glued into SQL, shell, HTML, paths or templates. AI model output is untrusted input too.
-2. **Check access on the server for every action and every record:** may this user touch *this* record? Deny by default.
-3. **Never hand-roll auth or crypto.** Proven libraries; slow salted password hashes; random, expiring, revocable tokens.
-4. **Secrets stay out of code, git, logs, URLs, errors and shipped apps;** a leaked one is rotated. Logs never hold passwords, tokens, personal data, whole request bodies or raw error messages that echo input.
-5. **Never weaken a safety check to make something work** (TLS, CORS, CSRF, permissions, auth): fix the cause (`references/security.md`).
-6. **All-or-nothing, safe to repeat:** one transaction for multi-step changes, atomic updates or locks for shared counters, side effects after success, and actions that can be retried or clicked twice are safe to repeat.
-7. **Never delete, drop, empty or overwrite stored data without the user's explicit OK.**
-8. **Never break what is shipped:** APIs, old app versions, saved data, formats, URLs keep working; change by adding; a risky change ships with a way back.
-9. **Prove it, don't claim it.** Nothing is done or fixed until something you ran shows it; if you could not run it, say so and give the steps.
-10. **Never weaken a test to make it pass.** If the test is wrong, say why first.
-11. **Never invent** names, API fields, config keys, paths, flags or packages. Check them against the version the project installs (lock file, then the installed package's own source, which file search often skips).
-12. **Fix the cause, not the symptom:** no swallowed errors, no special case for the test's input.
-13. **No production without the user's OK for that step,** even read-only: servers, databases, logs, deploys.
-14. **Understand first** (work rule): read the code you will touch and its callers. Code that repeats or goes around what exists is a design defect, even when it works (Kent Beck).
-15. **A checklist the user can see before any code** (work rule; small, normal and complex tasks).
+- **1 · Data never becomes code.** Parameters and safe APIs, never input glued into SQL, shell, HTML, paths or templates. AI model output is untrusted input too.
+- **4 · Secrets stay out of code, git, logs, URLs, errors and shipped apps;** a leaked one is rotated. Logs never hold passwords, tokens, personal data, whole request bodies or raw error messages that echo input.
+- **6 · All-or-nothing, safe to repeat:** one transaction for multi-step changes, atomic updates or locks for shared counters, side effects after success, and actions that can be retried or clicked twice are safe to repeat.
+- **7 · Never delete, drop, empty or overwrite stored data without the user's explicit OK.**
+- **9 · Prove it, don't claim it.** Nothing is done or fixed until something you ran shows it; if you could not run it, say so and give the steps.
+- **12 · Fix the cause, not the symptom:** no swallowed errors, no special case for the test's input.
+- **14 · Understand first** (work rule): read the code you will touch and its callers. Code that repeats or goes around what exists is a design defect, even when it works (Kent Beck).
+- **15 · A checklist the user can see before any code** (work rule; small, normal and complex tasks).
+
+**Also always, by number** (detail in `references/security.md`, `existing-code.md`, `testing.md`): 2 check access on the server for every action and record · 3 proven libraries for auth and crypto · 5 fix the cause, never weaken a safety check · 8 keep what is shipped working · 10 never weaken a test to pass · 11 check names, fields, flags and packages against the installed version · 13 the user's OK before touching production.
 
 ## The work
 
@@ -63,13 +58,14 @@ Logic (a condition, a loop, a calculation, a query) is never trivial. When unsur
 Mark each item `doing`, then `done` as soon as it is built and checked, one at a time. Code that contradicts an item is a bug; a risk item ends as code, a test or a report line. Before the report, read the request again against the list. Worked examples: `references/examples.md`.
 
 **Build.** Small steps, each run before the next. The simplest thing that works, and only what was asked. Follow the house style but never copy a danger (string-built SQL, a query in a loop, a race): write it safely and say so. A real problem inside the code you change is fixed as a separate, earlier step; one bigger than the task goes in the report as `Noticed, not touched:` with an issue to file (Google's review guide: "file a bug for the cleanup"). Same fix fails twice: stop and find the real cause; after a third, ask.
-- **Business rules live outside handlers, views and UI;** those edges only parse, call the rule and respond. The rule's transaction and locks live inside its function too:
+- **Business rules live outside handlers, views and UI;** those edges only parse (shape and type), call the rule once and respond. Every check the business set (a limit, opening hours, who may) and the rule's transaction and locks live inside that one function, so no caller can skip one:
   ```
   ❌ handler: BEGIN → SELECT … → check the rule → INSERT … → COMMIT → respond
+  ❌ handler: input = parse(request) → checkLimits(input) → result = transfer(db, user.id, input) → respond(result)
   ✅ handler: input = parse(request) → result = transfer(db, user.id, input) → respond(result)
   ```
-- **Money** is integer cents or decimals; a split's parts add up exactly to the whole (leftover cents go to some shares by a clear rule).
-- **Rate limits** (OWASP API4) on login, one-time codes, password resets, emails, SMS and anything that costs money: part of building it safely, so a `Warning:` line is not enough (`references/security.md`).
+- **Money** is integer cents or decimals. A split returns every share, and the shares add up exactly to the whole: leftover cents go to some shares by a clear rule, never by rounding every share the same way, even when the request asks for one "per person" amount.
+- **Limits** (OWASP API4): rate limits on login, one-time codes, password resets, emails, SMS and anything that costs money; and a time limit that really stops the work when input can make it run long (a pattern, query or expression the user wrote): run it where it can be ended. Both are part of building it safely, so a `Warning:` line is not enough (`references/security.md`).
 
 **Verify.**
 - Run every check the project has: build, types, lint, tests.
