@@ -31,29 +31,61 @@ export const TOOL_SCHEMA = {
 
 const SIZES: readonly Size[] = ['Trivial', 'Small', 'Normal', 'Complex']
 
+/** An item leaving `doing`: its current stretch is added to its work time. */
+const stopClock = (t: ChecklistItem, now: number): ChecklistItem => {
+  if (t.since === undefined) return t
+  const { since, ...rest } = t
+  return { ...rest, ms: (t.ms ?? 0) + Math.max(now - since, 0) }
+}
+
 /**
- * The list after one call of the tool. `items` writes a new list (all open);
- * `doing` marks one item as the one being worked on (any other goes back to
- * open); `done` ticks items. Numbers outside the list are ignored.
+ * The list after one call of the tool at time `now` (epoch ms). `items` writes a
+ * new list (all open) and starts its timer; `doing` marks one item as the one
+ * being worked on (any other goes back to open) and starts that item's clock;
+ * `done` ticks items and stops their clocks. Numbers outside the list are ignored.
  */
-export const applyChecklist = (list: Checklist | undefined, input: Record<string, unknown>): Checklist => {
+export const applyChecklist = (list: Checklist | undefined, input: Record<string, unknown>, now = Date.now()): Checklist => {
   let next: Checklist = list ?? { items: [] }
   if (Array.isArray(input.items)) {
     const items = input.items.map((t, i): ChecklistItem => ({ text: typeof t === 'string' && t.trim() !== '' ? t.trim() : `Item ${i + 1}`, status: 'open' }))
-    next = { items }
+    next = { items, startedAt: now }
   }
   if (SIZES.includes(input.size as Size)) next = { ...next, size: input.size as Size }
   const at = (n: unknown): number => (typeof n === 'number' && Number.isInteger(n) && n >= 1 && n <= next.items.length ? n - 1 : -1)
   const doing = at(input.doing)
   if (doing >= 0) {
-    next = { ...next, items: next.items.map((t, i) => (i === doing ? { ...t, status: t.status === 'done' ? 'done' : 'doing' } : t.status === 'doing' ? { ...t, status: 'open' } : t)) }
+    next = {
+      ...next,
+      items: next.items.map((t, i): ChecklistItem => {
+        if (i !== doing) return t.status === 'doing' ? { ...stopClock(t, now), status: 'open' } : t
+        if (t.status !== 'open') return t                     // a done item stays done; a doing one keeps its clock
+        return { ...t, status: 'doing', since: now }
+      }),
+    }
   }
   if (Array.isArray(input.done)) {
     const ticks = new Set(input.done.map(at).filter(i => i >= 0))
-    next = { ...next, items: next.items.map((t, i) => (ticks.has(i) ? { ...t, status: 'done' } : t)) }
+    next = { ...next, items: next.items.map((t, i): ChecklistItem => (ticks.has(i) ? { ...stopClock(t, now), status: 'done' } : t)) }
   }
-  return next
+  return next.startedAt === undefined ? next : { ...next, lastAt: now }
 }
+
+/** Work time as the timer shows it: m:ss, or h:mm:ss from an hour. */
+export const formatElapsed = (ms: number): string => {
+  const total = Math.floor(Math.max(ms, 0) / 1000)
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
+  const s = String(total % 60).padStart(2, '0')
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`
+}
+
+/** An item's work time at `now`: its earlier stretches plus the running one. Undefined if it was never worked on. */
+export const itemElapsed = (t: ChecklistItem, now: number): number | undefined =>
+  t.since === undefined && t.ms === undefined ? undefined : (t.ms ?? 0) + (t.since === undefined ? 0 : Math.max(now - t.since, 0))
+
+/** The whole list's time: running while Claude works, frozen at the last tool call once the turn has ended. */
+export const listElapsed = (list: Checklist, now: number, running: boolean): number | undefined =>
+  list.startedAt === undefined ? undefined : Math.max((running ? now : (list.lastAt ?? now)) - list.startedAt, 0)
 
 /** Items done, being worked on and still open. */
 export const countOf = (list: Checklist): { done: number; doing: number; open: number; total: number } => {

@@ -12,7 +12,7 @@ Format: `language | case | the trap | weakness | severity 1-10 | source`
 
 ## To build
 
-(none. Round 2, 2026-11-27: of 7 built, only question-only-ts was hard.)
+(none. Round 3, 2026-11-27: new-project-brief, finish-project-node and change-request-payments built; all three fail without the skill on Haiku.)
 
 
 

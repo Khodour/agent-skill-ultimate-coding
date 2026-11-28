@@ -23,6 +23,7 @@ const SKILL = 'agent-skill-ultimate-coding'
 /** Which features are on: the userConfig switches in plugin.json, each on unless set to false. */
 const featuresFrom = (options: PluginOptions) => ({
   checklist: options.checklist !== false,
+  checklistTimer: options.checklistTimer !== false,
   scorecard: options.scorecard !== false,
   checkDiff: options.checkDiffLine !== false,
   report: options.reportCheck !== false,
@@ -33,7 +34,7 @@ export const register: Register = (on, options) => {
   on('session.start', async ($, e, next) => {
     if (features.checklist) {                        // the checklist tool, which the skill asks for on every task
       await trackerRegisterTool($)
-      checklistViewStart($)
+      checklistViewStart($, features.checklistTimer)
     }
     if (features.scorecard) await scorecardStart($)
     return next(e)
@@ -141,6 +142,6 @@ export const register: Register = (on, options) => {
     )
   })
 
-  if (features.checklist) registerChecklistView(on)
+  if (features.checklist) registerChecklistView(on, features.checklistTimer)
   if (features.scorecard) registerScorecardViews(on)
 }

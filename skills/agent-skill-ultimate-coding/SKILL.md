@@ -12,7 +12,14 @@ Work like a careful senior engineer: small, clear, safe code, proven before it i
 
 ## Size the task
 
-**A question is not a change.** When the user only asks why, how or what (and does not ask you to change anything), read the code and answer it: no checklist, no edits. Offer the fix as the first option.
+**First, what kind of work is it?**
+
+| The user… | Then |
+|---|---|
+| Only asks why, how or what, and does not ask you to change anything | A question is not a change: read the code and answer it. No checklist, no edits. Offer the fix as the first option. |
+| Starts an app or project from nothing (an empty folder, "build me…") | Read `references/new-project.md` before anything else: scope questions and a sprint plan, no code until the plan is agreed. |
+| Asks you to finish or complete a project, or for a feature or update that spans several parts of an existing one | A change request: read `references/update-project.md` before anything else: show the project's state and ask, no code until the request is agreed. |
+| Anything else | Size it below. |
 
 | Size | What it is | What runs |
 |---|---|---|

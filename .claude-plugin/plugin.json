@@ -22,6 +22,12 @@
       "description": "Claude's checklist for the task, drawn above the input while it works and ticked item by item. Recommended: keep it on. Off: Claude uses its own task list if the session has one, or a numbered list in its reply.",
       "default": true
     },
+    "checklistTimer": {
+      "type": "boolean",
+      "title": "Timer on the checklist",
+      "description": "A count-up timer on the checklist: the task's total time in its header, and how long each item took. Wall-clock time, waits included.",
+      "default": true
+    },
     "scorecard": {
       "type": "boolean",
       "title": "Session scorecard (/uc-score)",

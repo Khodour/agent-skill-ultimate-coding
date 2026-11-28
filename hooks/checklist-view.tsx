@@ -10,7 +10,7 @@
 import { atom, read, update } from 'claude-code'
 import type { ElementTable, EngineInterface, On } from 'claude-code'
 
-import { checklistToolRow, countOf, meterCells, visibleItems } from './checklist'
+import { checklistToolRow, countOf, formatElapsed, itemElapsed, listElapsed, meterCells, visibleItems } from './checklist'
 import { trackerList } from './tracker'
 
 const spin = atom({ plugin: 'agent-skill-ultimate-coding', key: 'spin' } as const, 0)
@@ -27,12 +27,17 @@ const LEFT = '#4b5563'
 /** The item's words, cut to fit. */
 const short = (s: string, max: number): string => (s.length <= max ? s : `${s.slice(0, max - 1)}…`)
 
-/** Session start: the spinner's clock. It writes only while an item is being worked on, so an idle list costs nothing. */
-export function checklistViewStart($: EngineInterface): void {
+/**
+ * Session start: the spinner's clock. It writes only while Claude works on the list (an item being
+ * worked on, or the timer running between items), so a finished or idle list costs nothing.
+ */
+export function checklistViewStart($: EngineInterface, timer = true): void {
   $.clock.every(SPIN_MS, () => {
     void (async () => {
       const t = await trackerList($)
-      if (t !== null && !t.isDone && t.list?.items.some(i => i.status === 'doing')) await update($, spin, f => (f + 1) % FRAMES.length)
+      const items = t?.list?.items ?? []
+      const working = items.some(i => i.status === 'doing') || (timer && items.length > 0 && items.some(i => i.status !== 'done'))
+      if (t !== null && !t.isDone && working) await update($, spin, f => (f + 1) % FRAMES.length)
     })()
   })
 }
@@ -44,14 +49,20 @@ export async function checklistRow($: EngineInterface, input: unknown, ui: Pick<
   return <Text dimColor>{checklistToolRow(input, t?.list)}</Text>
 }
 
-/** Adds the drawing hook: the checklist above the prompt. */
-export const registerChecklistView = (on: On): void => {
+/** Adds the drawing hook: the checklist above the prompt; `timer` adds the work times. */
+export const registerChecklistView = (on: On, timer = true): void => {
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     const t = await trackerList($)
     const list = t?.list
     if (e.props.hasSurvey || t === null || list === undefined || list.items.length === 0) return next(e)
     const { Box, Text } = $.ui.resolve(e)
     const c = countOf(list)
+    const now = Date.now()
+    const total = timer ? listElapsed(list, now, !t.isDone) : undefined
+    const timeOf = (i: (typeof list.items)[number]) => {
+      const ms = timer ? itemElapsed(i, now) : undefined
+      return ms === undefined ? '' : `  ${formatElapsed(ms)}`
+    }
     const wide = (e.props.bodyColumns ?? 120) >= 100
     const sizeColor = list.size === undefined ? '#9ca3af' : SIZE_COLOR[list.size]
     const title = (
@@ -70,6 +81,7 @@ export const registerChecklistView = (on: On): void => {
           {title}
           <Text color={allDone ? DONE : DOING} bold>{allDone ? `  ✔ all ${c.total} done` : `  ${c.done}/${c.total} done`}</Text>
           {!allDone && firstOpen !== undefined && <Text dimColor>{` · open: ${short(firstOpen.text, 50)}`}</Text>}
+          {total !== undefined && <Text dimColor>{` · ⏱ ${formatElapsed(total)}`}</Text>}
         </Box>
       )
     }
@@ -88,12 +100,13 @@ export const registerChecklistView = (on: On): void => {
           <Text color={LEFT}>{'━'.repeat(m.left)}</Text>
           <Text bold>{`  ${c.done}/${c.total}`}</Text>
           {rows.length < c.total && <Text dimColor>{`  (${rows[0]?.n}–${rows[rows.length - 1]?.n})`}</Text>}
+          {total !== undefined && <Text dimColor>{`  ⏱ ${formatElapsed(total)}`}</Text>}
         </Text>
         {rows.map(i => (
           i.status === 'done'
-            ? <Text><Text color={DONE}>{'  ✔ '}</Text><Text dimColor strikethrough>{short(i.text, width)}</Text></Text>
+            ? <Text><Text color={DONE}>{'  ✔ '}</Text><Text dimColor strikethrough>{short(i.text, width)}</Text><Text dimColor>{timeOf(i)}</Text></Text>
             : i.status === 'doing'
-              ? <Text><Text color={DOING} bold>{`  ${frame} `}</Text><Text color={DOING} bold>{short(i.text, width)}</Text></Text>
+              ? <Text><Text color={DOING} bold>{`  ${frame} `}</Text><Text color={DOING} bold>{short(i.text, width)}</Text><Text color={DOING}>{timeOf(i)}</Text></Text>
               : <Text><Text color="#9ca3af">{'  □ '}</Text><Text>{short(i.text, width)}</Text></Text>
         ))}
         <Text dimColor>{'  Turn it off any time in /config › Checklist above the input · recommended: keep it on'}</Text>

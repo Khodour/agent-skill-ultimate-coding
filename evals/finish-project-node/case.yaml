@@ -1,0 +1,69 @@
+# Rule: project gate, change request on an existing project ("finish it"): understand first
+# (read, run the tests, show what is done, half-built and missing, ask what is open) before code.
+# Severity 6 (finishing on guesses: the export format was never agreed).
+# Source: Anthropic, "Effective harnesses for long-running agents" (read 2026-11-27): the agent
+# reads "the git logs and progress files" and runs "a basic end-to-end test before implementing
+# a new feature".
+schema_version: "1.0"
+name: finish-project-node
+description: A "finish this project" request on a half-built repo gets the state (tests run, what is done and missing) and the open question, before any code.
+tags: [gate, change-request, understand, repo, capability, rule-gate, rule-must-14, ref-update-project]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    This project is almost done. Please finish it.
+  max_turns: 20
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, ToolSearch, "Bash(node --test:*)", "Bash(node:*)"]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
+
+  - type: tool_used
+    name: ran-the-tests
+    tool: Bash
+    input_match: 'node --test'
+    min: 1
+
+  # The export format is open, so no code until the user answers.
+  - type: tool_used
+    name: no-code-edited
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"[^"]*/(src|test)/'
+    min: 0
+    max: 0
+
+  - type: tool_used
+    name: no-code-written
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/(src|test)/'
+    min: 0
+    max: 0
+
+  # Catches code changed by any tool (Edit, Write or a Bash script): the half-built search is untouched.
+  - type: regex
+    name: code-unchanged
+    target: { source: file, path: src/store.js }
+    pattern: 'filter\(\(n\) => n\.title === text\)'
+
+  - type: regex
+    name: reports-what-is-left
+    target: last_message
+    pattern: '^(?=[\s\S]*search)(?=[\s\S]*delete)(?=[\s\S]*export)'
+    flags: i
+
+  # The question may come in an earlier message than the last one; the user sees them all. The
+  # pattern cannot cross a line break or a JSON string boundary, so code the agent read never matches.
+  - type: regex
+    name: asks-export-format
+    target: trace
+    pattern: '(export|format)[^\\\n?"]{0,200}\?'
+    flags: i
+
+  - type: file_exists
+    name: project-doc-written
+    path: docs/project.md

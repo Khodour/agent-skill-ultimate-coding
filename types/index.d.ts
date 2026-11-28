@@ -31,11 +31,18 @@ export type Run = {
   list?: Checklist
 }
 
-/** One checklist item: its words, and whether it is still open, being worked on, or done. */
-export type ChecklistItem = { text: string; status: 'open' | 'doing' | 'done' }
+/**
+ * One checklist item: its words, and whether it is still open, being worked on, or done.
+ * `since` is when its current stretch of work started (only while `doing`); `ms` is the work time
+ * of its earlier stretches, so an item picked up twice adds both.
+ */
+export type ChecklistItem = { text: string; status: 'open' | 'doing' | 'done'; since?: number; ms?: number }
 
-/** The task's checklist: the size Claude chose and the items in order. */
-export type Checklist = { size?: Size; items: ChecklistItem[] }
+/**
+ * The task's checklist: the size Claude chose and the items in order. `startedAt` is when the
+ * list was written and `lastAt` the last call of the tool, both epoch ms, for the timer.
+ */
+export type Checklist = { size?: Size; items: ChecklistItem[]; startedAt?: number; lastAt?: number }
 
 /** What a submitted prompt means for the run: a new message from the person, part of the same task, or nothing. */
 export type PromptKind = 'new' | 'same' | 'none'

@@ -1,0 +1,68 @@
+# Rule: project gate, change request (record it in docs/change_requests/CR-NNN-*.md, ask what is
+# open, add only a plain-path pointer to CLAUDE.md, keep the user's CLAUDE.md).
+# Severity 4 (payment code on guessed choices; a bloated or rewritten CLAUDE.md costs every session).
+# Source: Claude Code Memory docs, code.claude.com/docs/en/memory (read 2026-11-27): "target
+# under 200 lines per CLAUDE.md file"; imports "don't reduce its context cost".
+schema_version: "1.0"
+name: change-request-payments
+description: A change request with open choices (online payment) is recorded and asked about, with no payment code on guesses and the user's CLAUDE.md kept.
+tags: [gate, change-request, repo, capability, rule-gate, rule-ask, ref-update-project]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Change request: customers should be able to pay for their orders online.
+  max_turns: 20
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, ToolSearch, "Bash(python3 -m unittest:*)", "Bash(mkdir:*)"]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
+
+  - type: tool_used
+    name: no-code-written
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*\.py"'
+    min: 0
+    max: 0
+
+  - type: tool_used
+    name: no-code-edited
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"[^"]*\.py"'
+    min: 0
+    max: 0
+
+  # The questions may come in an earlier message than the last one; the user sees them all.
+  - type: regex
+    name: asks-open-choices
+    target: trace
+    pattern: '(provider|stripe|paypal|gateway|refund|currenc)[^\n]{0,200}\?'
+    flags: i
+
+  # Catches payment code added by any tool, not only Edit or Write.
+  - type: regex
+    name: orders-unchanged
+    target: { source: file, path: shop/orders.py }
+    pattern: 'pay'
+    flags: i
+    match: not_contains
+
+  - type: regex
+    name: claude-md-kept
+    target: { source: file, path: CLAUDE.md }
+    pattern: 'Money is integer cents everywhere'
+
+  - type: regex
+    name: no-import-in-claude-md
+    target: { source: file, path: CLAUDE.md }
+    pattern: '(^|\s)@[\w./-]+\.md'
+    flags: m
+    match: not_contains
+
+  - type: file_exists
+    name: cr-file-written
+    path: docs/change_requests/CR-*.md

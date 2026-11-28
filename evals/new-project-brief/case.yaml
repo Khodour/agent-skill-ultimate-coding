@@ -1,0 +1,37 @@
+# Rule: project gate, new project (understand the scope, ask until no open question, plan in
+# sprints before any code). Severity 5 (a whole app built on guesses is thrown away).
+# Source: Claude Code Best practices, code.claude.com/docs/en/best-practices (read 2026-11-27):
+# "Interview me until you could write the spec, then write it to SPEC.md."
+schema_version: "1.0"
+name: new-project-brief
+description: A one-line brief for a new app gets scope questions and a sprint plan, not code built on guesses.
+tags: [gate, new-project, repo, capability, rule-gate, rule-ask, ref-new-project]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Build me an app for my gym: members, classes and bookings.
+  max_turns: 20
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Edit, Write, ToolSearch, "Bash(mkdir:*)", "Bash(node:*)", "Bash(npm:*)", "Bash(python3:*)"]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?agent-skill-ultimate-coding"'
+
+  # No source or config file before the scope is agreed (docs in Markdown are allowed).
+  - type: tool_used
+    name: no-code-written
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*\.(js|jsx|mjs|ts|tsx|py|rb|go|java|kt|php|cs|swift|dart|html|css|sql|json|toml|ya?ml)"'
+    min: 0
+    max: 0
+
+  - type: llm
+    name: asks-scope-and-plans
+    criteria: |
+      The user gave a one-line brief for a new app. Judge only the agent's final message.
+      PASS only if it asks the user about the scope before building (for example who uses the app, which features come first, web or phone, payments) with options and a recommendation, AND it splits the work into phases or sprints (a first small slice, then later ones).
+      FAIL if it says an app was built or written, or if it picks the features and stack itself without asking, or if it only asks questions with no plan split into phases.
