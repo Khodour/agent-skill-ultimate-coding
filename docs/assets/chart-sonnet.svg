@@ -17,7 +17,7 @@
 <text x="874" y="68" class="s" font-size="14" font-weight="400" fill="#8b949e" text-anchor="start">Without the skill</text>
 <rect x="1012" y="56" width="14" height="14" rx="3" fill="#3fb950"/>
 <text x="1034" y="68" class="s" font-size="14" font-weight="400" fill="#e6edf3" text-anchor="start">With the skill</text>
-<text x="48" y="166" class="s" font-size="44" font-weight="700"><tspan fill="#8b949e">60%</tspan><tspan fill="#6e7681" font-size="30" dx="10" dy="-5">→</tspan><tspan fill="#3fb950" dx="10" dy="5">99%</tspan></text>
+<text x="48" y="164" class="s" font-size="38" font-weight="700"><tspan fill="#8b949e">60%</tspan><tspan fill="#6e7681" font-size="26" dx="8" dy="-4">→</tspan><tspan fill="#3fb950" dx="8" dy="4">99%</tspan></text>
 <text x="330" y="138" class="s" font-size="15" font-weight="700" fill="#e6edf3" text-anchor="start">All 33 cases</text>
 <rect x="330" y="148" width="700" height="14" rx="3" fill="#21262d"/>
 <path d="M330 148h416a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-416z" fill="#6e7681"/>

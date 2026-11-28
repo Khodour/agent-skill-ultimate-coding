@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 590" width="1200" height="590" role="img" aria-labelledby="t d">
 <title id="t">Claude Opus 5.5: with and without the skill</title>
-<desc id="d">Claude Opus 5.5, share of checks passed on 33 hard cases. All cases: 63% without the skill, 97% with it. Organized code (5 cases): 20% without, 100% with; Secure by default (5 cases): 60% without, 80% with; Reliable data (4 cases): 50% without, 100% with; Proven and honest (5 cases): 66% without, 97% with; Asks and plans first (4 cases): 35% without, 100% with; Right-sized (10 cases): 100% without, 100% with.</desc>
+<desc id="d">Claude Opus 5.5, share of checks passed on 33 hard cases. All cases: 63% without the skill, 99.6% with it. Organized code (5 cases): 20% without, 100% with; Secure by default (5 cases): 60% without, 100% with; Reliable data (4 cases): 50% without, 100% with; Proven and honest (5 cases): 66% without, 97% with; Asks and plans first (4 cases): 35% without, 100% with; Right-sized (10 cases): 100% without, 100% with.</desc>
 <style>
   .s{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif} .m{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}
   .flow{stroke-dasharray:16 984;animation:flow 2.4s linear infinite}
@@ -17,14 +17,14 @@
 <text x="874" y="68" class="s" font-size="14" font-weight="400" fill="#8b949e" text-anchor="start">Without the skill</text>
 <rect x="1012" y="56" width="14" height="14" rx="3" fill="#3fb950"/>
 <text x="1034" y="68" class="s" font-size="14" font-weight="400" fill="#e6edf3" text-anchor="start">With the skill</text>
-<text x="48" y="166" class="s" font-size="44" font-weight="700"><tspan fill="#8b949e">63%</tspan><tspan fill="#6e7681" font-size="30" dx="10" dy="-5">→</tspan><tspan fill="#3fb950" dx="10" dy="5">97%</tspan></text>
+<text x="48" y="164" class="s" font-size="38" font-weight="700"><tspan fill="#8b949e">63%</tspan><tspan fill="#6e7681" font-size="26" dx="8" dy="-4">→</tspan><tspan fill="#3fb950" dx="8" dy="4">99.6%</tspan></text>
 <text x="330" y="138" class="s" font-size="15" font-weight="700" fill="#e6edf3" text-anchor="start">All 33 cases</text>
 <rect x="330" y="148" width="700" height="14" rx="3" fill="#21262d"/>
 <path d="M330 148h435a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-435z" fill="#6e7681"/>
 <rect x="330" y="166" width="700" height="14" rx="3" fill="#21262d"/>
-<path d="M330 166h672a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-672z" fill="#3fb950" class="grow" style="animation-delay:0.1s"/>
+<path d="M330 166h693a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-693z" fill="#3fb950" class="grow" style="animation-delay:0.1s"/>
 <text x="1044" y="160" class="s" font-size="14" font-weight="600" fill="#8b949e" text-anchor="start">63%</text>
-<text x="1044" y="178" class="s" font-size="14" font-weight="700" fill="#e6edf3" text-anchor="start">97%</text>
+<text x="1044" y="178" class="s" font-size="14" font-weight="700" fill="#e6edf3" text-anchor="start">99.6%</text>
 <path d="M48 214h1104" stroke="#30363d"/>
 <text x="48" y="263" class="s" font-size="15" font-weight="600" fill="#e6edf3" text-anchor="start">Organized code</text>
 <text x="48" y="283" class="s" font-size="13" font-weight="400" fill="#6e7681" text-anchor="start">5 cases</text>
@@ -40,10 +40,10 @@
 <rect x="330" y="304" width="700" height="12" rx="3" fill="#21262d"/>
 <path d="M330 304h416a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4h-416z" fill="#6e7681"/>
 <rect x="330" y="320" width="700" height="12" rx="3" fill="#21262d"/>
-<path d="M330 320h556a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4h-556z" fill="#3fb950" class="grow" style="animation-delay:0.33s"/>
+<path d="M330 320h696a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4h-696z" fill="#3fb950" class="grow" style="animation-delay:0.33s"/>
 <text x="1044" y="315" class="s" font-size="13" font-weight="600" fill="#8b949e" text-anchor="start">60%</text>
-<text x="1044" y="331" class="s" font-size="13" font-weight="700" fill="#e6edf3" text-anchor="start">80%</text>
-<text x="1152" y="324" class="s" font-size="14" font-weight="700" fill="#e6edf3" text-anchor="end">+20</text>
+<text x="1044" y="331" class="s" font-size="13" font-weight="700" fill="#e6edf3" text-anchor="start">100%</text>
+<text x="1152" y="324" class="s" font-size="14" font-weight="700" fill="#e6edf3" text-anchor="end">+40</text>
 <text x="48" y="371" class="s" font-size="15" font-weight="600" fill="#e6edf3" text-anchor="start">Reliable data</text>
 <text x="48" y="391" class="s" font-size="13" font-weight="400" fill="#6e7681" text-anchor="start">4 cases</text>
 <rect x="330" y="358" width="700" height="12" rx="3" fill="#21262d"/>

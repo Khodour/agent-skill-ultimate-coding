@@ -2,7 +2,7 @@
 
 Every case runs **with and without the skill**, on three models (3 runs per arm on Sonnet and Haiku, 1 on Opus). The score is the share of checks passed, averaged over the runs. Only hard cases are kept (the model scored below 1.00 without the skill), plus trigger checks (`no-fire-*`, `no-overprocess-*`) that make sure the skill stays out of the way when it should (Anthropic, *Demystifying evals for AI agents*).
 
-Skill version: the working tree of 2026-11-28 (2.3.0 plus the project gate, `new-project.md`, `update-project.md` and the checklist timer). Judge: Claude Sonnet 5.5 for every case. Repo cases ran with `--scaffold --allow-tools Edit Write Bash`; read-only cases ran without `--allow-tools`, so they keep their own tool list. Runs void because of the account's usage limit are left out, never counted as 0.
+Skill version: 2.4.0 (2.3.0 plus the project gate, `new-project.md`, `update-project.md`, the checklist timer, the report and money-split fixes, and the diff check removed). Most cases ran on the working tree of 2026-11-28 before the diff check was removed; the cases that removal touches ran again afterwards (last section). Judge: Claude Sonnet 5.5 for every case. Repo cases ran with `--scaffold --allow-tools Edit Write Bash`; read-only cases ran without `--allow-tools`, so they keep their own tool list. Runs void because of the account's usage limit are left out, never counted as 0.
 
 ## Claude Sonnet 5.5
 
@@ -61,20 +61,20 @@ Cost: 6.2 turns per run with the skill, 2.9 without; 1.63× the spend.
 - Agent: Claude Haiku 5.5 · judge: Claude Sonnet 5.5
 - Runs per case: 3
 - 12 cases re-run on 2026-11-28 after their first runs hit the usage limit (ask-open-choice, change-request-payments, commit-message, every-item-done, finish-project-node, new-project-brief, no-overprocess-health, no-overprocess-small, question-only-ts, regex-search-node, repo-bugfix, ssrf-link-preview), on the skill with the report, money-split and transaction fixes. commit-message and repo-bugfix are re-graded from the saved traces with their new code graders.
-- apply-coupon, book-room and money-split scores come from the earlier run, before their fixes; not re-run (test budget).
+- apply-coupon, book-room and money-split re-run on 2026-11-28 (3 runs per arm) on the skill as released in 2.4.0. Both money-split failures with the skill are fair: the answers work in cents but round every share up, so the shares add up to more than the bill. The book-room failure keeps the length and opening-hours check in the handler.
 
 | Group | Cases | Without the skill | With the skill |
 |---|:---:|:---:|:---:|
-| Held-out (written before tuning, never used to change the skill) | 4 | 0.25 | 0.58 |
-| Tuned (used while building the skill) | 29 | 0.58 | 0.92 |
-| **All** | 33 | 0.54 | 0.88 |
+| Held-out (written before tuning, never used to change the skill) | 4 | 0.25 | 0.83 |
+| Tuned (used while building the skill) | 29 | 0.58 | 0.94 |
+| **All** | 33 | 0.54 | 0.92 |
 
-Cost: 7.4 turns per run with the skill, 4.3 without; 1.26× the spend.
+Cost: 7.4 turns per run with the skill, 4.3 without; 1.26× the spend (spend from the main run).
 
 | Case | Group | Without | With | Turns without → with |
 |---|---|:---:|:---:|:---:|
-| apply-coupon | held-out | 0.00 | 0.33 | 1.0 → 5.0 |
-| book-room | held-out | 0.00 | 0.33 | 1.0 → 5.0 |
+| apply-coupon | held-out | 0.00 | 1.00 | 1.0 → 5.7 |
+| book-room | held-out | 0.00 | 0.67 | 1.0 → 5.3 |
 | cart-load | held-out | 1.00 | 1.00 | 1.0 → 5.3 |
 | redeem-gift-card | held-out | 0.00 | 0.67 | 1.0 → 5.7 |
 | ai-review-summary | tuned | 0.33 | 1.00 | 1.0 → 5.3 |
@@ -84,7 +84,7 @@ Cost: 7.4 turns per run with the skill, 4.3 without; 1.26× the spend.
 | commit-message | tuned | 1.00 | 1.00 | 9.7 → 16.0 |
 | every-item-done | tuned | 0.75 | 0.83 | 8.3 → 16.3 |
 | finish-project-node | tuned | 0.48 | 0.86 | 9.0 → 8.7 |
-| money-split | tuned | 0.00 | 0.00 | 1.0 → 5.7 |
+| money-split | tuned | 0.00 | 0.33 | 1.0 → 5.3 |
 | new-project-brief | tuned | 0.00 | 1.00 | 29.0 → 4.7 |
 | no-fire-commit-message | tuned | 1.00 | 1.00 | 1.0 → 3.3 |
 | no-fire-csv-to-excel | tuned | 1.00 | 1.00 | 1.0 → 1.0 |
@@ -113,16 +113,16 @@ Cost: 7.4 turns per run with the skill, 4.3 without; 1.26× the spend.
 - Agent: Claude Opus 5.5 · judge: Claude Sonnet 5.5
 - Runs per case: **1** per arm (cost: $13.27 for 66 runs)
 - small-report and every-item-done are re-graded from the saved traces with their current code graders (a regex that accepted only "confidence in this change", and an honesty judge that failed an honest report).
-- regex-search-node with the skill scores 0.00 as graded, but its answer is correct (a worker thread terminated after 2 s, read by hand): the judge read only `src/handlers.js` and the code was in `src/search.js`. The judge now reads the trace; the case is not re-run (test budget).
-- independent-outbound-timeout did not run (its folder name differs from its case name, so `--case` matched nothing).
+- regex-search-node re-run on 2026-11-28 with the fixed judge (it now reads the trace; before, it read only `src/handlers.js` and failed a correct fix in `src/search.js`).
+- independent-outbound-timeout (held out, written by an agent that never saw the skill) ran on 2026-11-28: 1.00 without the skill and 1.00 with it, so it is not hard for Opus. It is not in the 33.
 
 | Group | Cases | Without the skill | With the skill |
 |---|:---:|:---:|:---:|
 | Held-out (written before tuning, never used to change the skill) | 4 | 0.25 | 1.00 |
-| Tuned (used while building the skill) | 29 | 0.68 | 0.96 |
-| **All** | 33 | 0.63 | 0.97 |
+| Tuned (used while building the skill) | 29 | 0.68 | 0.995 |
+| **All** | 33 | 0.63 | 0.996 |
 
-Cost: 6.8 turns per run with the skill, 3.7 without; 1.47× the spend.
+Cost: 6.8 turns per run with the skill, 3.7 without; 1.47× the spend (spend from the main run).
 
 | Case | Group | Without | With | Turns without → with |
 |---|---|:---:|:---:|:---:|
@@ -149,7 +149,7 @@ Cost: 6.8 turns per run with the skill, 3.7 without; 1.47× the spend.
 | no-overprocess-small | tuned | 1.00 | 1.00 | 9.0 → 13.0 |
 | perf-n-plus-one | tuned | 0.00 | 1.00 | 1.0 → 6.0 |
 | question-only-ts | tuned | 1.00 | 1.00 | 6.0 → 8.0 |
-| regex-search-node | tuned | 1.00 | 0.00 | 9.0 → 14.0 |
+| regex-search-node | tuned | 1.00 | 1.00 | 11.0 → 14.0 |
 | repo-bugfix | tuned | 1.00 | 1.00 | 7.0 → 13.0 |
 | report-format | tuned | 0.29 | 0.86 | 1.0 → 5.0 |
 | reset-rate-limit | tuned | 1.00 | 1.00 | 1.0 → 4.0 |
@@ -159,3 +159,17 @@ Cost: 6.8 turns per run with the skill, 3.7 without; 1.47× the spend.
 | ssrf-link-preview | tuned | 1.00 | 1.00 | 9.0 → 29.0 |
 | stock-race | tuned | 1.00 | 1.00 | 1.0 → 5.0 |
 | thin-handler | tuned | 1.00 | 1.00 | 1.0 → 6.0 |
+
+## Release 2.4.0 checks (2026-11-28)
+
+After the cut that removed the diff check from `SKILL.md`, the cases that test the report and the task sizing ran again on Claude Sonnet 5.5, 1 run per arm, Sonnet judge. No case got worse; the tables above keep their 3-run scores.
+
+| Case | Without | With |
+|---|:---:|:---:|
+| every-item-done | 0.60 | 1.00 |
+| no-overprocess-health | 1.00 | 1.00 |
+| no-overprocess-small | 1.00 | 1.00 |
+| question-only-ts | 1.00 | 1.00 |
+| repo-bugfix | 0.80 | 1.00 |
+| report-format | 0.29 | 1.00 |
+| small-report | 0.20 | 1.00 |
